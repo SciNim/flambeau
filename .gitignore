@@ -1,0 +1,3 @@
+build/*
+minitorch/libtorch/*
+*.zip
