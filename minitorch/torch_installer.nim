@@ -16,6 +16,7 @@ type
     Cuda92 = "cu92"
     Cuda101 = "cu101"
     Cuda102 = "cu102"
+    Cuda110 = "cu110"
 
   ABI* = enum
     Cpp = "shared-with-deps"
@@ -36,7 +37,7 @@ proc downloadTo(url, targetDir, filename: string) {.async.} =
   echo "Storing temporary into: \"", targetDir, '\"'
   await client.downloadFile(url, targetDir / filename)
 
-proc getUrlAndFilename(version = "1.5.0", accel = Cuda102, abi = Cpp): tuple[url, filename: string] =
+proc getUrlAndFilename(version = "1.7.0", accel = Cuda102, abi = Cpp11): tuple[url, filename: string] =
   result.filename = "libtorch-"
 
   when defined(linux):
@@ -46,7 +47,7 @@ proc getUrlAndFilename(version = "1.5.0", accel = Cuda102, abi = Cpp): tuple[url
     result.filename &= ".zip"
   elif defined(windows):
     doAssert abi == Cpp, "LibTorch for Windows does not support the C++11 ABI"
-    result.filename &= &"{win}-{version}-{version}.zip"
+    result.filename &= &"-win-{abi}-{version}.zip"
   elif defined(osx):
     doAssert accel == Cpu, "LibTorch for MacOS does not support GPU acceleration"
     result.filename &= &"macos-{version}.zip"
@@ -66,10 +67,12 @@ proc uncompress(targetDir, filename: string, delete = false) =
   z.extractAll(targetDir)
   echo "Done."
   if delete:
-    "Deleting \"", tmp, "\""
+    echo "Deleting \"", tmp, "\""
+    removeFile(tmp)
   else:
-    "Not deleting \"", tmp, "\""
+    echo "Not deleting \"", tmp, "\""
 
 when isMainModule:
   let (url, filename) = getUrlAndFilename()
+  downloadLibTorch(url, getProjectDir(), filename)
   uncompress(getProjectDir(), filename)
