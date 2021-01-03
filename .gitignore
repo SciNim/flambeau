@@ -1,3 +1,4 @@
 build/*
 minitorch/libtorch/*
 *.zip
+nimcache/*

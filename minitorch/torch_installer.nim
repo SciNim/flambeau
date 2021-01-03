@@ -37,7 +37,7 @@ proc downloadTo(url, targetDir, filename: string) {.async.} =
   echo "Storing temporary into: \"", targetDir, '\"'
   await client.downloadFile(url, targetDir / filename)
 
-proc getUrlAndFilename(version = "1.7.0", accel = Cuda102, abi = Cpp11): tuple[url, filename: string] =
+proc getUrlAndFilename(version = "1.7.1", accel = Cuda110, abi = Cpp11): tuple[url, filename: string] =
   result.filename = "libtorch-"
 
   when defined(linux):
