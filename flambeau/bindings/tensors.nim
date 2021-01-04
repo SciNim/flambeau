@@ -57,6 +57,44 @@ const torchHeader = torchHeadersPath / "torch/torch.h"
 
 {.push header: torchHeader.}
 
+# Assumptions
+# -----------------------------------------------------------------------
+#
+# LibTorch is using "ArrayRef" through the codebase in particular
+# for shapes and strides.
+#
+# It has the following definition in
+# libtorch/include/c10/util/ArrayRef.h
+#
+# template <typename T>
+# class ArrayRef final {
+#  private:
+#   /// The start of the array, in an external buffer.
+#   const T* Data;
+#
+#   /// The number of elements.
+#   size_type Length;
+#
+# It is noted that the class does not own the underlying data.
+# We can model that in a zero-copy and safely borrow-checked way
+# with "openarray[T]"
+
+{.experimental:"views".}
+
+type
+  ArrayRef*{.importcpp: "c10::ArrayRef", bycopy.} [T] = object
+    # The field are private so we can't use them, but `lent` enforces borrow checking
+    p: lent UncheckedArray[T]
+    len: csize_t
+
+  IntArrayRef* = ArrayRef[int64]
+
+func data*[T](ar: ArrayRef[T]): lent UncheckedArray[T] {.importcpp: "#.data()".}
+func size*(ar: ArrayRef): csize_t {.importcpp: "#.size()".}
+
+template asNimView*[T](ar: ArrayRef[T]): openarray[T] =
+  toOpenArray(ar.data.unsafeAddr, 0, ar.size.int - 1)
+
 # #######################################################################
 #
 #                            Tensors
@@ -98,9 +136,14 @@ func dim*(t: Tensor): int64 {.sideeffect, importcpp: "#.dim()".}
 func reset*(t: var Tensor) {.importcpp: "#.reset()".}
 func `==`*(a, b: Tensor): bool {.importcpp: "#.is_same(#)".}
 
+func sizes*(a: Tensor): IntArrayRef {.importcpp:"#.sizes()".}
+  ## This is Arraymancer and Numpy "shape"
+func strides*(a: Tensor): IntArrayRef {.importcpp:"#.strides()".}
+
 func ndimension*(t: Tensor): int64 {.importcpp: "#.ndimension()".}
 func nbytes*(t: Tensor): uint {.importcpp: "#.nbytes()".}
 func numel*(t: Tensor): int64 {.importcpp: "#.numel()".}
+  ## This is Arraymancer and Numpy "size"
 func itemsize*(t: Tensor): uint {.importcpp: "#.itemsize()".}
 func element_size*(t: Tensor): int64 {.importcpp: "#.element_size()".}
 
