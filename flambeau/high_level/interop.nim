@@ -23,3 +23,8 @@ template asNimView*[T](ar: ArrayRef[T]): openarray[T] =
 
 template asTorchView*[T](oa: openarray[T]): ArrayRef[T] =
   ArrayRef[T].init(oa)
+
+# Tensor <-> Nim sequences
+# -----------------------------------------------------
+
+# func toTensor[T](oa: openarray[T]): Tensor =

@@ -6,7 +6,8 @@
 # at your option. This file may not be copied, modified, or distributed except according to those terms.
 
 import
-  std/[strutils, os]
+  std/[strutils, os],
+  ../config
 
 # (Almost) raw bindings to PyTorch Tensors
 # -----------------------------------------------------------------------
@@ -47,6 +48,9 @@ else:
 
 {.link: libPath & "libc10" & libSuffix.}
 {.link: libPath & "libtorch_cpu" & libSuffix.}
+
+when UseCuda:
+  {.link: libPath & "libtorch_cuda" & libSuffix.}
 
 # Headers
 # -----------------------------------------------------------------------
@@ -100,12 +104,59 @@ func init*[T](AR: type ArrayRef[T]): ArrayRef[T] {.constructor, varargs, importc
 
 # #######################################################################
 #
-#                            Tensors
+#                         Tensor Metadata
 #
 # #######################################################################
 
+# Backend Device
+# -----------------------------------------------------------------------
+# libtorch/include/c10/core/DeviceType.h
+
+type
+  DeviceKind* {.importc: "c10::DeviceType",
+                size: sizeof(int16).} = enum
+    kCPU = 0
+    kCUDA = 1
+    kMKLDNN = 2
+    kOpenGL = 3
+    kOpenCL = 4
+    kIDEEP = 5
+    kHIP = 6
+    kFPGA = 7
+    kMSNPU = 8
+    kXLA = 9
+    kVulkan = 10
+
+# Datatypes
+# -----------------------------------------------------------------------
+# libtorch/include/torch/csrc/api/include/torch/types.h
+# libtorch/include/c10/core/ScalarType.h
+
+type
+  ScalarKind* {.importc: "torch::ScalarType",
+                size: sizeof(int8).} = enum
+    kUint8 = 0 # kByte
+    kInt8 = 1 # kChar
+    kInt16 = 2 # kShort
+    kInt32 = 3 # kInt
+    kInt64 = 4 # kLong
+    kFloat16 = 5 # kHalf
+    kFloat32 = 6 # kFloat
+    kFloat64 = 7 # kDouble
+    kComplexF16 = 8 # kComplexHalf
+    kComplexF32 = 9 # kComplexFloat
+    kComplexF64 = 10 # kComplexDouble
+    kBool = 11
+    kQint8 = 12 # Quantized int8
+    kQuint8 = 13 # Quantized uint8
+    kQint32 = 14 # Quantized int32
+    kBfloat16 = 15 # Brain float16
+
+
 # TensorOptions
 # -----------------------------------------------------------------------
+# libtorch/include/c10/core/TensorOptions.h
+
 type
   TensorOptions* {.importcpp: "torch::TensorOptions", bycopy.} = object
 
@@ -120,6 +171,12 @@ func init*(T: type TensorOptions): TensorOptions {.constructor,importcpp: "torch
 # Hence in Nim we don't need to care about Scalar or defined converters
 # (except maybe for complex)
 type Scalar* = SomeNumber or bool
+
+# #######################################################################
+#
+#                            Tensors
+#
+# #######################################################################
 
 # Tensors
 # -----------------------------------------------------------------------
@@ -166,7 +223,20 @@ func is_meta*(t: Tensor): bool {.importcpp: "#.is_meta()".}
 # Constructors
 # -----------------------------------------------------------------------
 
+# DeviceType and ScalarType are auto-convertible to TensorOptions
+
 func init*(T: type Tensor): Tensor {.constructor,importcpp: "torch::Tensor".}
+
+func from_blob*(data: pointer, sizes: IntArrayRef): Tensor {.importcpp: "torch::from_blob(@)".}
+func from_blob*(data: pointer, sizes, strides: IntArrayRef): Tensor {.importcpp: "torch::from_blob(@)".}
+
+func from_blob*(data: pointer, sizes: IntArrayRef, options: TensorOptions): Tensor {.importcpp: "torch::from_blob(@)".}
+func from_blob*(data: pointer, sizes: IntArrayRef, scalarKind: ScalarKind): Tensor {.importcpp: "torch::from_blob(@)".}
+func from_blob*(data: pointer, sizes: IntArrayRef, device: DeviceKind): Tensor {.importcpp: "torch::from_blob(@)".}
+
+func from_blob*(data: pointer, sizes, strides: IntArrayRef, options: TensorOptions): Tensor {.importcpp: "torch::from_blob(@)".}
+func from_blob*(data: pointer, sizes, strides: IntArrayRef, scalarKind: ScalarKind): Tensor {.importcpp: "torch::from_blob(@)".}
+func from_blob*(data: pointer, sizes, strides: IntArrayRef, device: DeviceKind): Tensor {.importcpp: "torch::from_blob(@)".}
 
 # Indexing
 # -----------------------------------------------------------------------
@@ -268,3 +338,6 @@ func bitxor*(a: var Tensor, s: Tensor) {.importcpp: "# ^= #".}
 # -----------------------------------------------------------------------
 
 func eye*(n: int64): Tensor {.importcpp: "torch::eye(@)".}
+func eye*(n: int64, options: TensorOptions): Tensor {.importcpp: "torch::eye(@)".}
+func eye*(n: int64, scalarKind: ScalarKind): Tensor {.importcpp: "torch::eye(@)".}
+func eye*(n: int64, device: DeviceKind): Tensor {.importcpp: "torch::eye(@)".}
