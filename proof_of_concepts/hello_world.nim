@@ -1,6 +1,4 @@
-import
-  ../flambeau/bindings/tensors,
-  ../flambeau/cpp/std_cpp
+import ../flambeau
 
 var t = eye(3)
 t.print()

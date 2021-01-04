@@ -1,5 +1,4 @@
-import
-  ../flambeau/bindings/tensors
+import ../flambeau
 
 var t = eye(5)
 t.print()

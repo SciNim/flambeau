@@ -5,41 +5,9 @@
 #   * Apache v2 license (license terms in the root directory or at http://www.apache.org/licenses/LICENSE-2.0).
 # at your option. This file may not be copied, modified, or distributed except according to those terms.
 
-import ../helpers/ast_utils
-
-# #######################################################################
-#
-#                      Tensor indexing helpers
-#
-# #######################################################################
-#
-# This file is meant to be _included_ in tensors.nim
-# to limit the number of C++ linking/symbol resolution required.
-#
-# It enables libtorch with the same slicing API as Arraymancer.
-#
-# libtorch/include/ATen/TensorIndexing.h
-# and https://pytorch.org/cppdocs/notes/tensor_indexing.html
-
-type
-  TorchSlice {.importcpp: "torch::indexing::Slice", bycopy.} = object
-  # libtorch/include/ATen/TensorIndexing.h
-
-  IndexNone {.importcpp: "torch::indexing::None", bycopy.} = object
-    ## enum class TensorIndexType
-  IndexEllipsis {.importcpp: "torch::indexing::Ellipsis", bycopy.} = object
-    ## enum class TensorIndexType
-
-  Ellipsis = IndexEllipsis
-  SliceType = IndexNone or SomeSignedInt
-
-func torchSlice(){.importcpp: "torch::indexing::Slice(@)", constructor.}
-func torchSlice(start: SliceType): TorchSlice {.importcpp: "torch::indexing::Slice(@)", constructor.}
-func torchSlice(start: SliceType, stop: SliceType): TorchSlice {.importcpp: "torch::indexing::Slice(@)", constructor.}
-func torchSlice(start: SliceType, stop: SliceType, step: SliceType): TorchSlice {.importcpp: "torch::indexing::Slice(@)", constructor.}
-func start(s: TorchSlice): int64 {.importcpp: "#.start()".}
-func stop(s: TorchSlice): int64 {.importcpp: "#.stop()".}
-func step(s: TorchSlice): int64 {.importcpp: "#.step()".}
+import
+  ../helpers/ast_utils,
+  ../raw_bindings/tensors
 
 # #######################################################################
 #
@@ -632,3 +600,78 @@ macro slice_typed_dispatch_mut(t: typed, args: varargs[typed], val: typed): unty
         {.error: "Unreachable".}
     else:
       `lateBind_index_fill`(`t`, `axis`, `selector`, `val`)
+
+# #######################################################################
+#
+#                        Public fancy indexers
+#
+# #######################################################################
+
+macro `[]`*(t: Tensor, args: varargs[untyped]): untyped =
+  ## Slice a Tensor
+  ## Input:
+  ##   - a Tensor
+  ##   - and:
+  ##     - specific coordinates (``varargs[int]``)
+  ##     - or a slice (cf. tutorial)
+  ## Returns:
+  ##   - a value or a tensor corresponding to the slice
+  ##
+  ## Usage:
+  ##    - Basic indexing - foo[2, 3]
+  ##    - Basic indexing - foo[1+1, 2*2*1]
+  ##    - Basic slicing - foo[1..2, 3]
+  ##    - Basic slicing - foo[1+1..4, 3-2..2]
+  ##    - Span slices - foo[_, 3]
+  ##    - Span slices - foo[1.._, 3]
+  ##    - Span slices - foo[_..3, 3]
+  ##    - Span slices - foo[_.._, 3]
+  ##    - Stepping - foo[1..3\|2, 3]
+  ##    - Span stepping - foo[_.._\|2, 3]
+  ##    - Span stepping - foo[_.._\|+2, 3]
+  ##    - Span stepping - foo[1.._\|1, 2..3]
+  ##    - Span stepping - foo[_..<4\|2, 3]
+  ##    - Slicing until at n from the end - foo[0..^4, 3]
+  ##    - Span Slicing until at n from the end - foo[_..^2, 3]
+  ##    - Stepped Slicing until at n from the end - foo[1..^1\|2, 3]
+  ##    - Slice from the end - foo[^1..0\|-1, 3]
+  ##    - Slice from the end - expect non-negative step error - foo[^1..0, 3]
+  ##    - Slice from the end - foo[^(2*2)..2*2, 3]
+  ##    - Slice from the end - foo[^3..^2, 3]
+  let new_args = getAST(desugarSlices(args))
+
+  result = quote do:
+    slice_typed_dispatch(`t`, `new_args`)
+
+macro `[]=`*(t: var Tensor, args: varargs[untyped]): untyped =
+  ## Modifies a tensor inplace at the corresponding location or slice
+  ##
+  ##
+  ## Input:
+  ##   - a ``var`` tensor
+  ##   - a location:
+  ##     - specific coordinates (``varargs[int]``)
+  ##     - or a slice (cf. tutorial)
+  ##   - a value:
+  ##     - a single value that will
+  ##       - replace the value at the specific coordinates
+  ##       - or be applied to the whole slice
+  ##     - an openarray with a shape that matches the slice
+  ##     - a tensor with a shape that matches the slice
+  ## Result:
+  ##   - Nothing, the tensor is modified in-place
+  ## Usage:
+  ##   - Assign a single value - foo[1..2, 3..4] = 999
+  ##   - Assign an array/seq of values - foo[0..1,0..1] = [[111, 222], [333, 444]]
+  ##   - Assign values from a view/Tensor - foo[^2..^1,2..4] = bar
+  ##   - Assign values from the same Tensor - foo[^2..^1,2..4] = foo[^1..^2|-1, 4..2|-1]
+
+  # varargs[untyped] consumes all arguments so the actual value should be popped
+  # https://github.com/nim-lang/Nim/issues/5855
+
+  var tmp = args
+  let val = tmp.pop
+  let new_args = getAST(desugarSlices(tmp))
+
+  result = quote do:
+    slice_typed_dispatch_mut(`t`, `new_args`,`val`)

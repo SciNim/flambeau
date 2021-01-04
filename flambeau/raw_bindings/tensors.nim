@@ -13,14 +13,17 @@ import
 #
 # This provides almost raw bindings to PyTorch tensors.
 #
-# Differences:
-# - `&=`, `|=` and `^=` have been renamed bitand, bitor, bitxor
-# - `index` and `index_put` have a common `[]` and `[]=` interface.
-#   This allows Nim to be similar to the Python interface.
-#   It also avoids exposing the "Slice" and "None" index helpers.
+# "Nimification" (camelCase), ergonomic indexing and interoperability with Nim types is left to the "high-level" bindings.
+# This should ease searching PyTorch and libtorch documentation,
+# and make C++ tutorials easily applicable.
 #
-# Names were not "Nimified" (camel-cased) to ease
-# searching in PyTorch and libtorch docs
+# Nonetheless some slight modifications were given to the raw bindings:
+# - `&=`, `|=` and `^=` have been renamed bitand, bitor, bitxor
+# - `[]` and `[]=` are not exported as index and index_put are more flexible
+#   and we want to leave those symbols available for Numpy-like ergonomic indexing.
+# - Nim's `index_fill` and `masked_fill` are mapped to the in-place
+#   C++ `index_fill_` and `masked_fill_`.
+#   The original out-of-place versions are doing clone+in-place mutation
 
 # #######################################################################
 #
@@ -92,8 +95,8 @@ type
 func data*[T](ar: ArrayRef[T]): lent UncheckedArray[T] {.importcpp: "#.data()".}
 func size*(ar: ArrayRef): csize_t {.importcpp: "#.size()".}
 
-template asNimView*[T](ar: ArrayRef[T]): openarray[T] =
-  toOpenArray(ar.data.unsafeAddr, 0, ar.size.int - 1)
+func init*[T](AR: type ArrayRef[T], oa: openarray[T]): ArrayRef[T] {.constructor, importcpp: "ArrayRef(@)".}
+func init*[T](AR: type ArrayRef[T]): ArrayRef[T] {.constructor, varargs, importcpp: "ArrayRef({@})".}
 
 # #######################################################################
 #
@@ -218,78 +221,28 @@ func masked_select*(a: Tensor, mask: Tensor): Tensor {.importcpp: "#.masked_sele
 func index_fill*(a: var Tensor, mask: Tensor, value: Scalar or Tensor) {.importcpp: "#.index_fill_(@)".}
 func masked_fill*(a: var Tensor, mask: Tensor, value: Scalar or Tensor) {.importcpp: "#.masked_fill_(@)".}
 
-# High-level indexing API
+# Low-level slicing API
 # -----------------------------------------------------------------------
 
-include ./indexing
-macro `[]`*(t: Tensor, args: varargs[untyped]): untyped =
-  ## Slice a Tensor
-  ## Input:
-  ##   - a Tensor
-  ##   - and:
-  ##     - specific coordinates (``varargs[int]``)
-  ##     - or a slice (cf. tutorial)
-  ## Returns:
-  ##   - a value or a tensor corresponding to the slice
-  ##
-  ## Usage:
-  ##    - Basic indexing - foo[2, 3]
-  ##    - Basic indexing - foo[1+1, 2*2*1]
-  ##    - Basic slicing - foo[1..2, 3]
-  ##    - Basic slicing - foo[1+1..4, 3-2..2]
-  ##    - Span slices - foo[_, 3]
-  ##    - Span slices - foo[1.._, 3]
-  ##    - Span slices - foo[_..3, 3]
-  ##    - Span slices - foo[_.._, 3]
-  ##    - Stepping - foo[1..3\|2, 3]
-  ##    - Span stepping - foo[_.._\|2, 3]
-  ##    - Span stepping - foo[_.._\|+2, 3]
-  ##    - Span stepping - foo[1.._\|1, 2..3]
-  ##    - Span stepping - foo[_..<4\|2, 3]
-  ##    - Slicing until at n from the end - foo[0..^4, 3]
-  ##    - Span Slicing until at n from the end - foo[_..^2, 3]
-  ##    - Stepped Slicing until at n from the end - foo[1..^1\|2, 3]
-  ##    - Slice from the end - foo[^1..0\|-1, 3]
-  ##    - Slice from the end - expect non-negative step error - foo[^1..0, 3]
-  ##    - Slice from the end - foo[^(2*2)..2*2, 3]
-  ##    - Slice from the end - foo[^3..^2, 3]
-  let new_args = getAST(desugarSlices(args))
+type
+  TorchSlice* {.importcpp: "torch::indexing::Slice", bycopy.} = object
+  # libtorch/include/ATen/TensorIndexing.h
 
-  result = quote do:
-    slice_typed_dispatch(`t`, `new_args`)
+  IndexNone* {.importcpp: "torch::indexing::None", bycopy.} = object
+    ## enum class TensorIndexType
+  IndexEllipsis* {.importcpp: "torch::indexing::Ellipsis", bycopy.} = object
+    ## enum class TensorIndexType
 
-macro `[]=`*(t: var Tensor, args: varargs[untyped]): untyped =
-  ## Modifies a tensor inplace at the corresponding location or slice
-  ##
-  ##
-  ## Input:
-  ##   - a ``var`` tensor
-  ##   - a location:
-  ##     - specific coordinates (``varargs[int]``)
-  ##     - or a slice (cf. tutorial)
-  ##   - a value:
-  ##     - a single value that will
-  ##       - replace the value at the specific coordinates
-  ##       - or be applied to the whole slice
-  ##     - an openarray with a shape that matches the slice
-  ##     - a tensor with a shape that matches the slice
-  ## Result:
-  ##   - Nothing, the tensor is modified in-place
-  ## Usage:
-  ##   - Assign a single value - foo[1..2, 3..4] = 999
-  ##   - Assign an array/seq of values - foo[0..1,0..1] = [[111, 222], [333, 444]]
-  ##   - Assign values from a view/Tensor - foo[^2..^1,2..4] = bar
-  ##   - Assign values from the same Tensor - foo[^2..^1,2..4] = foo[^1..^2|-1, 4..2|-1]
+  Ellipsis* = IndexEllipsis
+  SomeSlicer* = IndexNone or SomeSignedInt
 
-  # varargs[untyped] consumes all arguments so the actual value should be popped
-  # https://github.com/nim-lang/Nim/issues/5855
-
-  var tmp = args
-  let val = tmp.pop
-  let new_args = getAST(desugarSlices(tmp))
-
-  result = quote do:
-    slice_typed_dispatch_mut(`t`, `new_args`,`val`)
+func torchSlice*(){.importcpp: "torch::indexing::Slice(@)", constructor.}
+func torchSlice*(start: SomeSlicer): TorchSlice {.importcpp: "torch::indexing::Slice(@)", constructor.}
+func torchSlice*(start: SomeSlicer, stop: SomeSlicer): TorchSlice {.importcpp: "torch::indexing::Slice(@)", constructor.}
+func torchSlice*(start: SomeSlicer, stop: SomeSlicer, step: SomeSlicer): TorchSlice {.importcpp: "torch::indexing::Slice(@)", constructor.}
+func start*(s: TorchSlice): int64 {.importcpp: "#.start()".}
+func stop*(s: TorchSlice): int64 {.importcpp: "#.stop()".}
+func step*(s: TorchSlice): int64 {.importcpp: "#.step()".}
 
 # Operators
 # -----------------------------------------------------------------------
