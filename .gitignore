@@ -1,4 +1,4 @@
 build/*
-flambeau/libtorch/*
+libtorch/*
 *.zip
 nimcache/*
