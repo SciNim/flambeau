@@ -31,3 +31,7 @@ The tensor definitions are stored in 2 locations:
 
 We use the namespace `torch::Foo` instead of the low-level `at::Foo`
 as this is the one recommended for C++ users.
+
+API reference:
+- Tensor methods: https://pytorch.org/cppdocs/api/classat_1_1_tensor.html
+- Free-standing functions: https://pytorch.org/cppdocs/api/file_build_aten_src_ATen_Functions.h.html
