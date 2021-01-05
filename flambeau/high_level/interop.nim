@@ -8,7 +8,7 @@
 import
   std/[complex, enumerate, typetraits, macros],
   ../raw_bindings/tensors,
-  ./dynamic_stack_arrays
+  ./internal/dynamic_stack_arrays
 
 # #######################################################################
 #
