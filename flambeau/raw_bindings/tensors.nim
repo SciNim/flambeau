@@ -46,11 +46,23 @@ elif defined(maxosx): # TODO check this
 else:
   const libSuffix = ".so" # BSD / Linux
 
-{.link: libPath & "libc10" & libSuffix.}
-{.link: libPath & "libtorch_cpu" & libSuffix.}
+# TODO: proper build system on "nimble install" (put libraries in .nimble/bin?)
+# if the libPath is not in LD_LIBRARY_PATH
+# The libraries won't be loaded at runtime
+when true:
+  # Not sure what "link" does differently from standard linking,
+  # it works, it might even work for both GCC and MSVC
+  {.link: libPath & "libc10" & libSuffix.}
+  {.link: libPath & "libtorch_cpu" & libSuffix.}
 
-when UseCuda:
-  {.link: libPath & "libtorch_cuda" & libSuffix.}
+  when UseCuda:
+    {.link: libPath & "libtorch_cuda" & libSuffix.}
+else:
+  # Standard GCC compatible linker
+  {.passL: "-L" & libPath & " -lc10 -ltorch_cpu ".}
+
+  when UseCuda:
+    {.passL: " -ltorch_cuda ".}
 
 # Headers
 # -----------------------------------------------------------------------
@@ -192,7 +204,7 @@ proc print*(t: Tensor) {.sideeffect, importcpp: "torch::print(@)".}
 # Metadata
 # -----------------------------------------------------------------------
 
-func dim*(t: Tensor): int64 {.sideeffect, importcpp: "#.dim()".}
+func dim*(t: Tensor): int64 {.importcpp: "#.dim()".}
 func reset*(t: var Tensor) {.importcpp: "#.reset()".}
 func `==`*(a, b: Tensor): bool {.importcpp: "#.is_same(#)".}
 
