@@ -6,7 +6,7 @@
 # at your option. This file may not be copied, modified, or distributed except according to those terms.
 
 import
-  std/[strutils, os],
+  std/[strutils, os, complex],
   ../config
 
 # (Almost) raw bindings to PyTorch Tensors
@@ -34,32 +34,35 @@ import
 
 # Libraries
 # -----------------------------------------------------------------------
-# I don't think we can do dynamic loading with C++11
-# So link directly
 
 const libTorchPath = currentSourcePath.rsplit(DirSep, 1)[0] & "/../../vendor/libtorch"
 static: echo "libTorchPath: ", libTorchPath
 const librariesPath = libTorchPath & "/lib"
 static: echo "librariesPath: ", librariesPath
 
+# TODO: we use dynamic linking currently (or are we? unsure about {.link.})
+# but we want to provide static linking for dependency-free deployment.
 when defined(windows):
   const libSuffix = ".dll"
+  const libPrefix = ""
 elif defined(maxosx): # TODO check this
   const libSuffix = ".dylib" # MacOS
+  const libPrefix = "lib"
 else:
   const libSuffix = ".so" # BSD / Linux
+  const libPrefix = "lib"
 
 # TODO: proper build system on "nimble install" (put libraries in .nimble/bin?)
 # if the libPath is not in LD_LIBRARY_PATH
 # The libraries won't be loaded at runtime
 when true:
-  # Not sure what "link" does differently from standard linking,
+  # Not sure what "link" does differently from standard dynamic linking,
   # it works, it might even work for both GCC and MSVC
-  {.link: librariesPath & "/libc10" & libSuffix.}
-  {.link: librariesPath & "/libtorch_cpu" & libSuffix.}
+  {.link: librariesPath & "/" & libPrefix & "c10" & libSuffix.}
+  {.link: librariesPath & "/" & libPrefix & "torch_cpu" & libSuffix.}
 
   when UseCuda:
-    {.link: librariesPath & "/libtorch_cuda" & libSuffix.}
+    {.link: librariesPath & "/" & libPrefix & "torch_cuda" & libSuffix.}
 else:
   # Standard GCC compatible linker
   {.passL: "-L" & librariesPath & " -lc10 -ltorch_cpu ".}
@@ -101,8 +104,6 @@ const torchHeader = torchHeadersPath / "torch/torch.h"
 # We can model that in a zero-copy and safely borrow-checked way
 # with "openarray[T]"
 
-{.experimental:"views".}
-
 type
   ArrayRef*{.importcpp: "c10::ArrayRef", bycopy.} [T] = object
     # The field are private so we can't use them, but `lent` enforces borrow checking
@@ -111,7 +112,7 @@ type
 
   IntArrayRef* = ArrayRef[int64]
 
-func data*[T](ar: ArrayRef[T]): lent UncheckedArray[T] {.importcpp: "#.data()".}
+func data*[T](ar: ArrayRef[T]): ptr UncheckedArray[T] {.importcpp: "#.data()".}
 func size*(ar: ArrayRef): csize_t {.importcpp: "#.size()".}
 
 func init*[T](AR: type ArrayRef[T], p: ptr T, len: SomeInteger): ArrayRef[T] {.constructor, importcpp: "c10::ArrayRef<'*0>(@)".}
@@ -126,8 +127,11 @@ func init*[T](AR: type ArrayRef[T]): ArrayRef[T] {.constructor, varargs, importc
 # Backend Device
 # -----------------------------------------------------------------------
 # libtorch/include/c10/core/DeviceType.h
+# libtorch/include/c10/core/Device.h
 
 type
+  DeviceIndex = int16
+
   DeviceKind* {.importc: "c10::DeviceType",
                 size: sizeof(int16).} = enum
     kCPU = 0
@@ -141,6 +145,10 @@ type
     kMSNPU = 8
     kXLA = 9
     kVulkan = 10
+
+  Device* {.importc: "c10::Device", bycopy.} = object
+    kind: DeviceKind
+    index: DeviceIndex
 
 # Datatypes
 # -----------------------------------------------------------------------
@@ -168,6 +176,9 @@ type
     kBfloat16 = 15 # Brain float16
 
 
+  SomeTorchType* = uint8|byte or SomeSignedInt or
+                   SomeFloat or Complex[float32] or Complex[float64]
+
 # TensorOptions
 # -----------------------------------------------------------------------
 # libtorch/include/c10/core/TensorOptions.h
@@ -186,6 +197,14 @@ func init*(T: type TensorOptions): TensorOptions {.constructor,importcpp: "torch
 # Hence in Nim we don't need to care about Scalar or defined converters
 # (except maybe for complex)
 type Scalar* = SomeNumber or bool
+
+# TensorAccessors
+# -----------------------------------------------------------------------
+# libtorch/include/ATen/core/TensorAccessors.h
+#
+# Tensor accessors gives "medium-level" access to a Tensor raw-data
+# - Compared to low-level "data_ptr" they take care of striding and shape
+# - Compared to high-level functions they don't provide any parallelism.
 
 # #######################################################################
 #
@@ -222,6 +241,19 @@ func numel*(t: Tensor): int64 {.importcpp: "#.numel()".}
 func itemsize*(t: Tensor): uint {.importcpp: "#.itemsize()".}
 func element_size*(t: Tensor): int64 {.importcpp: "#.element_size()".}
 
+# Accessors
+# -----------------------------------------------------------------------
+
+func data_ptr*(t: Tensor, T: typedesc[SomeTorchType]): ptr UncheckedArray[T] {.importcpp: "#.data_ptr<'2>(#)".}
+  ## Gives raw access to a tensor data of type T.
+  ##
+  ## This is a very low-level procedure. You need to take care
+  ## of the tensor shape and strides yourself.
+  ##
+  ## It is recommended to use this only on contiguous tensors
+  ## (freshly created or freshly cloned) and to avoid
+  ## sliced tensors.
+
 # Backend
 # -----------------------------------------------------------------------
 
@@ -249,6 +281,22 @@ func from_blob*(data: pointer, sizes: IntArrayRef, device: DeviceKind): Tensor {
 func from_blob*(data: pointer, sizes, strides: IntArrayRef, options: TensorOptions): Tensor {.importcpp: "torch::from_blob(@)".}
 func from_blob*(data: pointer, sizes, strides: IntArrayRef, scalarKind: ScalarKind): Tensor {.importcpp: "torch::from_blob(@)".}
 func from_blob*(data: pointer, sizes, strides: IntArrayRef, device: DeviceKind): Tensor {.importcpp: "torch::from_blob(@)".}
+
+func empty*(size: IntArrayRef, options: TensorOptions): Tensor {.importcpp:"torch::empty(@)"}
+  ## Create an uninitialized tensor of shape `size`
+  ## The tensor data must be filled manually
+  ##
+  ## The output tensor will be row major (C contiguous)
+func empty*(size: IntArrayRef, scalarKind: ScalarKind): Tensor {.importcpp:"torch::empty(@)"}
+func empty*(size: IntArrayRef, device: DeviceKind): Tensor {.importcpp:"torch::empty(@)"}
+  ## Create an uninitialized tensor of shape `size`
+  ## The tensor data must be filled manually.
+  ##
+  ## If device is NOT on CPU make sure to use specialized
+  ## copy operations. For example to update on Cuda devices
+  ## use cudaMemcpy not a.data[i] = 123
+  ##
+  ## The output tensor will be row major (C contiguous)
 
 # Indexing
 # -----------------------------------------------------------------------

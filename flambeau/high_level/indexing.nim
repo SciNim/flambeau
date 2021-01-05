@@ -177,7 +177,6 @@ func `^`*(s: Slice): TorchSlice {.inline.} =
 
 import std/macros
 
-func constructNone() {.importcpp: "torch::indexing::None", constructor.}
 func None(): NimNode =
   newCall(bindSym"None")
 func succ(node: NimNode): NimNode =

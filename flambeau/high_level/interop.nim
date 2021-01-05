@@ -6,8 +6,9 @@
 # at your option. This file may not be copied, modified, or distributed except according to those terms.
 
 import
-  std/complex,
-  ../raw_bindings/tensors
+  std/[complex, enumerate, typetraits, macros],
+  ../raw_bindings/tensors,
+  ./dynamic_stack_arrays
 
 # #######################################################################
 #
@@ -15,20 +16,27 @@ import
 #
 # #######################################################################
 
+type Metadata = DynamicStackArray[int64]
+
 # ArrayRefs
 # -----------------------------------------------------
 # libtorch/include/c10/util/ArrayRef.h
 
+{.experimental:"views".}
+
 template asNimView*[T](ar: ArrayRef[T]): openarray[T] =
-  toOpenArray(ar.data.unsafeAddr, 0, ar.size.int - 1)
+  toOpenArray(ar.data, 0, ar.size.int - 1)
 
 template asTorchView*[T](oa: openarray[T]): ArrayRef[T] =
   ArrayRef[T].init(oa[0].unsafeAddr, oa.len)
 
+template asTorchView(meta: Metadata): ArrayRef[int64] =
+  ArrayRef[int64].init(meta.data[0].unsafeAddr, meta.len)
+
 # Type map
 # -----------------------------------------------------
 
-func toScalarKind(T: typedesc): static ScalarKind =
+func toScalarKind(T: typedesc[SomeTorchType]): static ScalarKind =
   ## Maps a Nim type to Torch scalar kind
   when T is uint8|byte:
     kUint8
@@ -53,18 +61,90 @@ func toScalarKind(T: typedesc): static ScalarKind =
   else:
     {.error: "Unsupported type in libtorch: " & $T.}
 
-# Tensor <-> Nim sequences
+# Nim openarrays -> Torch Tensors
 # -----------------------------------------------------
 
-func toTensor*[T](oa: openarray[T]): Tensor =
-  ## Convert an openarray to a Tensor
+func getShape[T](s: openarray[T], parent_shape = Metadata()): Metadata =
+  ## Get the shape of nested seqs/arrays
+  ## Important ⚠: at each nesting level, only the length
+  ##   of the first element is used for the shape.
+  ##   Ensure before or after that seqs have the expected length
+  ##   or that the total number of elements matches the product of the dimensions.
+
+  result = parent_shape
+  result.add(s.len)
+
+  when (T is seq|array):
+    result = getShape(s[0], result)
+
+macro getBaseType(T: typedesc): untyped =
+  # Get the base T of a seq[T] input
+  result = T.getTypeInst()[1]
+  while result.kind == nnkBracketExpr and (
+          result[0].eqIdent"seq" or result[0].eqIdent"array"):
+    # We can also have nnkBracketExpr(Complex, float32)
+    if result[0].eqIdent"seq":
+      result = result[1]
+    else: # array
+      result = result[2]
+
+iterator flatIter*[T](s: openarray[T]): auto {.noSideEffect.}=
+  ## Inline iterator on any-depth seq or array
+  ## Returns values in order
+  for item in s:
+    when item is array|seq:
+      for subitem in flatIter(item):
+        yield subitem
+    else:
+      yield item
+
+func toTensorView*[T: SomeTorchType](oa: openarray[T]): lent Tensor =
+  ## Interpret an openarray as a CPU Tensor
+  ## Important:
+  ##   the buffer is shared.
+  ##   There is no copy but modifications are shared
+  ##   and the view cannot outlive its buffer.
+  ##
   ## Input:
   ##      - An array or a seq (can be nested)
   ## Result:
-  ##      - A Tensor of the same shape
+  ##      - A view Tensor of the same shape
   let shape = [oa.len.int64]
   return from_blob(
     oa[0].unsafeAddr,
     asTorchView(shape),
     toScalarKind(T)
   )
+
+func toTensor*[T: SomeTorchType](oa: openarray[T]): Tensor =
+  ## Interpret an openarray as a CPU Tensor
+  ##
+  ## Input:
+  ##      - An array or a seq
+  ## Result:
+  ##      - A view Tensor of the same shape
+  let shape = [oa.len.int64]
+  return from_blob(
+    oa[0].unsafeAddr,
+    asTorchView(shape),
+    toScalarKind(T)
+  ).clone()
+
+func toTensor*[T: seq|array](oa: openarray[T]): Tensor =
+  ## Interpret an openarray of openarray as a CPU Tensor
+  ##
+  ## Input:
+  ##      - A nested array or a seq
+  ## Result:
+  ##      - A view Tensor of the same shape
+  let shape = getShape(oa)
+  type BaseType = getBaseType(T)
+
+  result = empty(
+    shape.asTorchView(),
+    BaseType.toScalarKind()
+  )
+
+  let data = result.data_ptr(BaseType)
+  for i, val in enumerate(flatIter(oa)):
+    data[i] = val
