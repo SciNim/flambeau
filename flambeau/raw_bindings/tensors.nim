@@ -300,6 +300,11 @@ func empty*(size: IntArrayRef, device: DeviceKind): Tensor {.importcpp:"torch::e
 
 func clone*(a: Tensor): Tensor {.importcpp: "#.clone()".}
 
+func cpu*(a: Tensor): Tensor {.importcpp: "#.cpu()".}
+func cuda*(a: Tensor): Tensor {.importcpp: "#.cuda()".}
+func hip*(a: Tensor): Tensor {.importcpp: "#.hip()".}
+func vulkan*(a: Tensor): Tensor {.importcpp: "#.vulkan()".}
+
 # Indexing
 # -----------------------------------------------------------------------
 # libtorch/include/ATen/TensorIndexing.h
