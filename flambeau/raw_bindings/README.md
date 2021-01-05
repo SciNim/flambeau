@@ -40,7 +40,7 @@ API reference:
 
 c10::optional is similar to Nim `Option` for PyTorch.
 The type `T` is implicitly convertible to `c10::optional<T>` at the C++ compiler level
-hence we don't expose `c10::optional` in Nim but the bindings directly use the base type.
+hence we don't expose `c10::optional` in Nim but the bindings directly use the base type and an overload with no input.
 
 #### On TensorOptions, Device, DeviceKind and ScalarType
 
