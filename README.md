@@ -6,10 +6,6 @@ Flambeau provides Nim bindings to libtorch C++ API.
 
 TODO
 
-## External dependencies
-
-- OpenCV is required. The exact version depends on the PyTorch version chosen.
-
 ## Limitations
 
 Compared to Numpy and Arraymancer, Flambeau inherits the following PyTorch limitations:
