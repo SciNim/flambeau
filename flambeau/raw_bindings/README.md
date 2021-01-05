@@ -35,3 +35,29 @@ as this is the one recommended for C++ users.
 API reference:
 - Tensor methods: https://pytorch.org/cppdocs/api/classat_1_1_tensor.html
 - Free-standing functions: https://pytorch.org/cppdocs/api/file_build_aten_src_ATen_Functions.h.html
+
+#### Dealing with c10::optional
+
+c10::optional is similar to Nim `Option` for PyTorch.
+The type `T` is implicitly convertible to `c10::optional<T>` at the C++ compiler level
+hence we don't expose `c10::optional` in Nim but the bindings directly use the base type.
+
+#### On TensorOptions, Device, DeviceKind and ScalarType
+
+`TensorOptions` has a default param of empty `{}`.
+Also DeviceKind (for example kCuda), Device ({kCuda, 0} for Cuda GPU0 and scalar type (kFloat32) are implictly convertible to TensorOptions.
+
+This means that for ergonomic use, it's best to create overload with each parameters, for instance for
+
+```C++
+Tensor at::eye(int64_t n, const TensorOptions &options = {})
+```
+
+We translate that into
+```Nim
+func eye*(n: int64): Tensor {.importcpp: "torch::eye(@)".}
+func eye*(n: int64, options: TensorOptions): Tensor {.importcpp: "torch::eye(@)".}
+func eye*(n: int64, scalarKind: ScalarKind): Tensor {.importcpp: "torch::eye(@)".}
+func eye*(n: int64, device: DeviceKind): Tensor {.importcpp: "torch::eye(@)".}
+func eye*(n: int64, device: Device): Tensor {.importcpp: "torch::eye(@)".}
+```
