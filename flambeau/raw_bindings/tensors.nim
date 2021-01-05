@@ -298,6 +298,8 @@ func empty*(size: IntArrayRef, device: DeviceKind): Tensor {.importcpp:"torch::e
   ##
   ## The output tensor will be row major (C contiguous)
 
+func clone*(a: Tensor): Tensor {.importcpp: "#.clone()".}
+
 # Indexing
 # -----------------------------------------------------------------------
 # libtorch/include/ATen/TensorIndexing.h
