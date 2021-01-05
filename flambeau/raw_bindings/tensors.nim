@@ -37,7 +37,10 @@ import
 # I don't think we can do dynamic loading with C++11
 # So link directly
 
-const libPath = currentSourcePath.rsplit(DirSep, 1)[0] & "/../libtorch/lib/"
+const libTorchPath = currentSourcePath.rsplit(DirSep, 1)[0] & "/../../vendor/libtorch"
+static: echo "libTorchPath: ", libTorchPath
+const librariesPath = libTorchPath & "/lib"
+static: echo "librariesPath: ", librariesPath
 
 when defined(windows):
   const libSuffix = ".dll"
@@ -52,14 +55,14 @@ else:
 when true:
   # Not sure what "link" does differently from standard linking,
   # it works, it might even work for both GCC and MSVC
-  {.link: libPath & "libc10" & libSuffix.}
-  {.link: libPath & "libtorch_cpu" & libSuffix.}
+  {.link: librariesPath & "/libc10" & libSuffix.}
+  {.link: librariesPath & "/libtorch_cpu" & libSuffix.}
 
   when UseCuda:
-    {.link: libPath & "libtorch_cuda" & libSuffix.}
+    {.link: librariesPath & "/libtorch_cuda" & libSuffix.}
 else:
   # Standard GCC compatible linker
-  {.passL: "-L" & libPath & " -lc10 -ltorch_cpu ".}
+  {.passL: "-L" & librariesPath & " -lc10 -ltorch_cpu ".}
 
   when UseCuda:
     {.passL: " -ltorch_cuda ".}
@@ -67,7 +70,7 @@ else:
 # Headers
 # -----------------------------------------------------------------------
 
-const headersPath = currentSourcePath.rsplit(DirSep, 1)[0] & "/../libtorch/include"
+const headersPath = libTorchPath & "/include"
 const torchHeadersPath = headersPath / "torch/csrc/api/include"
 const torchHeader = torchHeadersPath / "torch/torch.h"
 
@@ -238,9 +241,6 @@ func is_meta*(t: Tensor): bool {.importcpp: "#.is_meta()".}
 # DeviceType and ScalarType are auto-convertible to TensorOptions
 
 func init*(T: type Tensor): Tensor {.constructor,importcpp: "torch::Tensor".}
-
-func from_blob*(data: pointer, sizes: IntArrayRef): Tensor {.importcpp: "torch::from_blob(@)".}
-func from_blob*(data: pointer, sizes, strides: IntArrayRef): Tensor {.importcpp: "torch::from_blob(@)".}
 
 func from_blob*(data: pointer, sizes: IntArrayRef, options: TensorOptions): Tensor {.importcpp: "torch::from_blob(@)".}
 func from_blob*(data: pointer, sizes: IntArrayRef, scalarKind: ScalarKind): Tensor {.importcpp: "torch::from_blob(@)".}

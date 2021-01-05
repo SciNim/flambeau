@@ -1,4 +1,4 @@
 build/*
-libtorch/*
+vendor/libtorch
 *.zip
 nimcache/*
