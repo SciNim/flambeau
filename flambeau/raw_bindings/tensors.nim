@@ -114,8 +114,8 @@ type
 func data*[T](ar: ArrayRef[T]): lent UncheckedArray[T] {.importcpp: "#.data()".}
 func size*(ar: ArrayRef): csize_t {.importcpp: "#.size()".}
 
-func init*[T](AR: type ArrayRef[T], oa: openarray[T]): ArrayRef[T] {.constructor, importcpp: "ArrayRef(@)".}
-func init*[T](AR: type ArrayRef[T]): ArrayRef[T] {.constructor, varargs, importcpp: "ArrayRef({@})".}
+func init*[T](AR: type ArrayRef[T], p: ptr T, len: SomeInteger): ArrayRef[T] {.constructor, importcpp: "c10::ArrayRef<'*0>(@)".}
+func init*[T](AR: type ArrayRef[T]): ArrayRef[T] {.constructor, varargs, importcpp: "c10::ArrayRef<'*0>({@})".}
 
 # #######################################################################
 #
