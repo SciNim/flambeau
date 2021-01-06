@@ -7,7 +7,8 @@
 
 import
   std/[strutils, os, complex],
-  ../config
+  ../config,
+  ../cpp/std_cpp
 
 # (Almost) raw bindings to PyTorch Tensors
 # -----------------------------------------------------------------------
@@ -43,7 +44,7 @@ static: echo "librariesPath: ", librariesPath
 # TODO: we use dynamic linking currently (or are we? unsure about {.link.})
 # but we want to provide static linking for dependency-free deployment.
 when defined(windows):
-  const libSuffix = ".dll"
+  const libSuffix = ".lib"
   const libPrefix = ""
 elif defined(maxosx): # TODO check this
   const libSuffix = ".dylib" # MacOS
@@ -105,7 +106,7 @@ const torchHeader = torchHeadersPath / "torch/torch.h"
 # with "openarray[T]"
 
 type
-  ArrayRef*{.importcpp: "c10::ArrayRef", bycopy.} [T] = object
+  ArrayRef*[T] {.importcpp: "c10::ArrayRef", bycopy.} = object
     # The field are private so we can't use them, but `lent` enforces borrow checking
     p: lent UncheckedArray[T]
     len: csize_t
@@ -508,3 +509,6 @@ func squeeze*(t: Tensor): Tensor {.importcpp: "#.squeeze()".}
 func squeeze*(t: Tensor, axis: int64): Tensor {.importcpp: "#.squeeze(@)".}
 func unsqueeze*(t: Tensor, axis: int64): Tensor {.importcpp: "#.unsqueeze(@)".}
 
+func fft*(t: Tensor): Tensor {.importcpp: "torch::fft_fft(@)".}
+func fft*(t: Tensor, n: int64, axis: int64 = -1): Tensor {.importcpp: "torch::fft_fft(@)".}
+func fft*(t: Tensor, n: int64, axis: int64 = -1, norm: CppString): Tensor {.importcpp: "torch::fft_fft(@)".}
