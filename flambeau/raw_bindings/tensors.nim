@@ -36,9 +36,7 @@ import
 # -----------------------------------------------------------------------
 
 const libTorchPath = currentSourcePath.rsplit(DirSep, 1)[0] & "/../../vendor/libtorch"
-static: echo "libTorchPath: ", libTorchPath
 const librariesPath = libTorchPath & "/lib"
-static: echo "librariesPath: ", librariesPath
 
 # TODO: we use dynamic linking currently (or are we? unsure about {.link.})
 # but we want to provide static linking for dependency-free deployment.
@@ -277,6 +275,10 @@ func init*(T: type Tensor): Tensor {.constructor,importcpp: "torch::Tensor".}
 func from_blob*(data: pointer, sizes: IntArrayRef, options: TensorOptions): Tensor {.importcpp: "torch::from_blob(@)".}
 func from_blob*(data: pointer, sizes: IntArrayRef, scalarKind: ScalarKind): Tensor {.importcpp: "torch::from_blob(@)".}
 func from_blob*(data: pointer, sizes: IntArrayRef, device: DeviceKind): Tensor {.importcpp: "torch::from_blob(@)".}
+
+func from_blob*(data: pointer, sizes: int64, options: TensorOptions): Tensor {.importcpp: "torch::from_blob(@)".}
+func from_blob*(data: pointer, sizes: int64, scalarKind: ScalarKind): Tensor {.importcpp: "torch::from_blob(@)".}
+func from_blob*(data: pointer, sizes: int64, device: DeviceKind): Tensor {.importcpp: "torch::from_blob(@)".}
 
 func from_blob*(data: pointer, sizes, strides: IntArrayRef, options: TensorOptions): Tensor {.importcpp: "torch::from_blob(@)".}
 func from_blob*(data: pointer, sizes, strides: IntArrayRef, scalarKind: ScalarKind): Tensor {.importcpp: "torch::from_blob(@)".}

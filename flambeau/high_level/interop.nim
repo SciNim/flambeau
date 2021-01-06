@@ -109,10 +109,9 @@ func toTensorView*[T: SomeTorchType](oa: openarray[T]): lent Tensor =
   ##      - An array or a seq (can be nested)
   ## Result:
   ##      - A view Tensor of the same shape
-  let shape = [oa.len.int64]
   return from_blob(
     oa[0].unsafeAddr,
-    asTorchView(shape),
+    oa.len.int64,
     toScalarKind(T)
   )
 
@@ -123,10 +122,9 @@ func toTensor*[T: SomeTorchType](oa: openarray[T]): Tensor =
   ##      - An array or a seq
   ## Result:
   ##      - A view Tensor of the same shape
-  let shape = [oa.len.int64]
   return from_blob(
     oa[0].unsafeAddr,
-    asTorchView(shape),
+    oa.len.int64,
     toScalarKind(T)
   ).clone()
 
