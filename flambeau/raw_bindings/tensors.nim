@@ -431,12 +431,16 @@ func argmin*(t: Tensor, axis: int64, keepdim: bool = false): Tensor {.importcpp:
 # sum needs wrapper procs/templates to allow for using nim arrays and single axis.
 func sum*(t: Tensor): Tensor {.importcpp: "#.sum()".}
 func sum*(t: Tensor, dtype: ScalarKind): Tensor {.importcpp: "#.sum(@)".}
+func sum*(t: Tensor, axis: int64, keepdim: bool = false): Tensor {.importcpp: "#.sum(@)".}
+func sum*(t: Tensor, axis: int64, keepdim: bool = false, dtype: ScalarKind): Tensor {.importcpp: "#.sum(@)".}
 func sum*(t: Tensor, axis: IntArrayRef, keepdim: bool = false): Tensor {.importcpp: "#.sum(@)".}
 func sum*(t: Tensor, axis: IntArrayRef, keepdim: bool = false, dtype: ScalarKind): Tensor {.importcpp: "#.sum(@)".}
 
 # mean as well
 func mean*(t: Tensor): Tensor {.importcpp: "#.mean()".}
 func mean*(t: Tensor, dtype: ScalarKind): Tensor {.importcpp: "#.mean(@)".}
+func mean*(t: Tensor, axis: int64, keepdim: bool = false): Tensor {.importcpp: "#.mean(@)".}
+func mean*(t: Tensor, axis: int64, keepdim: bool = false, dtype: ScalarKind): Tensor {.importcpp: "#.mean(@)".}
 func mean*(t: Tensor, axis: IntArrayRef, keepdim: bool = false): Tensor {.importcpp: "#.mean(@)".}
 func mean*(t: Tensor, axis: IntArrayRef, keepdim: bool = false, dtype: ScalarKind): Tensor {.importcpp: "#.mean(@)".}
 
@@ -455,9 +459,11 @@ func max*(t: Tensor): Tensor {.importcpp: "#.max()".}
 #func max*(t: Tensor, axis: int64, keepdim: bool = false): CppTuple[Tensor, Tensor] {.importcpp: "torch::max(@)".}
 
 func variance*(t: Tensor, unbiased: bool = true): Tensor {.importcpp: "#.var(@)".} # can't use `var` because of keyword.
+func variance*(t: Tensor, axis: int64, unbiased: bool = true, keepdim: bool = false): Tensor {.importcpp: "#.var(@)".}
 func variance*(t: Tensor, axis: IntArrayRef, unbiased: bool = true, keepdim: bool = false): Tensor {.importcpp: "#.var(@)".}
 
 func stddev*(t: Tensor, unbiased: bool = true): Tensor {.importcpp: "#.std(@)".}
+func stddev*(t: Tensor, axis: int64, unbiased: bool = true, keepdim: bool = false): Tensor {.importcpp: "#.std(@)".}
 func stddev*(t: Tensor, axis: IntArrayRef, unbiased: bool = true, keepdim: bool = false): Tensor {.importcpp: "#.std(@)".}
 
 # algorithms:
