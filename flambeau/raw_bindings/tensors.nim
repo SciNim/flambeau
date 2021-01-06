@@ -7,7 +7,8 @@
 
 import
   std/[strutils, os, complex],
-  ../config
+  ../config,
+  ../cpp/std_cpp
 
 # (Almost) raw bindings to PyTorch Tensors
 # -----------------------------------------------------------------------
@@ -41,7 +42,7 @@ const librariesPath = libTorchPath & "/lib"
 # TODO: we use dynamic linking currently (or are we? unsure about {.link.})
 # but we want to provide static linking for dependency-free deployment.
 when defined(windows):
-  const libSuffix = ".dll"
+  const libSuffix = ".lib"
   const libPrefix = ""
 elif defined(maxosx): # TODO check this
   const libSuffix = ".dylib" # MacOS
@@ -103,7 +104,7 @@ const torchHeader = torchHeadersPath / "torch/torch.h"
 # with "openarray[T]"
 
 type
-  ArrayRef*{.importcpp: "c10::ArrayRef", bycopy.} [T] = object
+  ArrayRef*[T] {.importcpp: "c10::ArrayRef", bycopy.} = object
     # The field are private so we can't use them, but `lent` enforces borrow checking
     p: lent UncheckedArray[T]
     len: csize_t
@@ -215,6 +216,14 @@ type Scalar* = SomeNumber or bool
 
 type
   Tensor* {.importcpp: "torch::Tensor", byref.} = object
+
+{.push header: "<tuple>".}
+type
+  CppTuple2Tensors* {.importcpp: "std::tuple<Tensor, Tensor>", bycopy.} = object
+
+func getFirst*(t: CppTuple2Tensors): lent Tensor {.importcpp: "std::get<0>(#)".}
+func getSecond*(t: CppTuple2Tensors): lent Tensor {.importcpp: "std::get<1>(#)".}
+
 
 # Strings & Debugging
 # -----------------------------------------------------------------------
@@ -406,7 +415,126 @@ func bitxor*(a: var Tensor, s: Tensor) {.importcpp: "# ^= #".}
 # Functions.h
 # -----------------------------------------------------------------------
 
+func toType*(t: Tensor, dtype: ScalarKind): Tensor {.importcpp: "#.toType(@)".}
+
 func eye*(n: int64): Tensor {.importcpp: "torch::eye(@)".}
 func eye*(n: int64, options: TensorOptions): Tensor {.importcpp: "torch::eye(@)".}
 func eye*(n: int64, scalarKind: ScalarKind): Tensor {.importcpp: "torch::eye(@)".}
 func eye*(n: int64, device: DeviceKind): Tensor {.importcpp: "torch::eye(@)".}
+
+
+func add*(t: Tensor, other: Tensor, alpha: Scalar = 1): Tensor {.importcpp: "#.add(@)".}
+func add*(t: Tensor, other: Scalar, alpha: Scalar = 1): Tensor {.importcpp: "#.add(@)".}
+func addmv*(t: Tensor, mat: Tensor, vec: Tensor, beta: Scalar = 1, alpha: Scalar = 1): Tensor {.importcpp: "#.addmv(@)".}
+func addmm*(t, mat1, mat2: Tensor, beta: Scalar = 1, alpha: Scalar = 1): Tensor {.importcpp: "#.addmm(@)".}
+func mm*(t, other: Tensor): Tensor {.importcpp: "#.mm(@)".}
+func matmul*(t, other: Tensor): Tensor {.importcpp: "#.matmul(@)".}
+func bmm*(t, other: Tensor): Tensor {.importcpp: "#.bmm(@)".}
+
+func luSolve*(t, data, pivots: Tensor): Tensor {.importcpp: "#.lu_solve(@)".}
+
+func qr_internal*(t: Tensor, some: bool = true): lent CppTuple2Tensors {.importcpp: "#.qr(@)".}
+func qr*(t: Tensor, some: bool = true): (lent Tensor, lent Tensor) =
+  let cppTuple = qr_internal(t, some)
+  result[0] = cppTuple.getFirst()
+  result[1] = cppTuple.getSecond()
+
+# addr?
+func all*(t: Tensor, axis: int64): Tensor {.importcpp: "#.all(@)".}
+func all*(t: Tensor, axis: int64, keepdim: bool): Tensor {.importcpp: "#.all(@)".}
+func allClose*(t, other: Tensor, rtol: float64 = 1e-5, abstol: float64 = 1e-8, equalNan: bool = false): bool {.importcpp: "#.allclose(@)".}
+func any*(t: Tensor, axis: int64): Tensor {.importcpp: "#.any(@)".}
+func any*(t: Tensor, axis: int64, keepdim: bool): Tensor {.importcpp: "#.any(@)".}
+func argmax*(t: Tensor): Tensor {.importcpp: "#.argmax()".}
+func argmax*(t: Tensor, axis: int64, keepdim: bool = false): Tensor {.importcpp: "#.argmax(@)".}
+func argmin*(t: Tensor): Tensor {.importcpp: "#.argmin()".}
+func argmin*(t: Tensor, axis: int64, keepdim: bool = false): Tensor {.importcpp: "#.argmin(@)".}
+
+# aggregate:
+
+# sum needs wrapper procs/templates to allow for using nim arrays and single axis.
+func sum*(t: Tensor): Tensor {.importcpp: "#.sum()".}
+func sum*(t: Tensor, dtype: ScalarKind): Tensor {.importcpp: "#.sum(@)".}
+func sum*(t: Tensor, axis: int64, keepdim: bool = false): Tensor {.importcpp: "#.sum(@)".}
+func sum*(t: Tensor, axis: int64, keepdim: bool = false, dtype: ScalarKind): Tensor {.importcpp: "#.sum(@)".}
+func sum*(t: Tensor, axis: IntArrayRef, keepdim: bool = false): Tensor {.importcpp: "#.sum(@)".}
+func sum*(t: Tensor, axis: IntArrayRef, keepdim: bool = false, dtype: ScalarKind): Tensor {.importcpp: "#.sum(@)".}
+
+# mean as well
+func mean*(t: Tensor): Tensor {.importcpp: "#.mean()".}
+func mean*(t: Tensor, dtype: ScalarKind): Tensor {.importcpp: "#.mean(@)".}
+func mean*(t: Tensor, axis: int64, keepdim: bool = false): Tensor {.importcpp: "#.mean(@)".}
+func mean*(t: Tensor, axis: int64, keepdim: bool = false, dtype: ScalarKind): Tensor {.importcpp: "#.mean(@)".}
+func mean*(t: Tensor, axis: IntArrayRef, keepdim: bool = false): Tensor {.importcpp: "#.mean(@)".}
+func mean*(t: Tensor, axis: IntArrayRef, keepdim: bool = false, dtype: ScalarKind): Tensor {.importcpp: "#.mean(@)".}
+
+# median requires std::tuple
+
+func prod*(t: Tensor): Tensor {.importcpp: "#.prod()".}
+func prod*(t: Tensor, dtype: ScalarKind): Tensor {.importcpp: "#.prod(@)".}
+func prod*(t: Tensor, axis: int64, keepdim: bool = false): Tensor {.importcpp: "#.prod(@)".}
+func prod*(t: Tensor, axis: int64, keepdim: bool = false, dtype: ScalarKind): Tensor {.importcpp: "#.prod(@)".}
+
+func min*(t: Tensor): Tensor {.importcpp: "#.min()".}
+# Must wrap CppTuple
+func min*(t: Tensor, axis: int64, keepdim: bool = false): CppTuple2Tensors {.importcpp: "torch::min(@)".}
+func max*(t: Tensor): Tensor {.importcpp: "#.max()".}
+# Must wrap CppTuple
+#func max*(t: Tensor, axis: int64, keepdim: bool = false): CppTuple[Tensor, Tensor] {.importcpp: "torch::max(@)".}
+
+func variance*(t: Tensor, unbiased: bool = true): Tensor {.importcpp: "#.var(@)".} # can't use `var` because of keyword.
+func variance*(t: Tensor, axis: int64, unbiased: bool = true, keepdim: bool = false): Tensor {.importcpp: "#.var(@)".}
+func variance*(t: Tensor, axis: IntArrayRef, unbiased: bool = true, keepdim: bool = false): Tensor {.importcpp: "#.var(@)".}
+
+func stddev*(t: Tensor, unbiased: bool = true): Tensor {.importcpp: "#.std(@)".}
+func stddev*(t: Tensor, axis: int64, unbiased: bool = true, keepdim: bool = false): Tensor {.importcpp: "#.std(@)".}
+func stddev*(t: Tensor, axis: IntArrayRef, unbiased: bool = true, keepdim: bool = false): Tensor {.importcpp: "#.std(@)".}
+
+# algorithms:
+
+#func sort*(t: Tensor, axis: int64 = -1, descending: bool = false): CppTuple[Tensor, Tensor] {.importcpp: "#.sort(@)".}
+func argsort*(t: Tensor, axis: int64 = -1, descending: bool = false): Tensor {.importcpp: "#.argsort(@)".}
+
+# math
+func abs*(t: Tensor): Tensor {.importcpp: "#.abs()".}
+func absolute*(t: Tensor): Tensor {.importcpp: "#.absolute()".}
+func angle*(t: Tensor): Tensor {.importcpp: "#.angle()".}
+func sgn*(t: Tensor): Tensor {.importcpp: "#.sgn()".}
+func conj*(t: Tensor): Tensor {.importcpp: "#.conj()".}
+func acos*(t: Tensor): Tensor {.importcpp: "#.acos()".}
+func arccos*(t: Tensor): Tensor {.importcpp: "#.arccos()".}
+func acosh*(t: Tensor): Tensor {.importcpp: "#.acosh()".}
+func arccosh*(t: Tensor): Tensor {.importcpp: "#.arccosh()".}
+func asinh*(t: Tensor): Tensor {.importcpp: "#.asinh()".}
+func arcsinh*(t: Tensor): Tensor {.importcpp: "#.arcsinh()".}
+func atanh*(t: Tensor): Tensor {.importcpp: "#.atanh()".}
+func arctanh*(t: Tensor): Tensor {.importcpp: "#.arctanh()".}
+func asin*(t: Tensor): Tensor {.importcpp: "#.asin()".}
+func arcsin*(t: Tensor): Tensor {.importcpp: "#.arcsin()".}
+func atan*(t: Tensor): Tensor {.importcpp: "#.atan()".}
+func arctan*(t: Tensor): Tensor {.importcpp: "#.arctan()".}
+func cos*(t: Tensor): Tensor {.importcpp: "#.cos()".}
+func sin*(t: Tensor): Tensor {.importcpp: "#.sin()".}
+func tan*(t: Tensor): Tensor {.importcpp: "#.tan()".}
+func exp*(t: Tensor): Tensor {.importcpp: "#.exp()".}
+func exp2*(t: Tensor): Tensor {.importcpp: "#.exp2()".}
+func erf*(t: Tensor): Tensor {.importcpp: "#.erf()".}
+func erfc*(t: Tensor): Tensor {.importcpp: "#.erfc()".}
+func reciprocal*(t: Tensor): Tensor {.importcpp: "#.reciprocal()"}
+func neg*(t: Tensor): Tensor {.importcpp: "#.neg()".}
+func clamp*(t: Tensor, min, max: Scalar): Tensor {.importcpp: "#.clamp(@)".}
+func clampMin*(t: Tensor, min: Scalar): Tensor {.importcpp: "#.clamp_min(@)".}
+func clampMax*(t: Tensor, max: Scalar): Tensor {.importcpp: "#.clamp_max(@)".}
+
+func dot*(t: Tensor, other: Tensor): Tensor {.importcpp: "#.dot(@)".}
+
+func squeeze*(t: Tensor): Tensor {.importcpp: "#.squeeze()".}
+func squeeze*(t: Tensor, axis: int64): Tensor {.importcpp: "#.squeeze(@)".}
+func unsqueeze*(t: Tensor, axis: int64): Tensor {.importcpp: "#.unsqueeze(@)".}
+
+func fft*(t: Tensor): Tensor {.importcpp: "torch::fft_fft(@)".}
+func fft*(t: Tensor, n: int64, axis: int64 = -1): Tensor {.importcpp: "torch::fft_fft(@)".}
+func fft*(t: Tensor, n: int64, axis: int64 = -1, norm: CppString): Tensor {.importcpp: "torch::fft_fft(@)".}
+
+#func convolution*(t: Tensor, weight: Tensor, bias: Tensor, stride, padding, dilation: int64, transposed: bool, outputPadding: int64, groups: int64): Tensor {.importcpp: "torch::convolution(@)".}
+
