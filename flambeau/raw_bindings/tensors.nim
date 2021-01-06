@@ -404,7 +404,51 @@ func bitxor*(a: var Tensor, s: Tensor) {.importcpp: "# ^= #".}
 # Functions.h
 # -----------------------------------------------------------------------
 
+func toType*(t: Tensor, dtype: ScalarKind): Tensor {.importcpp: "#.toType(@)".}
+
 func eye*(n: int64): Tensor {.importcpp: "torch::eye(@)".}
 func eye*(n: int64, options: TensorOptions): Tensor {.importcpp: "torch::eye(@)".}
 func eye*(n: int64, scalarKind: ScalarKind): Tensor {.importcpp: "torch::eye(@)".}
 func eye*(n: int64, device: DeviceKind): Tensor {.importcpp: "torch::eye(@)".}
+
+func abs*(t: Tensor): Tensor {.importcpp: "#.abs()".}
+func absolute*(t: Tensor): Tensor {.importcpp: "#.absolute()".}
+func angle*(t: Tensor): Tensor {.importcpp: "#.angle()".}
+func sgn*(t: Tensor): Tensor {.importcpp: "#.sgn()".}
+func conj*(t: Tensor): Tensor {.importcpp: "#.conj()".}
+func acos*(t: Tensor): Tensor {.importcpp: "#.acos()".}
+func arccos*(t: Tensor): Tensor {.importcpp: "#.arccos()".}
+func add*(t: Tensor, other: Tensor, alpha: Scalar = 1): Tensor {.importcpp: "#.add(@)".}
+func add*(t: Tensor, other: Scalar, alpha: Scalar = 1): Tensor {.importcpp: "#.add(@)".}
+func addmv*(t: Tensor, mat: Tensor, vec: Tensor, beta: Scalar = 1, alpha: Scalar = 1): Tensor {.importcpp: "#.addmv(@)".}
+# addr?
+func all*(t: Tensor, axis: int64): Tensor {.importcpp: "#.all(@)".}
+func all*(t: Tensor, axis: int64, keepdim: bool): Tensor {.importcpp: "#.all(@)".}
+func allClose*(t, other: Tensor, rtol: float = 1e-5, abstol: float = 1e-8, equalNan: bool = false): bool {.importcpp: "#.allclose(@)".}
+func any*(t: Tensor, axis: int64): Tensor {.importcpp: "#.any(@)".}
+func any*(t: Tensor, axis: int64, keepdim: bool): Tensor {.importcpp: "#.any(@)".}
+func argmax*(t: Tensor): Tensor {.importcpp: "#.argmax()".}
+func argmax*(t: Tensor, axis: int64, keepdim: bool = false): Tensor {.importcpp: "#.argmax(@)".}
+func argmin*(t: Tensor): Tensor {.importcpp: "#.argmin()".}
+func argmin*(t: Tensor, axis: int64, keepdim: bool = false): Tensor {.importcpp: "#.argmin(@)".}
+func acosh*(t: Tensor): Tensor {.importcpp: "#.acosh()".}
+func arccosh*(t: Tensor): Tensor {.importcpp: "#.arccosh()".}
+func asinh*(t: Tensor): Tensor {.importcpp: "#.asinh()".}
+func arcsinh*(t: Tensor): Tensor {.importcpp: "#.arcsinh()".}
+func atanh*(t: Tensor): Tensor {.importcpp: "#.atanh()".}
+func arctanh*(t: Tensor): Tensor {.importcpp: "#.arctanh()".}
+func asin*(t: Tensor): Tensor {.importcpp: "#.asin()".}
+func arcsin*(t: Tensor): Tensor {.importcpp: "#.arcsin()".}
+func atan*(t: Tensor): Tensor {.importcpp: "#.atan()".}
+func arctan*(t: Tensor): Tensor {.importcpp: "#.arctan()".}
+
+# aggregate:
+
+# sum needs wrapper procs/templates to allow for using nim arrays and single axis.
+#[
+func sum*(t: Tensor): Tensor {.importcpp: "#.sum()".}
+func sum*(t: Tensor, dtype: ScalarKind): Tensor {.importcpp: "#.sum(@)".}
+func sum*(t: Tensor, axis: IntArrayRef, keepdim: bool = false): Tensor {.importcpp: "#.sum(@)".}
+func sum*(t: Tensor, axis: IntArrayRef, keepdim: bool = false, dtype: ScalarKind): Tensor {.importcpp: "#.sum(@)".}
+]#
+
