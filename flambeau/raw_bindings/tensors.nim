@@ -418,7 +418,7 @@ func addmv*(t: Tensor, mat: Tensor, vec: Tensor, beta: Scalar = 1, alpha: Scalar
 # addr?
 func all*(t: Tensor, axis: int64): Tensor {.importcpp: "#.all(@)".}
 func all*(t: Tensor, axis: int64, keepdim: bool): Tensor {.importcpp: "#.all(@)".}
-func allClose*(t, other: Tensor, rtol: float = 1e-5, abstol: float = 1e-8, equalNan: bool = false): bool {.importcpp: "#.allclose(@)".}
+func allClose*(t, other: Tensor, rtol: float64 = 1e-5, abstol: float64 = 1e-8, equalNan: bool = false): bool {.importcpp: "#.allclose(@)".}
 func any*(t: Tensor, axis: int64): Tensor {.importcpp: "#.any(@)".}
 func any*(t: Tensor, axis: int64, keepdim: bool): Tensor {.importcpp: "#.any(@)".}
 func argmax*(t: Tensor): Tensor {.importcpp: "#.argmax()".}
