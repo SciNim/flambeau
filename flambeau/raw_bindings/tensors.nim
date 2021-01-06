@@ -486,9 +486,19 @@ func arctan*(t: Tensor): Tensor {.importcpp: "#.arctan()".}
 func cos*(t: Tensor): Tensor {.importcpp: "#.cos()".}
 func sin*(t: Tensor): Tensor {.importcpp: "#.sin()".}
 func tan*(t: Tensor): Tensor {.importcpp: "#.tan()".}
+func exp*(t: Tensor): Tensor {.importcpp: "#.exp()".}
+func exp2*(t: Tensor): Tensor {.importcpp: "#.exp2()".}
+func erf*(t: Tensor): Tensor {.importcpp: "#.erf()".}
+func erfc*(t: Tensor): Tensor {.importcpp: "#.erfc()".}
 func reciprocal*(t: Tensor): Tensor {.importcpp: "#.reciprocal()"}
 func neg*(t: Tensor): Tensor {.importcpp: "#.neg()".}
 func clamp*(t: Tensor, min, max: Scalar): Tensor {.importcpp: "#.clamp(@)".}
 func clampMin*(t: Tensor, min: Scalar): Tensor {.importcpp: "#.clamp_min(@)".}
 func clampMax*(t: Tensor, max: Scalar): Tensor {.importcpp: "#.clamp_max(@)".}
+
+func dot*(t: Tensor, other: Tensor): Tensor {.importcpp: "#.dot(@)".}
+
+func squeeze*(t: Tensor): Tensor {.importcpp: "#.squeeze()".}
+func squeeze*(t: Tensor, axis: int64): Tensor {.importcpp: "#.squeeze(@)".}
+func unsqueeze*(t: Tensor, axis: int64): Tensor {.importcpp: "#.unsqueeze(@)".}
 
