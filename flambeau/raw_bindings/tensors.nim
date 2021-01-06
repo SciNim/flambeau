@@ -411,13 +411,7 @@ func eye*(n: int64, options: TensorOptions): Tensor {.importcpp: "torch::eye(@)"
 func eye*(n: int64, scalarKind: ScalarKind): Tensor {.importcpp: "torch::eye(@)".}
 func eye*(n: int64, device: DeviceKind): Tensor {.importcpp: "torch::eye(@)".}
 
-func abs*(t: Tensor): Tensor {.importcpp: "#.abs()".}
-func absolute*(t: Tensor): Tensor {.importcpp: "#.absolute()".}
-func angle*(t: Tensor): Tensor {.importcpp: "#.angle()".}
-func sgn*(t: Tensor): Tensor {.importcpp: "#.sgn()".}
-func conj*(t: Tensor): Tensor {.importcpp: "#.conj()".}
-func acos*(t: Tensor): Tensor {.importcpp: "#.acos()".}
-func arccos*(t: Tensor): Tensor {.importcpp: "#.arccos()".}
+
 func add*(t: Tensor, other: Tensor, alpha: Scalar = 1): Tensor {.importcpp: "#.add(@)".}
 func add*(t: Tensor, other: Scalar, alpha: Scalar = 1): Tensor {.importcpp: "#.add(@)".}
 func addmv*(t: Tensor, mat: Tensor, vec: Tensor, beta: Scalar = 1, alpha: Scalar = 1): Tensor {.importcpp: "#.addmv(@)".}
@@ -431,6 +425,54 @@ func argmax*(t: Tensor): Tensor {.importcpp: "#.argmax()".}
 func argmax*(t: Tensor, axis: int64, keepdim: bool = false): Tensor {.importcpp: "#.argmax(@)".}
 func argmin*(t: Tensor): Tensor {.importcpp: "#.argmin()".}
 func argmin*(t: Tensor, axis: int64, keepdim: bool = false): Tensor {.importcpp: "#.argmin(@)".}
+
+# aggregate:
+
+# sum needs wrapper procs/templates to allow for using nim arrays and single axis.
+func sum*(t: Tensor): Tensor {.importcpp: "#.sum()".}
+func sum*(t: Tensor, dtype: ScalarKind): Tensor {.importcpp: "#.sum(@)".}
+func sum*(t: Tensor, axis: IntArrayRef, keepdim: bool = false): Tensor {.importcpp: "#.sum(@)".}
+func sum*(t: Tensor, axis: IntArrayRef, keepdim: bool = false, dtype: ScalarKind): Tensor {.importcpp: "#.sum(@)".}
+
+# mean as well
+func mean*(t: Tensor): Tensor {.importcpp: "#.mean()".}
+func mean*(t: Tensor, dtype: ScalarKind): Tensor {.importcpp: "#.mean(@)".}
+func mean*(t: Tensor, axis: IntArrayRef, keepdim: bool = false): Tensor {.importcpp: "#.mean(@)".}
+func mean*(t: Tensor, axis: IntArrayRef, keepdim: bool = false, dtype: ScalarKind): Tensor {.importcpp: "#.mean(@)".}
+
+# median requires std::tuple
+
+func prod*(t: Tensor): Tensor {.importcpp: "#.prod()".}
+func prod*(t: Tensor, dtype: ScalarKind): Tensor {.importcpp: "#.prod(@)".}
+func prod*(t: Tensor, axis: int64, keepdim: bool = false): Tensor {.importcpp: "#.prod(@)".}
+func prod*(t: Tensor, axis: int64, keepdim: bool = false, dtype: ScalarKind): Tensor {.importcpp: "#.prod(@)".}
+
+func min*(t: Tensor): Tensor {.importcpp: "#.min()".}
+# Must wrap CppTuple
+#func min*(t: Tensor, axis: int64, keepdim: bool = false): CppTuple[Tensor, Tensor] {.importcpp: "torch::min(@)".}
+func max*(t: Tensor): Tensor {.importcpp: "#.max()".}
+# Must wrap CppTuple
+#func max*(t: Tensor, axis: int64, keepdim: bool = false): CppTuple[Tensor, Tensor] {.importcpp: "torch::max(@)".}
+
+func variance*(t: Tensor, unbiased: bool = true): Tensor {.importcpp: "#.var(@)".} # can't use `var` because of keyword.
+func variance*(t: Tensor, axis: IntArrayRef, unbiased: bool = true, keepdim: bool = false): Tensor {.importcpp: "#.var(@)".}
+
+func std*(t: Tensor, unbiased: bool = true): Tensor {.importcpp: "#.std(@)".} # can't use `var` because of keyword.
+func std*(t: Tensor, axis: IntArrayRef, unbiased: bool = true, keepdim: bool = false): Tensor {.importcpp: "#.std(@)".}
+
+# algorithms:
+
+#func sort*(t: Tensor, axis: int64 = -1, descending: bool = false): CppTuple[Tensor, Tensor] {.importcpp: "#.sort(@)".}
+func argsort*(t: Tensor, axis: int64 = -1, descending: bool = false): Tensor {.importcpp: "#.argsort(@)".}
+
+# math
+func abs*(t: Tensor): Tensor {.importcpp: "#.abs()".}
+func absolute*(t: Tensor): Tensor {.importcpp: "#.absolute()".}
+func angle*(t: Tensor): Tensor {.importcpp: "#.angle()".}
+func sgn*(t: Tensor): Tensor {.importcpp: "#.sgn()".}
+func conj*(t: Tensor): Tensor {.importcpp: "#.conj()".}
+func acos*(t: Tensor): Tensor {.importcpp: "#.acos()".}
+func arccos*(t: Tensor): Tensor {.importcpp: "#.arccos()".}
 func acosh*(t: Tensor): Tensor {.importcpp: "#.acosh()".}
 func arccosh*(t: Tensor): Tensor {.importcpp: "#.arccosh()".}
 func asinh*(t: Tensor): Tensor {.importcpp: "#.asinh()".}
@@ -441,14 +483,12 @@ func asin*(t: Tensor): Tensor {.importcpp: "#.asin()".}
 func arcsin*(t: Tensor): Tensor {.importcpp: "#.arcsin()".}
 func atan*(t: Tensor): Tensor {.importcpp: "#.atan()".}
 func arctan*(t: Tensor): Tensor {.importcpp: "#.arctan()".}
-
-# aggregate:
-
-# sum needs wrapper procs/templates to allow for using nim arrays and single axis.
-#[
-func sum*(t: Tensor): Tensor {.importcpp: "#.sum()".}
-func sum*(t: Tensor, dtype: ScalarKind): Tensor {.importcpp: "#.sum(@)".}
-func sum*(t: Tensor, axis: IntArrayRef, keepdim: bool = false): Tensor {.importcpp: "#.sum(@)".}
-func sum*(t: Tensor, axis: IntArrayRef, keepdim: bool = false, dtype: ScalarKind): Tensor {.importcpp: "#.sum(@)".}
-]#
+func cos*(t: Tensor): Tensor {.importcpp: "#.cos()".}
+func sin*(t: Tensor): Tensor {.importcpp: "#.sin()".}
+func tan*(t: Tensor): Tensor {.importcpp: "#.tan()".}
+func reciprocal*(t: Tensor): Tensor {.importcpp: "#.reciprocal()"}
+func neg*(t: Tensor): Tensor {.importcpp: "#.neg()".}
+func clamp*(t: Tensor, min, max: Scalar): Tensor {.importcpp: "#.clamp(@)".}
+func clampMin*(t: Tensor, min: Scalar): Tensor {.importcpp: "#.clamp_min(@)".}
+func clampMax*(t: Tensor, max: Scalar): Tensor {.importcpp: "#.clamp_max(@)".}
 
