@@ -457,8 +457,8 @@ func max*(t: Tensor): Tensor {.importcpp: "#.max()".}
 func variance*(t: Tensor, unbiased: bool = true): Tensor {.importcpp: "#.var(@)".} # can't use `var` because of keyword.
 func variance*(t: Tensor, axis: IntArrayRef, unbiased: bool = true, keepdim: bool = false): Tensor {.importcpp: "#.var(@)".}
 
-func std*(t: Tensor, unbiased: bool = true): Tensor {.importcpp: "#.std(@)".} # can't use `var` because of keyword.
-func std*(t: Tensor, axis: IntArrayRef, unbiased: bool = true, keepdim: bool = false): Tensor {.importcpp: "#.std(@)".}
+func stddev*(t: Tensor, unbiased: bool = true): Tensor {.importcpp: "#.std(@)".}
+func stddev*(t: Tensor, axis: IntArrayRef, unbiased: bool = true, keepdim: bool = false): Tensor {.importcpp: "#.std(@)".}
 
 # algorithms:
 
