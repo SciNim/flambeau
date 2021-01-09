@@ -215,7 +215,7 @@ type Scalar* = SomeNumber or bool
 # -----------------------------------------------------------------------
 
 type
-  Tensor* {.importcpp: "torch::Tensor", byref.} = object
+  Tensor* {.importcpp: "torch::Tensor", bycopy.} = object
 
 {.push header: "<tuple>".}
 type
@@ -537,4 +537,3 @@ func fft*(t: Tensor, n: int64, axis: int64 = -1): Tensor {.importcpp: "torch::ff
 func fft*(t: Tensor, n: int64, axis: int64 = -1, norm: CppString): Tensor {.importcpp: "torch::fft_fft(@)".}
 
 #func convolution*(t: Tensor, weight: Tensor, bias: Tensor, stride, padding, dilation: int64, transposed: bool, outputPadding: int64, groups: int64): Tensor {.importcpp: "torch::convolution(@)".}
-

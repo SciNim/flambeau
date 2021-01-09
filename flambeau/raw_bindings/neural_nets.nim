@@ -1,0 +1,110 @@
+# Flambeau
+# Copyright (c) 2020 Mamy André-Ratsimbazafy
+# Licensed and distributed under either of
+#   * MIT license (license terms in the root directory or at http://opensource.org/licenses/MIT).
+#   * Apache v2 license (license terms in the root directory or at http://www.apache.org/licenses/LICENSE-2.0).
+# at your option. This file may not be copied, modified, or distributed except according to those terms.
+
+import ./tensors
+
+# (Almost) raw bindings to PyTorch Neural Networks
+# -----------------------------------------------------------------------
+#
+# This provides almost raw bindings to PyTorch tensors.
+#
+# "Nimification" (camelCase), ergonomic indexing and interoperability with Nim types is left to the "high-level" bindings.
+# This should ease searching PyTorch and libtorch documentation,
+# and make C++ tutorials easily applicable.
+
+# #######################################################################
+#
+#                       LibTorch Functional API
+#
+# #######################################################################
+#
+# LibTorch Functional API is described here.
+# https://pytorch.org/cppdocs/api/namespace_torch__nn__functional.html#namespace-torch-nn-functional
+# libtorch/include/torch/csrc/api/include/torch/nn/functional
+#
+# It is stateless, meaning users need to track weight and bias themselves.
+# It is suitable for layers with no learning parameters (for example reshaping),
+# or when extra flexibility is required at a small price of ergonomics.
+# The high-level Module API uses Functional internally.
+
+func linear*(input, weight: Tensor): Tensor {.importcpp: "linear(@)".}
+  ## Applies a linear transformation to the incoming data:
+  ##   y = input * transpose(weight)
+  ##
+  ## Input: (N,∗,in_features)(N, *, in\_features)(N,∗,in_features)
+  ##        N is the batch size, * means any number of additional dimensions
+  ## Weight: (out_features,in_features)
+  ## Output: (N,∗,out_features)
+
+func linear*(input, weight, bias: Tensor): Tensor {.importcpp: "linear(@)".}
+  ## Applies a linear transformation to the incoming data:
+  ##   y = input * transpose(weight) + bias
+  ##
+  ## Input: (N,∗,in_features)(N, *, in\_features)(N,∗,in_features)
+  ##        N is the batch size, * means any number of additional dimensions
+  ## Weight: (out_features,in_features)
+  ## Bias: (out_features)
+  ## Output: (N,∗,out_features)
+
+# #######################################################################
+#
+#                       LibTorch Module API
+#
+# #######################################################################
+#
+# LibTorch Module API is described here.
+# https://pytorch.org/cppdocs/api/namespace_torch__nn.html#classes
+# libtorch/include/torch/csrc/api/include/torch/nn/module.h
+#
+# It uses class derived from the base "Module" class.
+# The modules keep track of weights and biases for the users.
+# They also keep track of the training or evaluation mode,
+# allow pretty-printing of a computation graph,
+# serialization and deserialization.
+#
+# See Module ownership notes:
+# - https://pytorch.org/cppdocs/api/classtorch_1_1nn_1_1_module_holder.html#classtorch_1_1nn_1_1_module_holder
+# - https://pytorch.org/tutorials/advanced/cpp_frontend.html#module-ownership
+# all modules are thin wrapper around shared_ptr + ModuleImpl
+#
+# Torch serialization expect the shared_ptr so we should respect their Module API.
+
+type
+  Module* {.pure, inheritable, importcpp: "torch::nn::Module".} = object
+    ## A LibTorch neural network module that can be inherited from
+    # Impl detaim:
+    #   Nim inheritable objects have runtime type information pointer
+    #   as a hidden first field.
+    #   {.pure, inheritable.} removes that to make the object C++ compatible.
+
+# Linear layer
+# --------------------------------
+# https://pytorch.org/cppdocs/api/classtorch_1_1nn_1_1_linear_impl.html
+
+type
+  LinearOptions* {.importcpp: "torch::nn::LinearOptions", bycopy.} = object
+
+  Linear* {.importcpp: "torch::nn::Linear", bycopy.} = object
+    # Linear is a shared_ptr underneath.
+    # The ptr is bycopy which results in the actual data being byref.
+    options*{.importc.}: LinearOptions
+    weight*{.importc.}: Tensor
+    bias*{.importc.}: Tensor
+
+func reset*(linear: Linear){.importcpp: "#.reset()".}
+  ## reset() must perform initialization of all members with reference semantics,
+  ## most importantly parameters, buffers and submodules.
+
+func reset_parameters*(linear: Linear){.importcpp: "#.reset_parameters()".}
+
+# pretty_print
+
+func forward*(linear: Linear, input: Tensor): Tensor {.importcpp: "#.forward(#)".}
+  ## Transforms the ``input`` tensor
+  ## by multiplying with the ``weight``
+  ## and optionally adding the ``bias``,
+  ## if ``with_bias`` is true in the ``options``.
