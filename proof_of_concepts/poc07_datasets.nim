@@ -13,4 +13,6 @@ proc main() =
   mnist.get(0).target.print()
   echo "\n-----------------------"
 
+  echo "Stateful dataset? ", mnist.typeof.is_stateful
+
 main()

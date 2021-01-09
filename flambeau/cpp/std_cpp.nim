@@ -5,6 +5,8 @@
 #   * Apache v2 license (license terms in the root directory or at http://www.apache.org/licenses/LICENSE-2.0).
 # at your option. This file may not be copied, modified, or distributed except according to those terms.
 
+import std/macros
+
 # ############################################################
 #
 #                   C++ standard types wrapper
@@ -45,6 +47,35 @@ type
 func make_shared*(T: typedesc): CppSharedPtr[T] {.importcpp: "std::make_shared<'*0>()".}
 
 {.pop.}
+
+# std::unique_ptr<T>
+# -----------------------------------------------------------------------
+
+{.push header: "<memory>".}
+
+type
+  CppUniquePtr* {.importcpp: "std::unique_ptr", header: "<memory>", bycopy.} [T] = object
+
+# func `=copy`*[T](dst: var CppUniquePtr[T], src: CppUniquePtr[T]) {.error: "A unique ptr cannot be copied".}
+func make_unique*(T: typedesc): CppUniquePtr[T] {.importcpp: "std::make_unique<'*0>()".}
+
+{.pop.}
+
+# Seamless pointer access
+# -----------------------------------------------------------------------
+{.experimental: "dotOperators".}
+
+# This returns var T but with strictFunc it shouldn't
+func deref*[T](p: CppUniquePtr[T] or CppSharedPtr[T]): var T {.importcpp: "(* #)", header: "<memory>".}
+
+macro `.()`*[T](p: CppUniquePtr[T] or CppSharedPtr[T], fieldOrFunc: untyped, args: varargs[untyped]): untyped =
+  result = nnkCall.newTree(
+    nnkDotExpr.newTree(
+      newCall(bindSym"deref", p),
+      fieldOrFunc
+    )
+  )
+  copyChildrenTo(args, result)
 
 # std::vector<T>
 # -----------------------------------------------------------------------

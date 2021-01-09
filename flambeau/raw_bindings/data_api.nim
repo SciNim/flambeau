@@ -85,6 +85,8 @@ type
     kTrain = 0
     kTest = 1
 
+func is_stateful*(D: type BatchDataset): bool {.importcpp: "'1::is_stateful".}
+
 func mnist*(rootPath: cstring, mode = kTrain): Mnist {.constructor, importcpp:"torch::data::datasets::MNIST(@)".}
   ## Loads the MNIST dataset from the `root` path
   ## The supplied `rootpath` should contain the *content* of the unzipped
@@ -98,18 +100,115 @@ func targets*(dataset: Mnist): lent Tensor {.importcpp: "#.targets()".}
 
 # #######################################################################
 #
+#                         Samplers
+#
+# #######################################################################
+
+type
+  # TODO: https://github.com/nim-lang/Nim/issues/16653
+  #   generics + {.inheritable.} doesn't work
+  Sampler*
+      {.bycopy, pure, inheritable,
+      importcpp: "torch::data::samplers::Sampler".}
+      # [BatchRequest]
+    = object
+
+  RandomSampler*
+      {.bycopy, pure,
+      importcpp: "torch::data::samplers::RandomSampler".}
+    = object
+
+# #######################################################################
+#
+#                         Transforms
+#
+# #######################################################################
+
+# #######################################################################
+#
 #                         Dataloader
 #
 # #######################################################################
 
-# #######################################################################
-#
-#                         Samplers
-#
-# #######################################################################
+when not compileOption("threads"):
+  {.error: "The data API is multithreaded, use the --threads:on compilation flag".}
 
-# #######################################################################
+type
+  # TODO: https://github.com/nim-lang/Nim/issues/16653
+  #   generics + {.inheritable.} doesn't work
+  DataLoaderBase*
+        {.bycopy, pure, inheritable,
+        importcpp: "torch::data::datasets::BatchDataset".}
+        # [Dataset, Batch, BatchRequest] # TODO: generic inheritable https://github.com/nim-lang/Nim/issues/16653
+      = object
+
+  StatelessDataLoader*
+        {.bycopy, pure,
+        importcpp: "torch::data::StatelessDataLoader".}
+        [Dataset, Sampler]
+      = object of DataLoaderBase
+
+  StatefulDataLoader*
+        {.bycopy, pure,
+        importcpp: "torch::data::StatefulDataLoader".}
+        [Dataset]
+      = object of DataLoaderBase
+
+  DataLoaderOptions*
+        {.bycopy,
+        importcpp: "torch::data::DataLoaderOptions".} = object
+    # TODO: multithreaded batch support
+
+# Note make_data_loader is using `enable_if`
+# to dispatch between either
+# a StatelessDataLoader or a StatefulDataLoader
+# A StatefulDataLoader uses optional<T> instead of plain T
 #
-#                         Samplers
+# libtorch/include/torch/csrc/api/include/torch/data/datasets/base.h
+# -> line 30, 32 and 45
 #
-# #######################################################################
+# This can be represented in Nim with
+# type DataLoader[Dataset, Sampler] = object
+#   when Dataset.Batch.Element is TorchOptional:
+#     dl: CppUniquePtr[StatefulDataLoader[Dataset, Sampler]] # Sampler = DummySampler for Stateful
+#   else:
+#     dl: CppUniquePtr[StatelessDataLoader[Dataset, Sampler]]
+#
+# For now we assume Stateless datasets
+
+func make_data_loader*[D: Dataset](
+       dataset: D
+  ): CppUniquePtr[StatelessDataLoader[D, RandomSampler]] {.
+  importcpp: "torch::data::make_data_loader(#)".}
+
+func make_data_loader*[D: Dataset](
+       dataset: D,
+       options: DataLoaderOptions
+  ): CppUniquePtr[StatelessDataLoader[D, RandomSampler]] {.
+  importcpp: "torch::data::make_data_loader(@)".}
+
+func make_data_loader*[D: Dataset](
+       dataset: D,
+       batch_size: csize_t
+  ): CppUniquePtr[StatelessDataLoader[D, RandomSampler]] {.
+  importcpp: "torch::data::make_data_loader(@)".}
+
+func make_data_loader*[D: Dataset; S: Sampler](
+       dataset: D,
+       sampler: S,
+  ): CppUniquePtr[StatelessDataLoader[D, S]] {.
+  importcpp: "torch::data::make_data_loader(@)".}
+
+func make_data_loader*[D: Dataset; S: Sampler](
+       dataset: D,
+       sampler: S,
+       options: DataLoaderOptions
+  ): CppUniquePtr[StatelessDataLoader[D, S]] {.
+  importcpp: "torch::data::make_data_loader(@)".}
+
+func make_data_loader*[D: Dataset; S: Sampler](
+       dataset: D,
+       sampler: S,
+       batch_size: csize_t
+  ): CppUniquePtr[StatelessDataLoader[D, S]] {.
+  importcpp: "torch::data::make_data_loader(@)".}
