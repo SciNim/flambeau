@@ -10,11 +10,20 @@ Nonetheless some slight modifications were given to the raw bindings:
 - `&=`, `|=` and `^=` have been renamed bitand, bitor, bitxor
 - `[]` and `[]=` are not exported as index and index_put are more flexible
   and we want to leave those symbols available for Numpy-like ergonomic indexing.
-- Nim's `index_fill` and `masked_fill` are mapped to the in-place
+- Nim's `index_fill_mut` and `masked_fill_mut` are mapped to the in-place
   C++ `index_fill_` and `masked_fill_`.
   The original out-of-place versions are doing clone+in-place mutation
 
 ## Adding new bindings
+
+### Conventions
+
+PyTorch exposes out-of-place and in-place versions of functions.
+
+The out-of-place version is usually named `foo` and in-place `foo_`.
+In Nim we use `foo` and `foo_mut`.
+
+Also the mutating version returns a reference to the mutated tensors. This is something that we avoid in Nim and so mutated version should return nothing.
 
 ### Tensors
 

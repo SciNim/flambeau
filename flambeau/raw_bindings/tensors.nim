@@ -23,7 +23,7 @@ import
 # - `&=`, `|=` and `^=` have been renamed bitand, bitor, bitxor
 # - `[]` and `[]=` are not exported as index and index_put are more flexible
 #   and we want to leave those symbols available for Numpy-like ergonomic indexing.
-# - Nim's `index_fill` and `masked_fill` are mapped to the in-place
+# - Nim's `index_fill_mut` and `masked_fill_mut` are mapped to the in-place
 #   C++ `index_fill_` and `masked_fill_`.
 #   The original out-of-place versions are doing clone+in-place mutation
 
@@ -366,8 +366,8 @@ func masked_select*(a: Tensor, mask: Tensor): Tensor {.importcpp: "#.masked_sele
 # that does in-place + clone
 # we only exposes the in-place version.
 
-func index_fill*(a: var Tensor, mask: Tensor, value: Scalar or Tensor) {.importcpp: "#.index_fill_(@)".}
-func masked_fill*(a: var Tensor, mask: Tensor, value: Scalar or Tensor) {.importcpp: "#.masked_fill_(@)".}
+func index_fill_mut*(a: var Tensor, mask: Tensor, value: Scalar or Tensor) {.importcpp: "#.index_fill_(@)".}
+func masked_fill_mut*(a: var Tensor, mask: Tensor, value: Scalar or Tensor) {.importcpp: "#.masked_fill_(@)".}
 
 # Low-level slicing API
 # -----------------------------------------------------------------------

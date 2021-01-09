@@ -31,7 +31,10 @@ import ./tensors
 # or when extra flexibility is required at a small price of ergonomics.
 # The high-level Module API uses Functional internally.
 
-func linear*(input, weight: Tensor): Tensor {.importcpp: "linear(@)".}
+# Linear Layers
+# -------------------------------------------------------------------------
+
+func linear*(input, weight: Tensor): Tensor {.importcpp: "torch::nn::functional::linear(@)".}
   ## Applies a linear transformation to the incoming data:
   ##   y = input * transpose(weight)
   ##
@@ -40,7 +43,7 @@ func linear*(input, weight: Tensor): Tensor {.importcpp: "linear(@)".}
   ## Weight: (out_features,in_features)
   ## Output: (N,∗,out_features)
 
-func linear*(input, weight, bias: Tensor): Tensor {.importcpp: "linear(@)".}
+func linear*(input, weight, bias: Tensor): Tensor {.importcpp: "torch::nn::functional::linear(@)".}
   ## Applies a linear transformation to the incoming data:
   ##   y = input * transpose(weight) + bias
   ##
@@ -49,6 +52,16 @@ func linear*(input, weight, bias: Tensor): Tensor {.importcpp: "linear(@)".}
   ## Weight: (out_features,in_features)
   ## Bias: (out_features)
   ## Output: (N,∗,out_features)
+
+# Dropout functions
+# -------------------------------------------------------------------------
+
+# func dropout*(input: Tensor, p = 0.5, training=true): Tensor {.importcpp: "torch::nn::functional::dropout(@)".}
+# func dropout_mut*(input: var Tensor, p = 0.5, training=true) {.importcpp: "torch::nn::functional::dropout(@, /*inplace=*/ true)".}
+
+func dropout*(input: Tensor, p = 0.5, training=true): Tensor {.importcpp: "torch::dropout(@)".}
+func dropout_mut*(input: var Tensor, p = 0.5, training=true) {.importcpp: "torch::dropout_(@)".}
+
 
 # #######################################################################
 #
@@ -74,12 +87,15 @@ func linear*(input, weight, bias: Tensor): Tensor {.importcpp: "linear(@)".}
 # Torch serialization expect the shared_ptr so we should respect their Module API.
 
 type
-  Module* {.pure, inheritable, importcpp: "torch::nn::Module".} = object
+  Module* {.bycopy, pure, inheritable, importcpp: "torch::nn::Module".} = object
     ## A LibTorch neural network module that can be inherited from
     # Impl detaim:
     #   Nim inheritable objects have runtime type information pointer
     #   as a hidden first field.
     #   {.pure, inheritable.} removes that to make the object C++ compatible.
+
+proc register_module*(parent: var Module, name: cstring, child: Module){.importcpp: "#.register_module(@)".}
+  ## Register a submodule to a parent module.
 
 # Linear layer
 # --------------------------------

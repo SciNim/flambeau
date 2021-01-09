@@ -548,19 +548,19 @@ macro slice_typed_dispatch_mut(t: typed, args: varargs[typed], val: typed): unty
   let fancy = args.getFancySelector(axis, selector)
   if fancy == FancyIndex:
     return newCall(
-        ident"index_fill",
+        ident"index_fill_mut",
         t, newLit axis, selector,
         val
       )
   if fancy == FancyMaskFull:
     return newCall(
-        ident"masked_fill",
+        ident"masked_fill_mut",
         t, selector,
         val
       )
   elif fancy == FancyMaskAxis:
     return newCall(
-        ident"masked_axis_fill",
+        ident"masked_axis_fill_mut",
         t, selector, newLit axis,
         val
       )
