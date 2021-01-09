@@ -3,11 +3,14 @@ import
     data_api, tensors
   ]
 
-let mnist = mnist("build/mnist")
+proc main() =
+  let mnist = mnist("build/mnist")
 
-echo "Data"
-# mnist.get(0).data.print()
-# echo "\n-----------------------"
-# echo "Target"
-# mnist.get(0).target.print()
-# echo "\n-----------------------"
+  echo "Data"
+  mnist.get(0).data.print()
+  echo "\n-----------------------"
+  echo "Target"
+  mnist.get(0).target.print()
+  echo "\n-----------------------"
+
+main()

@@ -18,6 +18,14 @@ import
 # This should ease searching PyTorch and libtorch documentation,
 # and make C++ tutorials easily applicable.
 
+# Headers
+# -----------------------------------------------------------------------
+
+{.passC: "-I" & headersPath.}
+{.passC: "-I" & torchHeadersPath.}
+
+{.push header: torchHeader.}
+
 # #######################################################################
 #
 #                         Datasets
@@ -47,10 +55,14 @@ type
     ##   with T being Example[Data, Target]
     ## BatchRequest is by default ArrayRef[csize_t]
 
+  # TODO: https://github.com/nim-lang/Nim/issues/16653
+  #   generics + {.inheritable.} doesn't work
+  # TODO: https://github.com/nim-lang/Nim/issues/16655
+  # CRTP + importcpp don't work
   Dataset*
     {.bycopy, pure,
     importcpp: "torch::data::datasets::Dataset".}
-    [Self, Batch]
+    # [Self, Batch]
       = object of BatchDataset # [Self, Batch, ArrayRef[csize_t]]
     ## A Dataset type
     ## Self: is the class type that implements the Dataset API
@@ -58,10 +70,12 @@ type
     ## Batch is by default the type CppVector[T]
     ##   with T being Example[Data, Target]
 
+  # TODO: https://github.com/nim-lang/Nim/issues/16655
+  # CRTP + importcpp don't work
   Mnist*
     {.bycopy, pure,
     importcpp: "torch::data::datasets::MNIST".}
-    = object of Dataset[Mnist, CppVector[Example[Tensor, Tensor]]]
+    = object of Dataset # [Mnist, CppVector[Example[Tensor, Tensor]]]
     ## The MNIST dataset
     ## http://yann.lecun.com/exdb/mnist
 
@@ -71,7 +85,7 @@ type
     kTrain = 0
     kTest = 1
 
-func mnist*(rootPath: cstring, mode = kTrain): Mnist {.constructor, importcpp:"MNIST(@)".}
+func mnist*(rootPath: cstring, mode = kTrain): Mnist {.constructor, importcpp:"torch::data::datasets::MNIST(@)".}
   ## Loads the MNIST dataset from the `root` path
   ## The supplied `rootpath` should contain the *content* of the unzipped
   ## MNIST dataset, available from http://yann.lecun.com/exdb/mnist.

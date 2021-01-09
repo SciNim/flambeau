@@ -72,9 +72,9 @@ else:
 # Headers
 # -----------------------------------------------------------------------
 
-const headersPath = libTorchPath & "/include"
-const torchHeadersPath = headersPath / "torch/csrc/api/include"
-const torchHeader = torchHeadersPath / "torch/torch.h"
+const headersPath* = libTorchPath & "/include"
+const torchHeadersPath* = headersPath / "torch/csrc/api/include"
+const torchHeader* = torchHeadersPath / "torch/torch.h"
 
 {.passC: "-I" & headersPath.}
 {.passC: "-I" & torchHeadersPath.}
