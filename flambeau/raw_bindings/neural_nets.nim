@@ -30,6 +30,22 @@ import ./tensors
 # It is suitable for layers with no learning parameters (for example reshaping),
 # or when extra flexibility is required at a small price of ergonomics.
 # The high-level Module API uses Functional internally.
+#
+# Note:
+#   Function exists both in ATen TensorBody.h (namespace at:: or torch::)
+#   and in torch::nn::functional.
+#
+#   We can have
+#     func dropout*(input: Tensor, p = 0.5, training=true): Tensor {.importcpp: "torch::nn::functional::dropout(@)".}
+#     func dropout_mut*(input: var Tensor, p = 0.5, training=true) {.importcpp: "torch::nn::functional::dropout(@, /*inplace=*/ true)".}
+#
+#     OR
+#
+#     func dropout*(input: Tensor, p = 0.5, training=true): Tensor {.importcpp: "torch::dropout(@)".}
+#     func dropout_mut*(input: var Tensor, p = 0.5, training=true) {.importcpp: "torch::dropout_(@)".}
+#
+#   The functions in torch::nn::functional are thin inlined wrapper over TensorBody.h
+#   so we directly use them.
 
 # Linear Layers
 # -------------------------------------------------------------------------
@@ -53,15 +69,23 @@ func linear*(input, weight, bias: Tensor): Tensor {.importcpp: "torch::nn::funct
   ## Bias: (out_features)
   ## Output: (N,∗,out_features)
 
-# Dropout functions
+# Activation functions
 # -------------------------------------------------------------------------
 
-# func dropout*(input: Tensor, p = 0.5, training=true): Tensor {.importcpp: "torch::nn::functional::dropout(@)".}
-# func dropout_mut*(input: var Tensor, p = 0.5, training=true) {.importcpp: "torch::nn::functional::dropout(@, /*inplace=*/ true)".}
+func relu*(input: Tensor): Tensor {.importcpp: "torch::relu(@)".}
+func relu_mut*(input: var Tensor) {.importcpp: "torch::relu_(@)".}
+
+# Dropout functions
+# -------------------------------------------------------------------------
 
 func dropout*(input: Tensor, p = 0.5, training=true): Tensor {.importcpp: "torch::dropout(@)".}
 func dropout_mut*(input: var Tensor, p = 0.5, training=true) {.importcpp: "torch::dropout_(@)".}
 
+# Loss functions
+# -------------------------------------------------------------------------
+
+func log_softmax*(input: Tensor, axis: int64): Tensor {.importcpp: "torch::log_softmax(@)".}
+func log_softmax*(input: Tensor, axis: int64, dtype: ScalarKind): Tensor {.importcpp: "torch::log_softmax(@)".}
 
 # #######################################################################
 #
