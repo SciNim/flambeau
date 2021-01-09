@@ -98,6 +98,21 @@ func images*(dataset: Mnist): lent Tensor {.importcpp: "#.images()".}
   ## Returns all images stacked into a single tensor
 func targets*(dataset: Mnist): lent Tensor {.importcpp: "#.targets()".}
 
+# libtorch/include/torch/csrc/api/include/torch/data/datasets/map.h
+# libtorch/include/torch/csrc/api/include/torch/data/datasets/base.h
+# ----------------------------------------------------------------------
+# The inner details are in map.h but the public view is in base.h
+type
+  MapDataset*
+    {.bycopy, pure, importcpp: "torch::data::datasets::MapDataset".}
+    [SourceDataset, AppliedTransform]
+    = object of BatchDataset
+
+func map*[DatasetType, TransformType](
+       dataset: sink DatasetType,
+       transform: sink TransformType
+  ): MapDataset[DatasetType, TransformType] {.importcpp: "#.map(#)".}
+
 # #######################################################################
 #
 #                         Samplers
@@ -123,6 +138,69 @@ type
 #                         Transforms
 #
 # #######################################################################
+
+type
+  # libtorch/include/torch/csrc/api/include/torch/data/transforms/base.h
+  # --------------------------------------------------------------------
+
+  # TODO: https://github.com/nim-lang/Nim/issues/16653
+  #   generics + {.inheritable.} doesn't work
+  BatchTransform*
+      {.bycopy, pure, inheritable,
+      importcpp: "torch::data::transforms::BatchTransform".}
+      # [BatchRequest]
+    = object
+
+  Transform*
+      {.bycopy, pure,
+      importcpp: "torch::data::transforms::Transform".}
+      [Input, Output]
+    = object
+
+  # libtorch/include/torch/csrc/api/include/torch/data/transforms/lambda.h
+  # ----------------------------------------------------------------------
+
+  BatchLambda*
+      {.bycopy, pure,
+      importcpp: "torch::data::transforms::BatchLambda".}
+      [Input, Output]
+    = object of BatchTransform
+    ## A `BatchTransform` that applies a user-provided functor to a batch.
+
+  Lambda*
+      {.bycopy, pure,
+      importcpp: "torch::data::transforms::Lambda".}
+      [Input, Output]
+    = object
+    ## A `Transform` that applies a user-provided functor to individual examples.
+
+  # libtorch/include/torch/csrc/api/include/torch/data/transforms/collate.h
+  # -----------------------------------------------------------------------
+
+  # TODO: https://github.com/nim-lang/Nim/issues/16653
+  #   generics + {.inheritable.} doesn't work
+  Collation*
+    {.importcpp:"torch::data::transforms::Collation".}
+    [BatchType, T] = BatchTransform # [BatchType, T]
+
+  Collate*
+    {.importcpp:"torch::data::transforms::Collate".}
+    [BatchType, T] = BatchLambda[BatchType, T]
+
+  # libtorch/include/torch/csrc/api/include/torch/data/transforms/stack.h
+  # ---------------------------------------------------------------------
+  Stack*
+    {.importcpp:"torch::data::transforms::Stack".}
+    [E] = object of Collate[CppVector[E], E]
+    ## A `Collation` for `Example<Tensor, Tensor>` types that stacks all data
+    ## tensors into one tensor, and all target (label) tensors into one tensor.
+    ##
+    ## or
+    ##
+    ## A `Collation` for `Example<Tensor, NoTarget>` types that stacks all data
+    ## tensors into one tensor.
+
+func init*(S: type Stack): S {.constructor, importcpp: "torch::data::transforms::Stack<>()".}
 
 # #######################################################################
 #
@@ -176,37 +254,37 @@ type
 #
 # For now we assume Stateless datasets
 
-func make_data_loader*[D: Dataset](
+func make_data_loader*[D: BatchDataset](
        dataset: D
   ): CppUniquePtr[StatelessDataLoader[D, RandomSampler]] {.
   importcpp: "torch::data::make_data_loader(#)".}
 
-func make_data_loader*[D: Dataset](
+func make_data_loader*[D: BatchDataset](
        dataset: D,
        options: DataLoaderOptions
   ): CppUniquePtr[StatelessDataLoader[D, RandomSampler]] {.
   importcpp: "torch::data::make_data_loader(@)".}
 
-func make_data_loader*[D: Dataset](
+func make_data_loader*[D: BatchDataset](
        dataset: D,
        batch_size: csize_t
   ): CppUniquePtr[StatelessDataLoader[D, RandomSampler]] {.
   importcpp: "torch::data::make_data_loader(@)".}
 
-func make_data_loader*[D: Dataset; S: Sampler](
+func make_data_loader*[D: BatchDataset; S: Sampler](
        dataset: D,
        sampler: S,
   ): CppUniquePtr[StatelessDataLoader[D, S]] {.
   importcpp: "torch::data::make_data_loader(@)".}
 
-func make_data_loader*[D: Dataset; S: Sampler](
+func make_data_loader*[D: BatchDataset; S: Sampler](
        dataset: D,
        sampler: S,
        options: DataLoaderOptions
   ): CppUniquePtr[StatelessDataLoader[D, S]] {.
   importcpp: "torch::data::make_data_loader(@)".}
 
-func make_data_loader*[D: Dataset; S: Sampler](
+func make_data_loader*[D: BatchDataset; S: Sampler](
        dataset: D,
        sampler: S,
        batch_size: csize_t
