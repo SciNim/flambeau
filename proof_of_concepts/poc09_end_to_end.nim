@@ -5,24 +5,14 @@ import
   ../flambeau,
   std/[enumerate, strformat]
 
-# Argh, need Linear{nullptr} in the codegen
-# so we cheat by inlining C++
-#
-# type Net {.pure.} = object of Module
-#
-#   fc1: Linear
-#   fc2: Linear
-#   fc3: Linear
+# Net is defined in poc_09_end_to_end_types.nim.hpp
+# to work around https://github.com/nim-lang/Nim/issues/16664
+# which workarounds https://github.com/nim-lang/Nim/issues/4687
 
-{.emit:["""
-struct Net: public torch::nn::Module {
-  torch::nn::Linear fc1{nullptr};
-  torch::nn::Linear fc2{nullptr};
-  torch::nn::Linear fc3{nullptr};
-};
-"""].}
-
-type Net{.pure, importcpp.} = object of Module
+type Net
+  {.pure, importcpp,
+    header:"poc09_end_to_end_types.nim.hpp".}
+    = object of Module
   fc1: Linear
   fc2: Linear
   fc3: Linear
@@ -72,6 +62,6 @@ proc main() =
       if batch_index mod 100 == 0:
         echo &"Epoch: {epoch} | Batch: {batch_index} | Loss: {loss.item(float32)}"
         # Serialize your model periodically as a checkpoint.
-        net.save("net.pt")
+        save(net, "net.pt")
 
 main()

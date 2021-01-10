@@ -5,7 +5,10 @@
 #   * Apache v2 license (license terms in the root directory or at http://www.apache.org/licenses/LICENSE-2.0).
 # at your option. This file may not be copied, modified, or distributed except according to those terms.
 
-import ./tensors, ./neural_nets
+import
+  ../cpp/std_cpp,
+  ./tensors,
+  ./neural_nets
 
 # (Almost) raw bindings to PyTorch serialization
 # -----------------------------------------------------------------------
@@ -31,4 +34,4 @@ import ./tensors, ./neural_nets
 # #######################################################################
 # libtorch/include/torch/csrc/api/include/torch/optim/optimizer.h
 
-proc save*(module: Module, path: cstring){.sideeffect, importcpp:"torch::save(@)".}
+proc save*[T](module: CppSharedPtr[T], path: cstring){.sideeffect, importcpp:"torch::save(@)".}

@@ -2,3 +2,4 @@ build/*
 vendor/libtorch
 *.zip
 nimcache/*
+*.pt
