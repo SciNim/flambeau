@@ -1,7 +1,4 @@
-import
-  ../flambeau/raw_bindings/[
-    data_api, tensors
-  ]
+import ../flambeau_nn
 
 proc main() =
   let mnist = mnist("build/mnist")

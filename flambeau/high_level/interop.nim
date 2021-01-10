@@ -6,7 +6,7 @@
 # at your option. This file may not be copied, modified, or distributed except according to those terms.
 
 import
-  std/[complex, enumerate, typetraits, macros],
+  std/[complex, enumerate, macros],
   ../raw_bindings/tensors,
   ./internal/dynamic_stack_arrays
 
