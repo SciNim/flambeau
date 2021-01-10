@@ -28,6 +28,23 @@ import
 
 # #######################################################################
 #
+#                         Iterators
+#
+# #######################################################################
+#
+# /home/beta/Programming/Nim/flambeau/vendor/libtorch/include/torch/csrc/api/include/torch/data/iterator.h
+
+type
+  TorchDataIterator*
+    {.bycopy, importcpp: "torch::data::Iterator".}
+    [Batch] = object
+
+func next*(it: var TorchDataIterator) {.importcpp: "(++#)".}
+func get*[Batch](it: var TorchDataIterator[Batch]): lent Batch {.importcpp: "(*#)".}
+func `==`*(it1, it2: TorchDataIterator): bool {.importcpp: "# == #".}
+
+# #######################################################################
+#
 #                         Datasets
 #
 # #######################################################################
@@ -131,7 +148,7 @@ type
   RandomSampler*
       {.bycopy, pure,
       importcpp: "torch::data::samplers::RandomSampler".}
-    = object
+    = object of Sampler
 
 # #######################################################################
 #
@@ -237,6 +254,25 @@ type
         importcpp: "torch::data::DataLoaderOptions".} = object
     # TODO: multithreaded batch support
 
+# TODO: because of https://github.com/nim-lang/Nim/issues/16653
+#       and https://github.com/nim-lang/Nim/issues/16655
+#       BatchDataset and Dataset have no generics attached
+#       and so we can't infer their Iterator type :/
+func start*(dl: DataLoaderBase
+       ): TorchDataIterator[Example[Tensor, Tensor]]
+  {.importcpp: "#.begin()".}
+  ## Start an iterator
+  ## Note: due to compiler bugs with C++ interop
+  ##       we can't attach the DataLoaderBase generic type,
+  ##       and so the output is fixed to Example[Tensor, Tensor]
+  ##       which is the output of the Stack transform
+
+func stop*(dl: DataLoaderBase
+       ): TorchDataIterator[Example[Tensor, Tensor]]
+       {.importcpp: "#.end()".}
+  ## Returns a sentinel value that denotes
+  ## the end of an iterator
+
 # Note make_data_loader is using `enable_if`
 # to dispatch between either
 # a StatelessDataLoader or a StatefulDataLoader
@@ -251,6 +287,13 @@ type
 #     dl: CppUniquePtr[StatefulDataLoader[Dataset, Sampler]] # Sampler = DummySampler for Stateful
 #   else:
 #     dl: CppUniquePtr[StatelessDataLoader[Dataset, Sampler]]
+#
+# Or
+#
+# func make_data_loader*[D: BatchDataset and not Optional](...): CppUniquePtr[StatelessDataLoader[D, RandomSampler]]
+# func make_data_loader*[D: BatchDataset and Optional](...): CppUniquePtr[StatefulDataLoader[D]]
+#
+# potentially using concept for constraints if higher-kinded constraints don't work
 #
 # For now we assume Stateless datasets
 
