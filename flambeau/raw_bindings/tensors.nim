@@ -245,6 +245,7 @@ func ndimension*(t: Tensor): int64 {.importcpp: "#.ndimension()".}
 func nbytes*(t: Tensor): uint {.importcpp: "#.nbytes()".}
 func numel*(t: Tensor): int64 {.importcpp: "#.numel()".}
   ## This is Arraymancer and Numpy "size"
+func size*(t: Tensor, axis: int64): int64 {.importcpp: "#.size(#)".}
 func itemsize*(t: Tensor): uint {.importcpp: "#.itemsize()".}
 func element_size*(t: Tensor): int64 {.importcpp: "#.element_size()".}
 
@@ -368,6 +369,16 @@ func masked_select*(a: Tensor, mask: Tensor): Tensor {.importcpp: "#.masked_sele
 
 func index_fill_mut*(a: var Tensor, mask: Tensor, value: Scalar or Tensor) {.importcpp: "#.index_fill_(@)".}
 func masked_fill_mut*(a: var Tensor, mask: Tensor, value: Scalar or Tensor) {.importcpp: "#.masked_fill_(@)".}
+
+# Shapeshifting
+# -----------------------------------------------------------------------
+
+func reshape*(a: Tensor): Tensor {.varargs, importcpp: "#.reshape({@})".}
+
+# Automatic Differentiation
+# -----------------------------------------------------------------------
+
+func backward*(a: var Tensor){.importcpp: "#.backward()".}
 
 # Low-level slicing API
 # -----------------------------------------------------------------------

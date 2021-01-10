@@ -5,7 +5,9 @@
 #   * Apache v2 license (license terms in the root directory or at http://www.apache.org/licenses/LICENSE-2.0).
 # at your option. This file may not be copied, modified, or distributed except according to those terms.
 
-import ./tensors
+import
+  ../cpp/std_cpp,
+  ./tensors
 
 # (Almost) raw bindings to PyTorch Neural Networks
 # -----------------------------------------------------------------------
@@ -15,6 +17,14 @@ import ./tensors
 # "Nimification" (camelCase), ergonomic indexing and interoperability with Nim types is left to the "high-level" bindings.
 # This should ease searching PyTorch and libtorch documentation,
 # and make C++ tutorials easily applicable.
+
+# Headers
+# -----------------------------------------------------------------------
+
+{.passC: "-I" & headersPath.}
+{.passC: "-I" & torchHeadersPath.}
+
+{.push header: torchHeader.}
 
 # #######################################################################
 #
@@ -75,6 +85,9 @@ func linear*(input, weight, bias: Tensor): Tensor {.importcpp: "torch::nn::funct
 func relu*(input: Tensor): Tensor {.importcpp: "torch::relu(@)".}
 func relu_mut*(input: var Tensor) {.importcpp: "torch::relu_(@)".}
 
+func log_softmax*(input: Tensor, axis: int64): Tensor {.importcpp: "torch::log_softmax(@)".}
+func log_softmax*(input: Tensor, axis: int64, dtype: ScalarKind): Tensor {.importcpp: "torch::log_softmax(@)".}
+
 # Dropout functions
 # -------------------------------------------------------------------------
 
@@ -84,8 +97,7 @@ func dropout_mut*(input: var Tensor, p = 0.5, training=true) {.importcpp: "torch
 # Loss functions
 # -------------------------------------------------------------------------
 
-func log_softmax*(input: Tensor, axis: int64): Tensor {.importcpp: "torch::log_softmax(@)".}
-func log_softmax*(input: Tensor, axis: int64, dtype: ScalarKind): Tensor {.importcpp: "torch::log_softmax(@)".}
+func nll_loss*(input, target: Tensor): Tensor {.importcpp: "torch::nll_loss(@)".}
 
 # #######################################################################
 #
@@ -118,22 +130,35 @@ type
     #   as a hidden first field.
     #   {.pure, inheritable.} removes that to make the object C++ compatible.
 
-proc register_module*(parent: var Module, name: cstring, child: Module){.importcpp: "#.register_module(@)".}
+proc register_module*[ParMod, ChildMod: Module](
+       parent: var ParMod, name: cstring, child: var ChildMod)
+       {.importcpp: "#.register_module(@)".}
   ## Register a submodule to a parent module.
+
+proc register_module*[ParMod, ChildMod: Module](
+       parent: var ParMod, name: cstring, child: sink ChildMod): ChildMod
+       {.importcpp: "#.register_module(@)".}
+  ## Register a submodule to a parent module.
+
+func parameters*(module: Module, recurse = true): CppVector[Tensor]{.importcpp: "#.parameters(#)".}
+
+func is_training*(module: Module): bool {.importcpp: "#.is_training()".}
 
 # Linear layer
 # --------------------------------
 # https://pytorch.org/cppdocs/api/classtorch_1_1nn_1_1_linear_impl.html
 
 type
-  LinearOptions* {.importcpp: "torch::nn::LinearOptions", bycopy.} = object
+  LinearOptions* {.bycopy, importcpp: "torch::nn::LinearOptions".} = object
 
-  Linear* {.importcpp: "torch::nn::Linear", bycopy.} = object
+  Linear* {.pure, bycopy, importcpp: "torch::nn::Linear".} = object of Module
     # Linear is a shared_ptr underneath.
     # The ptr is bycopy which results in the actual data being byref.
     options*{.importc.}: LinearOptions
     weight*{.importc.}: Tensor
     bias*{.importc.}: Tensor
+
+func init*(T: type Linear, in_features, out_features: int64): T {.constructor, importcpp:"torch::nn::Linear(@)".}
 
 func reset*(linear: Linear){.importcpp: "#.reset()".}
   ## reset() must perform initialization of all members with reference semantics,

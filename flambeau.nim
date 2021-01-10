@@ -16,6 +16,29 @@ import ./flambeau/raw_bindings/tensors
 
 export tensors # TODO, don't export low-level procs and types like C++ slices.
 
+import ./flambeau/raw_bindings/neural_nets
+  except LinearOptions
+export neural_nets
+
+import ./flambeau/raw_bindings/optimizers
+  except OptimizerOptions
+export optimizers
+
+import ./flambeau/raw_bindings/data_api
+  except
+    TorchDataIterator,
+    DataLoaderBase, DataLoaderOptions
+export data_api
+
+import ./flambeau/raw_bindings/serialize
+export serialize
+
+# C++ Standard Library
+# ----------------------------------------------------------------
+
+import ./flambeau/cpp/std_cpp
+export std_cpp
+
 # Convenience helpers
 # ----------------------------------------------------------------
 

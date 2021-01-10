@@ -45,93 +45,6 @@ func `==`*(it1, it2: TorchDataIterator): bool {.importcpp: "# == #".}
 
 # #######################################################################
 #
-#                         Datasets
-#
-# #######################################################################
-#
-# Custom Dataset example: https://github.com/mhubii/libtorch_custom_dataset
-# libtorch/include/torch/csrc/api/include/torch/data/datasets/base.h
-
-type
-  Example*{.bycopy, importcpp: "torch::data::Example".}
-      [Data, Target] = object
-    data*: Data
-    target*: Target
-
-  # TODO: https://github.com/nim-lang/Nim/issues/16653
-  #   generics + {.inheritable.} doesn't work
-  BatchDataset*
-        {.bycopy, pure, inheritable,
-        importcpp: "torch::data::datasets::BatchDataset".}
-        # [Self, Batch, BatchRequest] # TODO: generic inheritable https://github.com/nim-lang/Nim/issues/16653
-      = object
-    ## A BatchDataset type
-    ## Self: is the class type that implements the Dataset API
-    ##   (using the Curious Recurring Template Pattern in underlying C++)
-    ## Batch is by default the type CppVector[T]
-    ##   with T being Example[Data, Target]
-    ## BatchRequest is by default ArrayRef[csize_t]
-
-  # TODO: https://github.com/nim-lang/Nim/issues/16653
-  #   generics + {.inheritable.} doesn't work
-  # TODO: https://github.com/nim-lang/Nim/issues/16655
-  # CRTP + importcpp don't work
-  Dataset*
-    {.bycopy, pure,
-    importcpp: "torch::data::datasets::Dataset".}
-    # [Self, Batch]
-      = object of BatchDataset # [Self, Batch, ArrayRef[csize_t]]
-    ## A Dataset type
-    ## Self: is the class type that implements the Dataset API
-    ##   (using the Curious Recurring Template Pattern in underlying C++)
-    ## Batch is by default the type CppVector[T]
-    ##   with T being Example[Data, Target]
-
-  # TODO: https://github.com/nim-lang/Nim/issues/16655
-  # CRTP + importcpp don't work
-  Mnist*
-    {.bycopy, pure,
-    importcpp: "torch::data::datasets::MNIST".}
-    = object of Dataset # [Mnist, CppVector[Example[Tensor, Tensor]]]
-    ## The MNIST dataset
-    ## http://yann.lecun.com/exdb/mnist
-
-  MnistMode* {.size:sizeof(cint),
-      importcpp:"torch::data::datasets::MNIST::Mode".} = enum
-    ## Select the train or test mode of the Mnist data
-    kTrain = 0
-    kTest = 1
-
-func is_stateful*(D: type BatchDataset): bool {.importcpp: "'1::is_stateful".}
-
-func mnist*(rootPath: cstring, mode = kTrain): Mnist {.constructor, importcpp:"torch::data::datasets::MNIST(@)".}
-  ## Loads the MNIST dataset from the `root` path
-  ## The supplied `rootpath` should contain the *content* of the unzipped
-  ## MNIST dataset, available from http://yann.lecun.com/exdb/mnist.
-func get*(dataset: Mnist, index: int): Example[Tensor, Tensor] {.importcpp:"#.get(#)".}
-# func size*(dataset: Mnist): optional(int)
-func is_train*(): bool {.importcpp:"#.is_train()".}
-func images*(dataset: Mnist): lent Tensor {.importcpp: "#.images()".}
-  ## Returns all images stacked into a single tensor
-func targets*(dataset: Mnist): lent Tensor {.importcpp: "#.targets()".}
-
-# libtorch/include/torch/csrc/api/include/torch/data/datasets/map.h
-# libtorch/include/torch/csrc/api/include/torch/data/datasets/base.h
-# ----------------------------------------------------------------------
-# The inner details are in map.h but the public view is in base.h
-type
-  MapDataset*
-    {.bycopy, pure, importcpp: "torch::data::datasets::MapDataset".}
-    [SourceDataset, AppliedTransform]
-    = object of BatchDataset
-
-func map*[DatasetType, TransformType](
-       dataset: sink DatasetType,
-       transform: sink TransformType
-  ): MapDataset[DatasetType, TransformType] {.importcpp: "#.map(#)".}
-
-# #######################################################################
-#
 #                         Samplers
 #
 # #######################################################################
@@ -221,6 +134,100 @@ func init*(S: type Stack): S {.constructor, importcpp: "torch::data::transforms:
 
 # #######################################################################
 #
+#                         Datasets
+#
+# #######################################################################
+#
+# Custom Dataset example: https://github.com/mhubii/libtorch_custom_dataset
+# libtorch/include/torch/csrc/api/include/torch/data/datasets/base.h
+
+type
+  Example*{.bycopy, importcpp: "torch::data::Example".}
+      [Data, Target] = object
+    data*: Data
+    target*: Target
+
+  # TODO: https://github.com/nim-lang/Nim/issues/16653
+  #   generics + {.inheritable.} doesn't work
+  BatchDataset*
+        {.bycopy, pure, inheritable,
+        importcpp: "torch::data::datasets::BatchDataset".}
+        # [Self, Batch, BatchRequest] # TODO: generic inheritable https://github.com/nim-lang/Nim/issues/16653
+      = object
+    ## A BatchDataset type
+    ## Self: is the class type that implements the Dataset API
+    ##   (using the Curious Recurring Template Pattern in underlying C++)
+    ## Batch is by default the type CppVector[T]
+    ##   with T being Example[Data, Target]
+    ## BatchRequest is by default ArrayRef[csize_t]
+
+  # TODO: https://github.com/nim-lang/Nim/issues/16653
+  #   generics + {.inheritable.} doesn't work
+  # TODO: https://github.com/nim-lang/Nim/issues/16655
+  # CRTP + importcpp don't work
+  Dataset*
+    {.bycopy, pure,
+    importcpp: "torch::data::datasets::Dataset".}
+    # [Self, Batch]
+      = object of BatchDataset # [Self, Batch, ArrayRef[csize_t]]
+    ## A Dataset type
+    ## Self: is the class type that implements the Dataset API
+    ##   (using the Curious Recurring Template Pattern in underlying C++)
+    ## Batch is by default the type CppVector[T]
+    ##   with T being Example[Data, Target]
+
+  # TODO: https://github.com/nim-lang/Nim/issues/16655
+  # CRTP + importcpp don't work
+  Mnist*
+    {.bycopy, pure,
+    importcpp: "torch::data::datasets::MNIST".}
+    = object of Dataset # [Mnist, CppVector[Example[Tensor, Tensor]]]
+    ## The MNIST dataset
+    ## http://yann.lecun.com/exdb/mnist
+
+  MnistMode* {.size:sizeof(cint),
+      importcpp:"torch::data::datasets::MNIST::Mode".} = enum
+    ## Select the train or test mode of the Mnist data
+    kTrain = 0
+    kTest = 1
+
+func is_stateful*(D: type BatchDataset): bool {.importcpp: "'1::is_stateful".}
+
+func mnist*(rootPath: cstring, mode = kTrain): Mnist {.constructor, importcpp:"torch::data::datasets::MNIST(@)".}
+  ## Loads the MNIST dataset from the `root` path
+  ## The supplied `rootpath` should contain the *content* of the unzipped
+  ## MNIST dataset, available from http://yann.lecun.com/exdb/mnist.
+func get*(dataset: Mnist, index: int): Example[Tensor, Tensor] {.importcpp:"#.get(#)".}
+# func size*(dataset: Mnist): optional(int)
+func is_train*(): bool {.importcpp:"#.is_train()".}
+func images*(dataset: Mnist): lent Tensor {.importcpp: "#.images()".}
+  ## Returns all images stacked into a single tensor
+func targets*(dataset: Mnist): lent Tensor {.importcpp: "#.targets()".}
+
+# libtorch/include/torch/csrc/api/include/torch/data/datasets/map.h
+# libtorch/include/torch/csrc/api/include/torch/data/datasets/base.h
+# ----------------------------------------------------------------------
+# The inner details are in map.h but the public view is in base.h
+type
+  MapDataset*
+    {.bycopy, pure, importcpp: "torch::data::datasets::MapDataset".}
+    [SourceDataset, AppliedTransform]
+    = object of BatchDataset
+
+func map*[DatasetType; TransformType: not type](
+       dataset: sink DatasetType,
+       transform: sink TransformType
+  ): MapDataset[DatasetType, TransformType] {.importcpp: "#.map(#)".}
+
+func map*[DatasetType](
+       dataset: sink DatasetType,
+       transformType: typedesc
+  ): MapDataset[DatasetType, transformType] =
+  # TODO: bad C++ codegen, the typedesc arg disappears
+  map(dataset, init(transformType))
+
+# #######################################################################
+#
 #                         Dataloader
 #
 # #######################################################################
@@ -272,6 +279,28 @@ func stop*(dl: DataLoaderBase
        {.importcpp: "#.end()".}
   ## Returns a sentinel value that denotes
   ## the end of an iterator
+
+iterator items*(dl: DataLoaderBase): Example[Tensor, Tensor] =
+  # TODO: lent Example[Tensor, Tensor],
+  #   borrow checker complains about 'cur' escaping it's frame
+  #   but `cur.get()` already returns a borrowed view
+  var cur = dl.start()
+  let stop = dl.stop()
+  while cur != stop:
+    yield cur.get()
+    cur.next()
+
+iterator pairs*(dl: DataLoaderBase): tuple[index: int, value: Example[Tensor, Tensor]] =
+  # TODO: lent Example[Tensor, Tensor]
+  #   borrow checker complains about 'cur' escaping it's frame
+  #   but `cur.get()` already returns a borrowed view
+  var cur = dl.start()
+  let stop = dl.stop()
+  var index = 0
+  while cur != stop:
+    yield (index, cur.get())
+    inc index
+    cur.next()
 
 # Note make_data_loader is using `enable_if`
 # to dispatch between either
