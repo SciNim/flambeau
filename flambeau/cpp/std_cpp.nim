@@ -93,3 +93,40 @@ proc `[]`*[T](v: CppVector[T], idx: int): T{.importcpp: "#[#]", header: "<vector
 proc `[]`*[T](v: var CppVector[T], idx: int): var T{.importcpp: "#[#]", header: "<vector>".}
 
 {.pop.}
+
+# std::tuple
+# -----------------------------------------------------------------------
+#
+# We can either use objects or HList (Heterogenous Lists) or variadic templates to represent C++ tuples.
+# We use objects for simplicity but in that case we need to create one type per size used in libtorch
+
+# _batch_norm_impl_index, _thnn_fused_lstm_cell_backward need an arity of 5
+
+{.push header: "<tuple>".}
+type
+  CppTuple2* {.importcpp: "std::tuple".} [T0, T1] = object
+  CppTuple3* {.importcpp: "std::tuple".} [T0, T1, T2] = object
+  CppTuple4* {.importcpp: "std::tuple".} [T0, T1, T2, T3] = object
+  CppTuple5* {.importcpp: "std::tuple".} [T0, T1, T2, T3, T4] = object
+
+  CppTuple = CppTuple2|CppTuple3|CppTuple4|CppTuple5
+
+func tupGet(index: int, tup: CppTuple, outT: type): outT {.importcpp: "std::get<#>(#)".}
+  ## C++ get from tuple.
+  ## We have to use this unnatural argument order at low-level
+  ## and add an outType parameter for out type inference
+
+macro typeGet(Tup: typed, elem: static int): untyped =
+  ## Return type inference for tuple extraction
+  let Ti = ident("T" & $elem)
+  result = nnkDotExpr.newTree(Tup, Ti)
+
+template get*(tup: CppTuple, index: static int): auto =
+  ## Extract a value from a C++ tuple
+  # Note: it's important to use template here, we don't want
+  # an extra proc even inline as std::get(std::tuple) is probably
+  # special-cased to not copy unnecessarily or trigger std::shared_ptr refcount
+  bind tupGet, typeGet
+  tupGet(index, tup, typeGet(tup.typeof, index))
+
+{.pop.}

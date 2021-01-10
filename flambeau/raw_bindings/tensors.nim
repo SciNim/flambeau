@@ -219,14 +219,6 @@ type Scalar* = SomeNumber or bool
 type
   Tensor* {.importcpp: "torch::Tensor", bycopy.} = object
 
-{.push header: "<tuple>".}
-type
-  CppTuple2Tensors* {.importcpp: "std::tuple<Tensor, Tensor>", bycopy.} = object
-
-func getFirst*(t: CppTuple2Tensors): lent Tensor {.importcpp: "std::get<0>(#)".}
-func getSecond*(t: CppTuple2Tensors): lent Tensor {.importcpp: "std::get<1>(#)".}
-
-
 # Strings & Debugging
 # -----------------------------------------------------------------------
 
@@ -449,11 +441,14 @@ func bmm*(t, other: Tensor): Tensor {.importcpp: "#.bmm(@)".}
 
 func luSolve*(t, data, pivots: Tensor): Tensor {.importcpp: "#.lu_solve(@)".}
 
-func qr_internal*(t: Tensor, some: bool = true): lent CppTuple2Tensors {.importcpp: "#.qr(@)".}
-func qr*(t: Tensor, some: bool = true): (lent Tensor, lent Tensor) =
-  let cppTuple = qr_internal(t, some)
-  result[0] = cppTuple.getFirst()
-  result[1] = cppTuple.getSecond()
+func qr*(t: Tensor, some: bool = true): CppTuple2[Tensor, Tensor] {.importcpp: "#.qr(@)".}
+  ## Returns a tuple:
+  ## - Q of shape (∗,m,k)
+  ## - R of shape (∗,k,n)
+  ## with k=min(m,n) if some is true otherwise k=m
+  ##
+  ## The QR decomposition is batched over dimension(s) *
+  ## t = QR
 
 # addr?
 func all*(t: Tensor, axis: int64): Tensor {.importcpp: "#.all(@)".}
@@ -492,11 +487,14 @@ func prod*(t: Tensor, axis: int64, keepdim: bool = false): Tensor {.importcpp: "
 func prod*(t: Tensor, axis: int64, keepdim: bool = false, dtype: ScalarKind): Tensor {.importcpp: "#.prod(@)".}
 
 func min*(t: Tensor): Tensor {.importcpp: "#.min()".}
-# Must wrap CppTuple
-func min*(t: Tensor, axis: int64, keepdim: bool = false): CppTuple2Tensors {.importcpp: "torch::min(@)".}
+func min*(t: Tensor, axis: int64, keepdim: bool = false): CppTuple2[Tensor, Tensor] {.importcpp: "torch::min(@)".}
+  ## Returns a tuple (values, indices) of type (TensorT, TensorInt64)
+  ## of the minimum values and their index in the specified axis
+
 func max*(t: Tensor): Tensor {.importcpp: "#.max()".}
-# Must wrap CppTuple
-#func max*(t: Tensor, axis: int64, keepdim: bool = false): CppTuple[Tensor, Tensor] {.importcpp: "torch::max(@)".}
+func max*(t: Tensor, axis: int64, keepdim: bool = false): CppTuple2[Tensor, Tensor] {.importcpp: "torch::max(@)".}
+  ## Returns a tuple (values, indices) of type (TensorT, TensorInt64)
+  ## of the maximum values and their index in the specified axis
 
 func variance*(t: Tensor, unbiased: bool = true): Tensor {.importcpp: "#.var(@)".} # can't use `var` because of keyword.
 func variance*(t: Tensor, axis: int64, unbiased: bool = true, keepdim: bool = false): Tensor {.importcpp: "#.var(@)".}
@@ -508,7 +506,11 @@ func stddev*(t: Tensor, axis: IntArrayRef, unbiased: bool = true, keepdim: bool 
 
 # algorithms:
 
-#func sort*(t: Tensor, axis: int64 = -1, descending: bool = false): CppTuple[Tensor, Tensor] {.importcpp: "#.sort(@)".}
+func sort*(t: Tensor, axis: int64 = -1, descending: bool = false): CppTuple2[Tensor, Tensor] {.importcpp: "#.sort(@)".}
+  ## Sorts the elements of the input tensor along a given dimension in ascending order by value.
+  ## If dim is not given, the last dimension of the input is chosen (dim=-1).
+  ## Returns (values, originalIndices) or type (TensorT, TensorInt64)
+  ## where originalIndices is the original index of each values (before sorting)
 func argsort*(t: Tensor, axis: int64 = -1, descending: bool = false): Tensor {.importcpp: "#.argsort(@)".}
 
 # math
