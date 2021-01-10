@@ -168,7 +168,7 @@ func reset_parameters*(linear: Linear){.importcpp: "#.reset_parameters()".}
 
 # pretty_print
 
-func forward*(linear: Linear, input: Tensor): Tensor {.importcpp: "#.forward(#)".}
+func forward*(linear: Linear, input: Tensor): Tensor {.importcpp: "#->forward(#)".}
   ## Transforms the ``input`` tensor
   ## by multiplying with the ``weight``
   ## and optionally adding the ``bias``,

@@ -40,7 +40,8 @@ type
     [Batch] = object
 
 func next*(it: var TorchDataIterator) {.importcpp: "(++#)".}
-func get*[Batch](it: var TorchDataIterator[Batch]): lent Batch {.importcpp: "(*#)".}
+func get*[Batch](it: var TorchDataIterator[Batch]): Batch {.importcpp: "(*#)".}
+  # TODO: this should be lent?
 func `==`*(it1, it2: TorchDataIterator): bool {.importcpp: "# == #".}
 
 # #######################################################################
@@ -247,13 +248,13 @@ type
   StatelessDataLoader*
         {.bycopy, pure,
         importcpp: "torch::data::StatelessDataLoader".}
-        [Dataset, Sampler]
+        [D, S] # Dataset, Sampler
       = object of DataLoaderBase
 
   StatefulDataLoader*
         {.bycopy, pure,
         importcpp: "torch::data::StatefulDataLoader".}
-        [Dataset]
+        [D] # Dataset
       = object of DataLoaderBase
 
   DataLoaderOptions*
@@ -265,7 +266,7 @@ type
 #       and https://github.com/nim-lang/Nim/issues/16655
 #       BatchDataset and Dataset have no generics attached
 #       and so we can't infer their Iterator type :/
-func start*(dl: DataLoaderBase
+func start*(dl: StatelessDataLoader
        ): TorchDataIterator[Example[Tensor, Tensor]]
   {.importcpp: "#.begin()".}
   ## Start an iterator
@@ -274,13 +275,36 @@ func start*(dl: DataLoaderBase
   ##       and so the output is fixed to Example[Tensor, Tensor]
   ##       which is the output of the Stack transform
 
-func stop*(dl: DataLoaderBase
+func stop*(dl: StatelessDataLoader
        ): TorchDataIterator[Example[Tensor, Tensor]]
        {.importcpp: "#.end()".}
   ## Returns a sentinel value that denotes
   ## the end of an iterator
 
-iterator items*(dl: DataLoaderBase): Example[Tensor, Tensor] =
+func start*[D, S](
+         dl: CppUniquePtr[StatelessDataLoader[D, S]]
+       ): TorchDataIterator[Example[Tensor, Tensor]]
+  {.importcpp: "#->begin()".}
+  ## Start an iterator
+  ## Note: due to compiler bugs with C++ interop
+  ##       we can't attach the DataLoaderBase generic type,
+  ##       and so the output is fixed to Example[Tensor, Tensor]
+  ##       which is the output of the Stack transform
+  ##
+  ## Overload as StatelessDataLoader has no default constructors
+  ## So we don't want Nim to use temporaries
+
+func stop*[D, S](
+         dl: CppUniquePtr[StatelessDataLoader[D, S]]
+       ): TorchDataIterator[Example[Tensor, Tensor]]
+       {.importcpp: "#->end()".}
+  ## Returns a sentinel value that denotes
+  ## the end of an iterator
+  ##
+  ## Overload as StatelessDataLoader has no default constructors
+  ## So we don't want Nim to use temporaries
+
+iterator items*(dl: StatelessDataLoader or CppUniquePtr[StatelessDataLoader]): Example[Tensor, Tensor] =
   # TODO: lent Example[Tensor, Tensor],
   #   borrow checker complains about 'cur' escaping it's frame
   #   but `cur.get()` already returns a borrowed view
@@ -290,7 +314,7 @@ iterator items*(dl: DataLoaderBase): Example[Tensor, Tensor] =
     yield cur.get()
     cur.next()
 
-iterator pairs*(dl: DataLoaderBase): tuple[index: int, value: Example[Tensor, Tensor]] =
+iterator pairs*(dl: StatelessDataLoader or CppUniquePtr[StatelessDataLoader]): tuple[index: int, value: Example[Tensor, Tensor]] =
   # TODO: lent Example[Tensor, Tensor]
   #   borrow checker complains about 'cur' escaping it's frame
   #   but `cur.get()` already returns a borrowed view

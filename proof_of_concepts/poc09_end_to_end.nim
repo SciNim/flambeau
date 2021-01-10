@@ -1,7 +1,9 @@
 # This is a port of the C++ end-to-end example
 # at https://pytorch.org/cppdocs/frontend.html
 
-import ../flambeau
+import
+  ../flambeau,
+  std/[enumerate, strformat]
 
 # Argh, need Linear{nullptr} in the codegen
 # so we cheat by inlining C++
@@ -20,15 +22,16 @@ struct Net: public torch::nn::Module {
 };
 """].}
 
-type Net{.importcpp.} = object of Module
+type Net{.pure, importcpp.} = object of Module
   fc1: Linear
   fc2: Linear
   fc3: Linear
 
-proc init(T: type Net): Net =
-  result.fc1 = result.register_module("fc1", Linear.init(784, 64))
-  result.fc2 = result.register_module("fc2", Linear.init(64, 32))
-  result.fc3 = result.register_module("fc3", Linear.init(32, 10))
+proc init(net: var Net) =
+  # Note: PyTorch Model serialization requires shared_ptr
+  net.fc1 = net.register_module("fc1", Linear.init(784, 64))
+  net.fc2 = net.register_module("fc2", Linear.init(64, 32))
+  net.fc3 = net.register_module("fc3", Linear.init(32, 10))
 
 func forward*(net: Net, x: Tensor): Tensor =
   var x = x
@@ -39,7 +42,8 @@ func forward*(net: Net, x: Tensor): Tensor =
   return x
 
 proc main() =
-  let net = Net.init() # TODO: make_shared
+  let net = make_shared(Net)
+  net.init()
 
   let data_loader = make_data_loader(
     mnist("build/mnist").map(Stack[Example[Tensor, Tensor]].init()),
@@ -50,5 +54,24 @@ proc main() =
     net.parameters(),
     learning_rate = 0.01
   )
+
+  for epoch in 1 .. 10:
+    # Iterate the data loader to yield batches from the dataset.
+    for batch_index, batch in data_loader.pairs():
+      # Reset gradients.
+      optimizer.zero_grad()
+      # Execute the model on the input data.
+      let prediction = net.forward(batch.data)
+      # Compute a loss value to judge the prediction of our model.
+      var loss = nll_loss(prediction, batch.target)
+      # Compute the gradients of the loss w.r.t. the parameters of our model.
+      loss.backward()
+      # Update the parameters based on the calculated gradients.
+      optimizer.step()
+      # output the loss and checkpoint every 100 batches.
+      if batch_index mod 100 == 0:
+        echo &"Epoch: {epoch} | Batch: {batch_index} | Loss: {loss.item(float32)}"
+        # Serialize your model periodically as a checkpoint.
+        net.save("net.pt")
 
 main()

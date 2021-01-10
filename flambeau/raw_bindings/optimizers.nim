@@ -56,3 +56,4 @@ func init*(
      {.constructor, importcpp:"torch::optim::SGD(@)".}
 
 func step*(optim: var SGD){.importcpp: "#.step()".}
+func zero_grad*(optim: var SGD){.importcpp: "#.zero_grad()".}

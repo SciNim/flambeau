@@ -81,6 +81,8 @@ const torchHeader* = torchHeadersPath / "torch/torch.h"
 
 {.push header: torchHeader.}
 
+{.passC: "-Wfatal-errors".} # The default "-fmax-errors=3" is unreadable
+
 # Assumptions
 # -----------------------------------------------------------------------
 #
@@ -321,6 +323,9 @@ func vulkan*(a: Tensor): Tensor {.importcpp: "#.vulkan()".}
 # -----------------------------------------------------------------------
 # libtorch/include/ATen/TensorIndexing.h
 # and https://pytorch.org/cppdocs/notes/tensor_indexing.html
+
+func item*(a: Tensor, T: typedesc): T {.importcpp: "#.item<'0>()".}
+  ## Extract the scalar from a 0-dimensional tensor
 
 # Unsure what those corresponds to in Python
 # func `[]`*(a: Tensor, index: Scalar): Tensor {.importcpp: "#[#]".}
