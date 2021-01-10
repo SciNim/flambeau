@@ -36,8 +36,8 @@ export serialize
 # C++ Standard Library
 # ----------------------------------------------------------------
 
-import ./flambeau/cpp/std_cpp
-export std_cpp
+import ./flambeau/cpp/[std_cpp, emitters]
+export std_cpp, emitters
 
 # Convenience helpers
 # ----------------------------------------------------------------

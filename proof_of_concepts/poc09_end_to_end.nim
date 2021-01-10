@@ -5,13 +5,21 @@ import
   ../flambeau,
   std/[enumerate, strformat]
 
-# Net is defined in poc_09_end_to_end_types.nim.hpp
-# to work around https://github.com/nim-lang/Nim/issues/16664
-# which workarounds https://github.com/nim-lang/Nim/issues/4687
+# Inline C++
+# workaround https://github.com/nim-lang/Nim/issues/16664
+# and workaround https://github.com/nim-lang/Nim/issues/4687
+
+emitTypes:
+  """
+  struct Net: public torch::nn::Module {
+    torch::nn::Linear fc1{nullptr};
+    torch::nn::Linear fc2{nullptr};
+    torch::nn::Linear fc3{nullptr};
+  };
+  """
 
 type Net
-  {.pure, importcpp,
-    header:"poc09_end_to_end_types.nim.hpp".}
+  {.pure, importcpp.}
     = object of Module
   fc1: Linear
   fc2: Linear
