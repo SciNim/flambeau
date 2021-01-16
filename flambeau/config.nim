@@ -9,3 +9,4 @@
 # ----------------------------------------------------------------
 
 const UseCuda* = defined(cuda)
+const UseGlobalTorch* {.booldefine.} = false

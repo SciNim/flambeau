@@ -57,6 +57,8 @@ type
   CppUniquePtr* {.importcpp: "std::unique_ptr", header: "<memory>", bycopy.} [T] = object
 
 # func `=copy`*[T](dst: var CppUniquePtr[T], src: CppUniquePtr[T]) {.error: "A unique ptr cannot be copied".}
+# func `=destroy`*[T](dst: var CppUniquePtr[T]){.importcpp: "#.~'*1()".}
+# func `=sink`*[T](dst: var CppUniquePtr[T], src: CppUniquePtr[T]){.importcpp: "# = std::move(#)".}
 func make_unique*(T: typedesc): CppUniquePtr[T] {.importcpp: "std::make_unique<'*0>()".}
 
 {.pop.}
@@ -66,7 +68,7 @@ func make_unique*(T: typedesc): CppUniquePtr[T] {.importcpp: "std::make_unique<'
 {.experimental: "dotOperators".}
 
 # This returns var T but with strictFunc it shouldn't
-func deref*[T](p: CppUniquePtr[T] or CppSharedPtr[T]): var T {.importcpp: "(* #)", header: "<memory>".}
+func deref*[T](p: CppUniquePtr[T] or CppSharedPtr[T]): var T {.noInit, importcpp: "(* #)", header: "<memory>".}
 
 macro `.()`*[T](p: CppUniquePtr[T] or CppSharedPtr[T], fieldOrFunc: untyped, args: varargs[untyped]): untyped =
   result = nnkCall.newTree(

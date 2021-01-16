@@ -48,6 +48,9 @@ type
     {.pure, bycopy, importcpp: "torch::optim::SGD".}
     = object of Optimizer
 
+func step*(optim: var Optimizer){.importcpp: "#.step()".}
+func zero_grad*(optim: var Optimizer){.importcpp: "#.zero_grad()".}
+
 func init*(
        Optim: type SGD,
        params: CppVector[Tensor],
@@ -55,5 +58,22 @@ func init*(
      ): Optim
      {.constructor, importcpp:"torch::optim::SGD(@)".}
 
-func step*(optim: var SGD){.importcpp: "#.step()".}
-func zero_grad*(optim: var SGD){.importcpp: "#.zero_grad()".}
+# SGD-specific
+# -----------------------------------------------------------
+type
+  SGDOptions*
+    {.pure, bycopy, importcpp:"torch::optim::SGDOptions".}
+    = object of OptimizerOptions
+
+func init*(T: type SGDOptions, learning_rate: float64): T {.constructor, importcpp: "torch::optim::SGDOptions(@)".}
+func momentum*(opt: SGDOptions, momentum: float64): SGDOptions {.importcpp: "#.momentum(#)".}
+func dampening*(opt: SGDOptions, dampening: float64): SGDOptions {.importcpp: "#.dampening(#)".}
+func weight_decay*(opt: SGDOptions, weight_decay: float64): SGDOptions {.importcpp: "#.weight_decay(#)".}
+func nesterov*(opt: SGDOptions, useNesterov: bool): SGDOptions {.importcpp: "#.nesterov(#)".}
+
+func init*(
+       T: type SGD,
+       params: CppVector[Tensor],
+       options: SGDOptions
+     ): T
+     {.constructor, importcpp:"torch::optim::SGD(@)".}

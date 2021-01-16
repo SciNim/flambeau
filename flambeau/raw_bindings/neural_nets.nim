@@ -28,6 +28,28 @@ import
 
 # #######################################################################
 #
+#                       Autograd
+#
+# #######################################################################
+
+type
+  AutoGradMode* {.bycopy, pure, inheritable, importcpp: "torch::AutoGradMode".} = object
+
+func autogradMode(enabled: bool): AutoGradMode {.constructor, importcpp: "torch::AutoGradMode(#)".}
+
+template with*(T: type AutoGradMode, enabled: bool, body: untyped): untyped =
+  bind autogradMode
+  block:
+    let gradMode = autogradMode(enabled)
+    body
+
+template no_grad_mode*(body: untyped): untyped =
+  ## Disable precomputations necessary for gradient propagation
+  with(AutoGradMode, enabled = false):
+    body
+
+# #######################################################################
+#
 #                       LibTorch Functional API
 #
 # #######################################################################
@@ -79,6 +101,16 @@ func linear*(input, weight, bias: Tensor): Tensor {.importcpp: "torch::nn::funct
   ## Bias: (out_features)
   ## Output: (N,∗,out_features)
 
+# Pooling functions
+# -------------------------------------------------------------------------
+
+func max_pool2d*(input: Tensor): Tensor {.varargs, importcpp:"torch::max_pool2d(#, {@})".}
+  ## MaxPool 2D function
+  ## - `input`: a Tensor
+  ## - `kernel_size`: the kernel shape
+
+func max_pool2d*(input: Tensor, kernel_size: IntArrayRef): Tensor {.importcpp:"torch::max_pool2d(@)".}
+
 # Activation functions
 # -------------------------------------------------------------------------
 
@@ -97,7 +129,14 @@ func dropout_mut*(input: var Tensor, p = 0.5, training=true) {.importcpp: "torch
 # Loss functions
 # -------------------------------------------------------------------------
 
+type
+  Reduction* {.size: sizeof(cint), importcpp:"torch::Reduction::Reduction".} = enum
+    None = 0 # Do not reduce
+    Mean = 1 # (Possibly weighted) mean of losses
+    Sum = 2  # Sum losses
+
 func nll_loss*(input, target: Tensor): Tensor {.importcpp: "torch::nll_loss(@)".}
+func nll_loss*(input, target: Tensor, red: Reduction): Tensor {.importcpp: "torch::nll_loss(#, #, /*weight=*/{}, #)".}
 
 # #######################################################################
 #
@@ -144,6 +183,15 @@ func parameters*(module: Module, recurse = true): CppVector[Tensor]{.importcpp: 
 
 func is_training*(module: Module): bool {.importcpp: "#.is_training()".}
 
+proc to*(module: Module, device: DeviceKind) {.importcpp: "#.to(#)".}
+proc to*(module: Module, device: Device) {.importcpp: "#.to(#)".}
+
+func train*(module: var Module, on = true) {.importcpp: "#.train(#)".}
+  ## Enable training mode
+
+func eval*(module: var Module) {.importcpp: "#.eval()".}
+  ## Enable evaluation mode
+
 # Linear layer
 # --------------------------------
 # https://pytorch.org/cppdocs/api/classtorch_1_1nn_1_1_linear_impl.html
@@ -173,3 +221,57 @@ func forward*(linear: Linear, input: Tensor): Tensor {.importcpp: "#->forward(#)
   ## by multiplying with the ``weight``
   ## and optionally adding the ``bias``,
   ## if ``with_bias`` is true in the ``options``.
+
+# Conv2D layer
+# --------------------------------
+# Link TODO
+
+type
+  Conv2dOptions* {.bycopy, importcpp: "torch::nn::Conv2dOptions".} = object
+
+  Conv2d* {.pure, bycopy, importcpp: "torch::nn::Conv2d".} = object of Module
+    # Conv2d is a shared_ptr underneath.
+    # The ptr is bycopy which results in the actual data being byref.
+    options*{.importc.}: Conv2DOptions
+    weight*{.importc.}: Tensor
+    bias*{.importc.}: Tensor
+
+func init*(T: type Conv2d, in_channels, out_channels, kernel_size: int64): T {.constructor, importcpp:"torch::nn::Conv2d(@)".}
+func init*(T: type Conv2d, in_channels, out_channels,
+           kernel_size: array[2, int64]): T {.constructor, importcpp:"torch::nn::Conv2d(@)".}
+
+func reset*(conv2d: Conv2d){.importcpp: "#.reset()".}
+  ## reset() must perform initialization of all members with reference semantics,
+  ## most importantly parameters, buffers and submodules.
+
+func reset_parameters*(conv2d: Conv2d){.importcpp: "#.reset_parameters()".}
+
+# pretty_print
+
+func forward*(conv2d: Conv2d, input: Tensor): Tensor {.importcpp: "#->forward(#)".}
+  ## Transforms the ``input`` tensor
+  ## by multiplying with the ``weight``
+  ## and optionally adding the ``bias``,
+  ## if ``with_bias`` is true in the ``options``.
+
+# Dropout layers
+# --------------------------------
+# Link TODO
+
+type
+  DropoutOptions* {.bycopy, importcpp: "torch::nn::DropoutOptions".} = object
+
+  Dropout* {.pure, bycopy, importcpp: "torch::nn::Dropout".} = object of Module
+    options*{.importc.}: DropoutOptions
+  Dropout2d* {.pure, bycopy, importcpp: "torch::nn::Dropout2d".} = object of Module
+    options*{.importc.}: DropoutOptions
+  Dropout3d* {.pure, bycopy, importcpp: "torch::nn::Dropout3d".} = object of Module
+    options*{.importc.}: DropoutOptions
+
+  SomeDropout* = Dropout or Dropout2d or Dropout3d
+
+func init*(T: type Dropout, proba = 0.5): T {.constructor, importcpp:"torch::nn::Dropout(@)".}
+func init*(T: type Dropout2d, proba = 0.5): T {.constructor, importcpp:"torch::nn::Dropout2d(@)".}
+func init*(T: type Dropout3d, proba = 0.5): T {.constructor, importcpp:"torch::nn::Dropout3d(@)".}
+
+func forward*(dropout: SomeDropout, input: Tensor): Tensor {.importcpp: "#->forward(#)".}

@@ -70,3 +70,81 @@ func eye*(n: int64, scalarKind: ScalarKind): Tensor {.importcpp: "torch::eye(@)"
 func eye*(n: int64, device: DeviceKind): Tensor {.importcpp: "torch::eye(@)".}
 func eye*(n: int64, device: Device): Tensor {.importcpp: "torch::eye(@)".}
 ```
+
+## Passing or skipping types or static integer
+
+Nim is able to pass types to C++ with the following base behavior:
+
+If the type is attached to an argument or the return value, use the syntax
+  - `'0` to get the type of the return value
+  - `'1` to get the type of the first argument
+  - `i*0` to get the subtype of the generic return value, for example to extract T from CppVector[T]
+
+### Typedesc or static arguments
+
+Typedesc or static argument are skipped **in the codegen** when used with `#` or `@`
+Note that for counting purposes, typedesc or static argument still increment the count.
+
+For example for tuples, this will properly extract the tuple value
+
+```Nim
+type
+  CppTuple2* {.importcpp: "std::tuple".} [T0, T1] = object
+  CppTuple3* {.importcpp: "std::tuple".} [T0, T1, T2] = object
+  CppTuple4* {.importcpp: "std::tuple".} [T0, T1, T2, T3] = object
+  CppTuple5* {.importcpp: "std::tuple".} [T0, T1, T2, T3, T4] = object
+
+  CppTuple = CppTuple2|CppTuple3|CppTuple4|CppTuple5
+
+func tupGet(index: int, tup: CppTuple, outT: type): outT {.importcpp: "std::get<#>(#)".}
+  ## C++ get from tuple.
+  ## We have to use this unnatural argument order at low-level
+  ## and add an outType parameter for out type inference
+```
+
+The `index` must be an `int` and not a `static int` or it would be skipped.
+The `outT: type` would be skipped even if we use `@`.
+To finish wrapping tuple we need an extra `get` procedure which will give us
+a more intuitive ordering.
+```Nim
+template get*(tup: CppTuple, index: static int): auto =
+```
+
+### Constructors with typedesc
+
+This behavior allow us to wrap constructor like this
+```Nim
+func init*(T: type SGDOptions, learning_rate: float64): T {.constructor, importcpp: "torch::optim::SGDOptions(@)".}
+```
+
+The typedesc will not be passed to `@`
+
+### Passing typedesc to C++
+
+In some cases we might want to pass typedesc to C++, instead of leaving them
+just in Nim.
+Since they are skipped with `#` or `@` we need to pass them with the `'1` syntax
+
+This is done the following way:
+
+```Nim
+func make_data_loader*[D: BatchDataset; S: Sampler](
+       SamplerType: type S,
+       dataset: D,
+       batch_size: csize_t
+  ): CppUniquePtr[StatelessDataLoader[D, SamplerType]] {.
+  importcpp: "torch::data::make_data_loader<'*1>(@)".}
+```
+
+A call with `make_data_loader(SequentialSampler, dataset, 64)` will produce
+```C++
+torch::data::make_data_loader<torch::data::Sampler:SequentialSampler>(dataset, 64)
+```
+
+### Avoiding Nim temporaries
+
+For codegen Nim generates temporaries but this assumes that the temporary types has a default constructor.
+
+To avoid that we can tag the importcpp proc as `{.noInit.}
+
+This is especially important for dereferencing operators.

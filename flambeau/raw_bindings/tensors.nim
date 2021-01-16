@@ -54,7 +54,8 @@ else:
 # TODO: proper build system on "nimble install" (put libraries in .nimble/bin?)
 # if the libPath is not in LD_LIBRARY_PATH
 # The libraries won't be loaded at runtime
-when true:
+
+when false: # Static linking
   # Not sure what "link" does differently from standard dynamic linking,
   # it works, it might even work for both GCC and MSVC
   {.link: librariesPath & "/" & libPrefix & "c10" & libSuffix.}
@@ -62,12 +63,27 @@ when true:
 
   when UseCuda:
     {.link: librariesPath & "/" & libPrefix & "torch_cuda" & libSuffix.}
-else:
+else: # Dynamic linking
   # Standard GCC compatible linker
   {.passL: "-L" & librariesPath & " -lc10 -ltorch_cpu ".}
 
   when UseCuda:
     {.passL: " -ltorch_cuda ".}
+
+  when not UseGlobalTorch:
+    # Link to library in vendor (not for deployment!)!
+    when defined(macosx):
+      {.passL:"-rpath " & librariesPath.}
+    elif defined(posix):
+      {.passL:"-Wl,-rpath," & librariesPath.}
+
+    # Look next to the final binary
+    # when defined(macosx):
+    #   {.passL:"-rpath @loader_path".}
+    # elif defined(posix):
+    #   {.passL:"-Wl,-rpath,\\$ORIGIN".}
+
+{.push cdecl.}
 
 # Headers
 # -----------------------------------------------------------------------
@@ -83,7 +99,13 @@ const torchHeader* = torchHeadersPath / "torch/torch.h"
 
 {.passC: "-Wfatal-errors".} # The default "-fmax-errors=3" is unreadable
 
-# Assumptions
+# #######################################################################
+#
+#                         Helper types
+#
+# #######################################################################
+
+# ArrayRef
 # -----------------------------------------------------------------------
 #
 # LibTorch is using "ArrayRef" through the codebase in particular
@@ -119,6 +141,37 @@ func size*(ar: ArrayRef): csize_t {.importcpp: "#.size()".}
 func init*[T](AR: type ArrayRef[T], p: ptr T, len: SomeInteger): ArrayRef[T] {.constructor, importcpp: "c10::ArrayRef<'*0>(@)".}
 func init*[T](AR: type ArrayRef[T]): ArrayRef[T] {.constructor, varargs, importcpp: "c10::ArrayRef<'*0>({@})".}
 
+type
+  Optional*[T] {.bycopy, importcpp: "c10:optional".} = object
+
+func value*[T](o: Optional[T]): T {.importcpp: "#.value()".}
+
+# #######################################################################
+#
+#                         Context
+#
+# #######################################################################
+
+type Torch* = object
+
+# Random Number Generation
+# -----------------------------------------------------------------------
+
+proc manual_seed*(_: type Torch, seed: uint64) {.sideeffect, importcpp:"torch::manual_seed(@)".}
+  ## Set torch random number generator seed
+
+# Backends
+# -----------------------------------------------------------------------
+
+proc hasCuda*(_: type Torch): bool{.sideeffect, importcpp:"torch::hasCuda()".}
+  ## Returns true if libtorch was compiled with CUDA support
+proc cuda_is_available*(_: type Torch): bool{.sideeffect, importcpp:"torch::cuda::is_available()".}
+  ## Returns true if libtorch was compiled with CUDA support
+  ## and at least one CUDA device is available
+proc cudnn_is_available*(_: type Torch): bool {.sideeffect, importcpp:"torch::cuda::cudnn_is_available()".}
+  ## Returns true if libtorch was compiled with CUDA and CuDNN support
+  ## and at least one CUDA device is available
+
 # #######################################################################
 #
 #                         Tensor Metadata
@@ -150,6 +203,8 @@ type
   Device* {.importc: "c10::Device", bycopy.} = object
     kind: DeviceKind
     index: DeviceIndex
+
+func init*(T: type Device, kind: DeviceKind): T {.constructor, importcpp: "torch::Device(#)".}
 
 # Datatypes
 # -----------------------------------------------------------------------
@@ -229,7 +284,9 @@ proc print*(t: Tensor) {.sideeffect, importcpp: "torch::print(@)".}
 
 func dim*(t: Tensor): int64 {.importcpp: "#.dim()".}
 func reset*(t: var Tensor) {.importcpp: "#.reset()".}
-func `==`*(a, b: Tensor): bool {.importcpp: "#.is_same(#)".}
+func is_same*(a, b: Tensor): bool {.importcpp: "#.is_same(#)".}
+  ## Reference equality
+  ## Do the tensors use the same memory.
 
 func sizes*(a: Tensor): IntArrayRef {.importcpp:"#.sizes()".}
   ## This is Arraymancer and Numpy "shape"
@@ -269,6 +326,13 @@ func is_vulkan*(t: Tensor): bool {.importcpp: "#.is_vulkan()".}
 func is_quantized*(t: Tensor): bool {.importcpp: "#.is_quantized()".}
 func is_meta*(t: Tensor): bool {.importcpp: "#.is_meta()".}
 
+func cpu*(a: Tensor): Tensor {.importcpp: "#.cpu()".}
+func cuda*(a: Tensor): Tensor {.importcpp: "#.cuda()".}
+func hip*(a: Tensor): Tensor {.importcpp: "#.hip()".}
+func vulkan*(a: Tensor): Tensor {.importcpp: "#.vulkan()".}
+func to*(a: Tensor, device: DeviceKind): Tensor {.importcpp: "#.to(#)".}
+func to*(a: Tensor, device: Device): Tensor {.importcpp: "#.to(#)".}
+
 # Constructors
 # -----------------------------------------------------------------------
 
@@ -305,11 +369,6 @@ func empty*(size: IntArrayRef, device: DeviceKind): Tensor {.importcpp:"torch::e
   ## The output tensor will be row major (C contiguous)
 
 func clone*(a: Tensor): Tensor {.importcpp: "#.clone()".}
-
-func cpu*(a: Tensor): Tensor {.importcpp: "#.cpu()".}
-func cuda*(a: Tensor): Tensor {.importcpp: "#.cuda()".}
-func hip*(a: Tensor): Tensor {.importcpp: "#.hip()".}
-func vulkan*(a: Tensor): Tensor {.importcpp: "#.vulkan()".}
 
 # Indexing
 # -----------------------------------------------------------------------
@@ -371,6 +430,7 @@ func masked_fill_mut*(a: var Tensor, mask: Tensor, value: Scalar or Tensor) {.im
 # -----------------------------------------------------------------------
 
 func reshape*(a: Tensor): Tensor {.varargs, importcpp: "#.reshape({@})".}
+func view*(a: Tensor): Tensor {.varargs, importcpp: "#.reshape({@})".}
 
 # Automatic Differentiation
 # -----------------------------------------------------------------------
@@ -420,6 +480,9 @@ func bitor*(a: var Tensor, s: Tensor) {.importcpp: "# |= #".}
 func bitxor*(a: var Tensor, s: Tensor) {.importcpp: "# ^= #".}
   ## In-place bitwise `xor`.
 
+func eq*(a, b: Tensor): Tensor {.importcpp: "#.eq(#)".}
+  ## Equality of each tensor values
+
 # Functions.h
 # -----------------------------------------------------------------------
 
@@ -461,7 +524,7 @@ func argmax*(t: Tensor, axis: int64, keepdim: bool = false): Tensor {.importcpp:
 func argmin*(t: Tensor): Tensor {.importcpp: "#.argmin()".}
 func argmin*(t: Tensor, axis: int64, keepdim: bool = false): Tensor {.importcpp: "#.argmin(@)".}
 
-# aggregate:
+# aggregate
 
 # sum needs wrapper procs/templates to allow for using nim arrays and single axis.
 func sum*(t: Tensor): Tensor {.importcpp: "#.sum()".}
