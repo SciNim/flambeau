@@ -6,8 +6,9 @@
 # at your option. This file may not be copied, modified, or distributed except according to those terms.
 
 import
-  ./tensors,
-  ../cpp/std_cpp
+  ../cpp/std_cpp,
+  ../libtorch,
+  ./tensors
 
 # (Almost) raw bindings to PyTorch Data API
 # -----------------------------------------------------------------------
@@ -18,12 +19,10 @@ import
 # This should ease searching PyTorch and libtorch documentation,
 # and make C++ tutorials easily applicable.
 
-# Headers
+# C++ interop
 # -----------------------------------------------------------------------
 
-{.passC: "-I" & headersPath.}
-{.passC: "-I" & torchHeadersPath.}
-
+{.push cdecl.}
 {.push header: torchHeader.}
 
 # #######################################################################
@@ -261,7 +260,7 @@ func map*[DatasetType; TransformType: not type](
 func map*[DatasetType](
        dataset: sink DatasetType,
        transformType: typedesc
-  ): MapDataset[DatasetType, transformType] =
+  ): MapDataset[DatasetType, transformType] {.inline, nimcall.}=
   # TODO: bad C++ codegen, the typedesc arg disappears
   map(dataset, init(transformType))
 

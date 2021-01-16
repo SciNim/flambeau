@@ -1,5 +1,6 @@
 build/*
 vendor/libtorch
+vendor/lib
 *.zip
 nimcache/*
 *.pt

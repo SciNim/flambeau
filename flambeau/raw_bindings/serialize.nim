@@ -7,6 +7,7 @@
 
 import
   ../cpp/std_cpp,
+  ../libtorch,
   ./tensors,
   ./neural_nets
 
@@ -19,12 +20,10 @@ import
 # This should ease searching PyTorch and libtorch documentation,
 # and make C++ tutorials easily applicable.
 
-# Headers
+# C++ interop
 # -----------------------------------------------------------------------
 
-{.passC: "-I" & headersPath.}
-{.passC: "-I" & torchHeadersPath.}
-
+{.push cdecl.}
 {.push header: torchHeader.}
 
 # #######################################################################

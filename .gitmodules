@@ -1,0 +1,3 @@
+[submodule "vendor/vision"]
+	path = vendor/vision
+	url = https://github.com/pytorch/vision
