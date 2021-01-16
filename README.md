@@ -1,10 +1,18 @@
 # Flambeau
 
-Flambeau provides Nim bindings to libtorch C++ API.
+Flambeau provides Nim bindings to libtorch C++ API and torchvision.
 
 ## Installation
 
-TODO
+TODO.
+
+The library installation including:
+- auto-downloading and deploying of libtorch
+- optional auto-compiling of torchvision into a shared library (if requested)
+
+is not setup.
+
+The library is not ready for general use at the moment.
 
 ## Limitations
 
