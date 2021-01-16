@@ -178,7 +178,7 @@ func `^`*(s: Slice): TorchSlice {.inline.} =
 import std/macros
 
 func sliceNone(): NimNode =
-  bindSym("SliceNone")
+  bindSym("SliceSpan")
 func indexNone(): NimNode =
   bindSym("IndexNone")
 func succ(node: NimNode): NimNode =
@@ -410,7 +410,7 @@ proc getFancySelector(ast: NimNode, axis: var int, selector: var NimNode): Fancy
     let cur = ast[i]
     # Important: sameType doesn't work for generic type like Array, Seq or Tensors ...
     #            https://github.com/nim-lang/Nim/issues/14021
-    if cur.kind in {nnkIdent, nnkSym} and cur.eqIdent"SliceNone":
+    if cur.kind in {nnkIdent, nnkSym} and cur.eqIdent"SliceSpan":
       # Found a span
       discard
     elif (cur.kind == nnkCall and cur[0].eqIdent"torchSlice") or cur.isInt():

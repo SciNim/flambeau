@@ -138,6 +138,13 @@ type
 func nll_loss*(input, target: Tensor): Tensor {.importcpp: "torch::nll_loss(@)".}
 func nll_loss*(input, target: Tensor, red: Reduction): Tensor {.importcpp: "torch::nll_loss(#, #, /*weight=*/{}, #)".}
 
+func binary_cross_entropy_with_logits*(input, target: Tensor): Tensor {.importcpp: "torch::binary_cross_entropy_with_logits(@)".}
+  ## Sigmoid + Log + Negative loglikelihood
+  ## PyTorch naming
+func sigmoid_cross_entropy*(input, target: Tensor): Tensor {.importcpp: "torch::binary_cross_entropy_with_logits(@)".}
+  ## Sigmoid + Log + Negative loglikelihood
+  ## Arraymancer or Tensorflow naming
+
 # #######################################################################
 #
 #                       LibTorch Module API

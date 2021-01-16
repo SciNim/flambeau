@@ -465,10 +465,9 @@ type
 
   SomeSlicer* = TensorIndexType or SomeSignedInt
 
-proc SliceNone*(): Nullopt_t {.importcpp: "at::indexing::None".}
+proc SliceSpan*(): TorchSlice {.importcpp: "at::indexing::Slice()".}
     ## This is passed to the "index" function
-    ## It corresponds to the "None" c10::optional value
-    ## and is an argument for index and index_mut function
+    ## This is Python ":", span / whole dimension
 
 func torchSlice*(){.importcpp: "torch::indexing::Slice(@)", constructor.}
 func torchSlice*(start: SomeSlicer): TorchSlice {.importcpp: "torch::indexing::Slice(@)", constructor.}

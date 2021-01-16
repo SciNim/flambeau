@@ -37,7 +37,6 @@ let optim = model.optimizerSGD(learning_rate = 0.01'f32)
 # Learning loop
 for epoch in 0..5:
   for batch_id in 0..<100:
-
     # minibatch offset in the Tensor
     let offset = batch_id * 32
     let x = x_train[offset ..< offset + 32, _]
