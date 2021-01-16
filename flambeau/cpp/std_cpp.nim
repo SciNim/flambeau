@@ -42,7 +42,7 @@ func `$`*(s: CppString): string =
 {.push header: "<memory>".}
 
 type
-  CppSharedPtr* {.importcpp: "std::shared_ptr", bycopy.} [T] = object
+  CppSharedPtr*[T]{.importcpp: "std::shared_ptr", bycopy.} = object
 
 func make_shared*(T: typedesc): CppSharedPtr[T] {.importcpp: "std::make_shared<'*0>()".}
 
@@ -54,7 +54,7 @@ func make_shared*(T: typedesc): CppSharedPtr[T] {.importcpp: "std::make_shared<'
 {.push header: "<memory>".}
 
 type
-  CppUniquePtr* {.importcpp: "std::unique_ptr", header: "<memory>", bycopy.} [T] = object
+  CppUniquePtr*[T]{.importcpp: "std::unique_ptr", header: "<memory>", bycopy.} = object
 
 # func `=copy`*[T](dst: var CppUniquePtr[T], src: CppUniquePtr[T]) {.error: "A unique ptr cannot be copied".}
 # func `=destroy`*[T](dst: var CppUniquePtr[T]){.importcpp: "#.~'*1()".}
@@ -85,7 +85,7 @@ macro `.()`*[T](p: CppUniquePtr[T] or CppSharedPtr[T], fieldOrFunc: untyped, arg
 {.push header: "<memory>".}
 
 type
-  CppVector* {.importcpp"std::vector", header: "<vector>", bycopy.} [T] = object
+  CppVector*[T]{.importcpp"std::vector", header: "<vector>", bycopy.} = object
 
 proc init*(V: type CppVector): V {.importcpp: "std::vector<'*0>()", header: "<vector>", constructor.}
 proc init*(V: type CppVector, size: int): V {.importcpp: "std::vector<'*0>(#)", header: "<vector>", constructor.}
@@ -106,10 +106,10 @@ proc `[]`*[T](v: var CppVector[T], idx: int): var T{.importcpp: "#[#]", header: 
 
 {.push header: "<tuple>".}
 type
-  CppTuple2* {.importcpp: "std::tuple".} [T0, T1] = object
-  CppTuple3* {.importcpp: "std::tuple".} [T0, T1, T2] = object
-  CppTuple4* {.importcpp: "std::tuple".} [T0, T1, T2, T3] = object
-  CppTuple5* {.importcpp: "std::tuple".} [T0, T1, T2, T3, T4] = object
+  CppTuple2* [T0, T1] {.importcpp: "std::tuple".}= object
+  CppTuple3* [T0, T1, T2] {.importcpp: "std::tuple".} = object
+  CppTuple4* [T0, T1, T2, T3] {.importcpp: "std::tuple".} = object
+  CppTuple5* [T0, T1, T2, T3, T4] {.importcpp: "std::tuple".} = object
 
   CppTuple = CppTuple2|CppTuple3|CppTuple4|CppTuple5
 

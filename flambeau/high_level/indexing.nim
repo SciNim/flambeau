@@ -177,8 +177,10 @@ func `^`*(s: Slice): TorchSlice {.inline.} =
 
 import std/macros
 
-func None(): NimNode =
-  newCall(bindSym"None")
+func sliceNone(): NimNode =
+  bindSym("SliceNone")
+func indexNone(): NimNode =
+  bindSym("IndexNone")
 func succ(node: NimNode): NimNode =
   newCall(bindsym"succ", node)
 func `-`(node: NimNode): NimNode =
@@ -276,25 +278,25 @@ macro desugarSlices(args: untyped): void =
     ###### Core desugaring logic
     if nnk_joker:
       ## [_, 3] into [{None, 3}]
-      r.add(None())
+      r.add(sliceNone())
     elif nnk0_inf_dotdot and nnk1_joker and nnk2_joker:
       ## [_.._, 3] into [{None, 3}]
-      r.add(None())
+      r.add(sliceNone())
     elif nnk0_inf_dotdot and nnk1_joker and nnk20_bar_all and nnk21_joker:
       ## [_.._|2, 3] into [{Slice(None, None, 2), 3}]
       ## [_.._|+2, 3] into [{Slice(None, None, 2), 3}]
       ## [_.._|-2 doesn't make sense and will throw out of bounds
-      r.add(Slice(None(), None(), nnk[2][2]))
+      r.add(Slice(indexNone(), indexNone(), nnk[2][2]))
     elif nnk0_inf_dotdot_all and nnk1_joker and nnk20_bar_all:
       ## [_..10|1, 3] into [{Slice(None, 10+1, 1), 3}] (for inclusive)
       ## [_..^10|1, 3] into [{Slice(None, -10, 1), 3}]
       ## [_..<10|1, 3] into [{Slice(None, 10, 1), 3}] (exclusive)
       if nnk[0].eqident(".."):
-        r.add Slice(None(), succ(nnk[2][1]), nnk[2][2])
+        r.add Slice(indexNone(), succ(nnk[2][1]), nnk[2][2])
       elif nnk[0].eqident("..^"):
-        r.add Slice(None(), -nnk[2][1], nnk[2][2])
+        r.add Slice(indexNone(), -nnk[2][1], nnk[2][2])
       elif nnk[0].eqident("..<"):
-        r.add Slice(None(), nnk[2][1], nnk[2][2])
+        r.add Slice(indexNone(), nnk[2][1], nnk[2][2])
       else:
         error "Unreachable"
     elif nnk0_inf_dotdot_all and nnk1_joker:
@@ -302,11 +304,11 @@ macro desugarSlices(args: untyped): void =
       ## [_..^10, 3] into [{Slice(None, -10), 3}]
       ## [_..<10, 3] into [{Slice(None, 10), 3}]
       if nnk[0].eqident(".."):
-        r.add Slice(None(), succ(nnk[2]))
+        r.add Slice(indexNone(), succ(nnk[2]))
       elif nnk[0].eqident("..^"):
-        r.add Slice(None(), -nnk[2])
+        r.add Slice(indexNone(), -nnk[2])
       elif nnk[0].eqident("..<"):
-        r.add Slice(None(), nnk[2])
+        r.add Slice(indexNone(), nnk[2])
       else:
         error "Unreachable"
     elif nnk0_inf_dotdot and nnk2_joker:
@@ -315,7 +317,7 @@ macro desugarSlices(args: untyped): void =
     elif nnk0_inf_dotdot and nnk20_bar_pos and nnk21_joker:
       ## [1.._|1, 3] into [{Slice(1, None, 1), 3}]
       ## [1.._|+1, 3] into [{Slice(1, None, 1), 3}]
-      r.add Slice(nnk[1], None(), nnk[2][2])
+      r.add Slice(nnk[1], indexNone(), nnk[2][2])
     elif nnk0_inf_dotdot and nnk20_bar_min and nnk21_joker:
       ## Raise error on [5.._|-1, 3]
       raise newException(IndexDefect, "Please use explicit end of range " &
@@ -406,16 +408,15 @@ proc getFancySelector(ast: NimNode, axis: var int, selector: var NimNode): Fancy
   var i = 0
   while i < ast.len:
     let cur = ast[i]
-
     # Important: sameType doesn't work for generic type like Array, Seq or Tensors ...
     #            https://github.com/nim-lang/Nim/issues/14021
-    if cur.sameType(bindSym"None"):
+    if cur.kind in {nnkIdent, nnkSym} and cur.eqIdent"SliceNone":
       # Found a span
       discard
-    elif cur.sameType(bindSym"TorchSlice") or cur.isInt():
-      doAssert result == FancyNone
+    elif (cur.kind == nnkCall and cur[0].eqIdent"torchSlice") or cur.isInt():
+      doAssert result == FancyNone, "Internal FancyIndexing Error: Expected FancyNone, but got " & $result & " for AST: " & cur.repr()
       foundNonSpanOrEllipsis = true
-    elif cur.sameType(bindSym"Ellipsis"):
+    elif cur.eqIdent"IndexEllipsis":
       if i == ast.len - 1: # t[t.sum(axis = 1) >. 0.5, `...`]
         doAssert not ellipsisAtStart, "Cannot deduce the indexed/sliced dimensions due to ellipsis at the start and end of indexing."
         ellipsisAtStart = false

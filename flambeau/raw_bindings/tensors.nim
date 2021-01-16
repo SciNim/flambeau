@@ -39,25 +39,22 @@ import
 const libTorchPath = currentSourcePath.rsplit(DirSep, 1)[0] & "/../../vendor/libtorch"
 const librariesPath = libTorchPath & "/lib"
 
-# TODO: we use dynamic linking currently (or are we? unsure about {.link.})
-# but we want to provide static linking for dependency-free deployment.
-when defined(windows):
-  const libSuffix = ".lib"
-  const libPrefix = ""
-elif defined(maxosx): # TODO check this
-  const libSuffix = ".dylib" # MacOS
-  const libPrefix = "lib"
-else:
-  const libSuffix = ".so" # BSD / Linux
-  const libPrefix = "lib"
-
 # TODO: proper build system on "nimble install" (put libraries in .nimble/bin?)
 # if the libPath is not in LD_LIBRARY_PATH
 # The libraries won't be loaded at runtime
 
 when false: # Static linking
-  # Not sure what "link" does differently from standard dynamic linking,
-  # it works, it might even work for both GCC and MSVC
+  when defined(windows):
+    const libSuffix = ".lib"
+    const libPrefix = ""
+  elif defined(maxosx):
+    #
+    const libSuffix = ".a" # MacOS
+    const libPrefix = "lib"
+  else:
+    const libSuffix = ".a" # BSD / Linux
+    const libPrefix = "lib"
+
   {.link: librariesPath & "/" & libPrefix & "c10" & libSuffix.}
   {.link: librariesPath & "/" & libPrefix & "torch_cpu" & libSuffix.}
 
@@ -142,7 +139,8 @@ func init*[T](AR: type ArrayRef[T], p: ptr T, len: SomeInteger): ArrayRef[T] {.c
 func init*[T](AR: type ArrayRef[T]): ArrayRef[T] {.constructor, varargs, importcpp: "c10::ArrayRef<'*0>({@})".}
 
 type
-  Optional*[T] {.bycopy, importcpp: "c10:optional".} = object
+  Optional*[T] {.bycopy, importcpp: "c10::optional".} = object
+  Nullopt_t {.bycopy, importcpp: "c10::nullopt_t".} = object
 
 func value*[T](o: Optional[T]): T {.importcpp: "#.value()".}
 
@@ -333,6 +331,11 @@ func vulkan*(a: Tensor): Tensor {.importcpp: "#.vulkan()".}
 func to*(a: Tensor, device: DeviceKind): Tensor {.importcpp: "#.to(#)".}
 func to*(a: Tensor, device: Device): Tensor {.importcpp: "#.to(#)".}
 
+# dtype
+# -----------------------------------------------------------------------
+
+func to*(a: Tensor, dtype: ScalarKind): Tensor {.importcpp: "#.to(#)".}
+
 # Constructors
 # -----------------------------------------------------------------------
 
@@ -369,6 +372,13 @@ func empty*(size: IntArrayRef, device: DeviceKind): Tensor {.importcpp:"torch::e
   ## The output tensor will be row major (C contiguous)
 
 func clone*(a: Tensor): Tensor {.importcpp: "#.clone()".}
+
+# Random sampling
+# -----------------------------------------------------------------------
+
+func random_mut*(a: var Tensor, start, stopEx: int64) {.importcpp: "#.random_(@)".}
+func randint*(start, stopEx: int64): Tensor {.varargs, importcpp: "torch::randint(#, #, {@})".}
+func randint*(start, stopEx: int64, size: IntArrayRef): Tensor {.importcpp: "torch::randint(@)".}
 
 # Indexing
 # -----------------------------------------------------------------------
@@ -444,13 +454,21 @@ type
   TorchSlice* {.importcpp: "torch::indexing::Slice", bycopy.} = object
   # libtorch/include/ATen/TensorIndexing.h
 
-  IndexNone* {.importcpp: "torch::indexing::None", bycopy.} = object
-    ## enum class TensorIndexType
-  IndexEllipsis* {.importcpp: "torch::indexing::Ellipsis", bycopy.} = object
-    ## enum class TensorIndexType
+  TensorIndexType*{.size: sizeof(cint), bycopy, importcpp: "torch::indexing::TensorIndexType".} = enum
+    ## This is passed to torchSlice functions
+    IndexNone = 0
+    IndexEllipsis = 1
+    IndexInteger = 2
+    IndexBoolean = 3
+    IndexSlice = 4
+    IndexTensor = 5
 
-  Ellipsis* = IndexEllipsis
-  SomeSlicer* = IndexNone or SomeSignedInt
+  SomeSlicer* = TensorIndexType or SomeSignedInt
+
+proc SliceNone*(): Nullopt_t {.importcpp: "at::indexing::None".}
+    ## This is passed to the "index" function
+    ## It corresponds to the "None" c10::optional value
+    ## and is an argument for index and index_mut function
 
 func torchSlice*(){.importcpp: "torch::indexing::Slice(@)", constructor.}
 func torchSlice*(start: SomeSlicer): TorchSlice {.importcpp: "torch::indexing::Slice(@)", constructor.}
@@ -473,11 +491,19 @@ func `*=`*(a: var Tensor, b: Tensor) {.importcpp: "# *= #".}
 func `*=`*(a: var Tensor, s: Scalar) {.importcpp: "# *= #".}
 func `/=`*(a: var Tensor, b: Tensor) {.importcpp: "# /= #".}
 func `/=`*(a: var Tensor, s: Scalar) {.importcpp: "# /= #".}
-func bitand*(a: var Tensor, s: Tensor) {.importcpp: "# &= #".}
+
+func `and`*(a: Tensor, b: Tensor): Tensor {.importcpp: "#.bitwise_and(#)".}
+  ## bitwise `and`.
+func `or`*(a: Tensor, b: Tensor): Tensor {.importcpp: "#.bitwise_or(#)".}
+  ## bitwise `or`.
+func `xor`*(a: Tensor, b: Tensor): Tensor {.importcpp: "#.bitwise_xor(#)".}
+  ## bitwise `xor`.
+
+func bitand_mut*(a: var Tensor, s: Tensor) {.importcpp: "#.bitwise_and_(#)".}
   ## In-place bitwise `and`.
-func bitor*(a: var Tensor, s: Tensor) {.importcpp: "# |= #".}
+func bitor_mut*(a: var Tensor, s: Tensor) {.importcpp: "#.bitwise_or_(#)".}
   ## In-place bitwise `or`.
-func bitxor*(a: var Tensor, s: Tensor) {.importcpp: "# ^= #".}
+func bitxor_mut*(a: var Tensor, s: Tensor) {.importcpp: "#.bitwise_xor_(#)".}
   ## In-place bitwise `xor`.
 
 func eq*(a, b: Tensor): Tensor {.importcpp: "#.eq(#)".}

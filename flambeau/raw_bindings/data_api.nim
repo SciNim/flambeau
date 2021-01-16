@@ -77,8 +77,9 @@ func init*(T: type SequentialSampler): T {.constructor, importcpp: "torch::data:
 # #######################################################################
 
 type
-  Example*{.bycopy, importcpp: "torch::data::Example".}
-      [Data, Target] = object
+  Example*[Data, Target]
+    {.bycopy, importcpp: "torch::data::Example".}
+    = object
     ## An example maps data to a target label
     ## for classification
     data*: Data
