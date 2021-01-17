@@ -27,7 +27,7 @@ const librariesPath* = libTorchPath & "/lib"
 # if the libPath is not in LD_LIBRARY_PATH
 # The libraries won't be loaded at runtime
 
-when false: # Static linking
+when false or defined(windows): # Static linking
   when defined(windows):
     const libSuffix = ".lib"
     const libPrefix = ""
@@ -78,4 +78,5 @@ const torchHeader* = torchHeadersPath / "torch/torch.h"
 
 {.push header: torchHeader.}
 
-{.passC: "-Wfatal-errors".} # The default "-fmax-errors=3" is unreadable
+when not defined(windows): # couldn't find an equivilent for vcc
+  {.passC: "-Wfatal-errors".} # The default "-fmax-errors=3" is unreadable
