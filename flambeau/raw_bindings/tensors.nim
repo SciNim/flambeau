@@ -6,9 +6,12 @@
 # at your option. This file may not be copied, modified, or distributed except according to those terms.
 
 import
+  # Standard library
   std/complex,
+  # Internal
   ../libtorch,
-  ../cpp/std_cpp
+  ../cpp/std_cpp,
+  ./c10
 
 # (Almost) raw bindings to PyTorch Tensors
 # -----------------------------------------------------------------------
@@ -32,54 +35,6 @@ import
 
 {.push cdecl.}
 {.push header: torchHeader.}
-
-# #######################################################################
-#
-#                         Helper types
-#
-# #######################################################################
-
-# ArrayRef
-# -----------------------------------------------------------------------
-#
-# LibTorch is using "ArrayRef" through the codebase in particular
-# for shapes and strides.
-#
-# It has the following definition in
-# libtorch/include/c10/util/ArrayRef.h
-#
-# template <typename T>
-# class ArrayRef final {
-#  private:
-#   /// The start of the array, in an external buffer.
-#   const T* Data;
-#
-#   /// The number of elements.
-#   size_type Length;
-#
-# It is noted that the class does not own the underlying data.
-# We can model that in a zero-copy and safely borrow-checked way
-# with "openarray[T]"
-
-type
-  ArrayRef*[T] {.importcpp: "c10::ArrayRef", bycopy.} = object
-    # The field are private so we can't use them, but `lent` enforces borrow checking
-    p: lent UncheckedArray[T]
-    len: csize_t
-
-  IntArrayRef* = ArrayRef[int64]
-
-func data*[T](ar: ArrayRef[T]): ptr UncheckedArray[T] {.importcpp: "#.data()".}
-func size*(ar: ArrayRef): csize_t {.importcpp: "#.size()".}
-
-func init*[T](AR: type ArrayRef[T], p: ptr T, len: SomeInteger): ArrayRef[T] {.constructor, importcpp: "c10::ArrayRef<'*0>(@)".}
-func init*[T](AR: type ArrayRef[T]): ArrayRef[T] {.constructor, varargs, importcpp: "c10::ArrayRef<'*0>({@})".}
-
-type
-  Optional*[T] {.bycopy, importcpp: "c10::optional".} = object
-  Nullopt_t {.bycopy, importcpp: "c10::nullopt_t".} = object
-
-func value*[T](o: Optional[T]): T {.importcpp: "#.value()".}
 
 # #######################################################################
 #

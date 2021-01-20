@@ -7,7 +7,8 @@
 
 import
   std/[complex, enumerate, macros],
-  ../raw_bindings/tensors,
+  ../raw_bindings/[c10, tensors],
+  ../cpp/std_cpp,
   ./internal/dynamic_stack_arrays
 
 # #######################################################################
