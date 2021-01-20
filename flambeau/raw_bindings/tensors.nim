@@ -419,6 +419,11 @@ func step*(s: TorchSlice): int64 {.importcpp: "#.step()".}
 
 func `not`*(t: Tensor): Tensor {.importcpp: "~#".}
 func `-`*(t: Tensor): Tensor {.importcpp: "-#".}
+
+func `+`*(a: Tensor, b: Tensor): Tensor {.importcpp: "# + #".}
+func `-`*(a: Tensor, b: Tensor): Tensor {.importcpp: "# - #".}
+func `*`*(a: Tensor, b: Tensor): Tensor {.importcpp: "# * #".}
+
 func `+=`*(a: var Tensor, b: Tensor) {.importcpp: "# += #".}
 func `+=`*(a: var Tensor, s: Scalar) {.importcpp: "# += #".}
 func `-=`*(a: var Tensor, b: Tensor) {.importcpp: "# -= #".}
@@ -444,17 +449,26 @@ func bitxor_mut*(a: var Tensor, s: Tensor) {.importcpp: "#.bitwise_xor_(#)".}
 
 func eq*(a, b: Tensor): Tensor {.importcpp: "#.eq(#)".}
   ## Equality of each tensor values
-
+func equal*(a, b: Tensor): bool {.importcpp: "#.equal(#)".}
+template `==`*(a, b: Tensor): bool =
+  a.equal(b)
 # Functions.h
 # -----------------------------------------------------------------------
 
 func toType*(t: Tensor, dtype: ScalarKind): Tensor {.importcpp: "#.toType(@)".}
+func toSparse*(t: Tensor): Tensor {.importcpp: "#.to_sparse()".}
+func toSparse*(t: Tensor, sparseDim: int64): Tensor {.importcpp: "#.to_sparse(@)".}
 
 func eye*(n: int64): Tensor {.importcpp: "torch::eye(@)".}
 func eye*(n: int64, options: TensorOptions): Tensor {.importcpp: "torch::eye(@)".}
 func eye*(n: int64, scalarKind: ScalarKind): Tensor {.importcpp: "torch::eye(@)".}
 func eye*(n: int64, device: DeviceKind): Tensor {.importcpp: "torch::eye(@)".}
 
+func zeros*(dim: int64): Tensor {.importcpp: "torch::zeros(@)".}
+func zeros*(dim: IntArrayRef): Tensor {.importcpp: "torch::zeros(@)".}
+func zeros*(dim: IntArrayRef, options: TensorOptions): Tensor {.importcpp: "torch::zeros(@)".}
+func zeros*(dim: IntArrayRef, scalarKind: ScalarKind): Tensor {.importcpp: "torch::zeros(@)".}
+func zeros*(dim: IntArrayRef, device: DeviceKind): Tensor {.importcpp: "torch::zeros(@)".}
 
 func add*(t: Tensor, other: Tensor, alpha: Scalar = 1): Tensor {.importcpp: "#.add(@)".}
 func add*(t: Tensor, other: Scalar, alpha: Scalar = 1): Tensor {.importcpp: "#.add(@)".}

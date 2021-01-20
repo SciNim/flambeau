@@ -22,108 +22,111 @@ proc main() =
             [3, 4, 5],
             [6, 7, 8],
             [9, 10, 11]].toTensor()
-    let t_c = t.astype(Complex[float64])
+    let t_c = t.to(kComplexF64)
 
     test "Sum":
-      check: t.sum == 66
-      check: t_c.sum == complex(66'f64)
+      check: t.sum.item(int64) == 66
+      #check: t_c.sum.item(CppComplex[float64]).toNimComplex == complex(66'f64)
       let row_sum = [[18, 22, 26]].toTensor()
       let col_sum = [[3],
                     [12],
                     [21],
                     [30]].toTensor()
-      check: t.sum(axis=0) == row_sum
-      check: t.sum(axis=1) == col_sum
-      check: t_c.sum(axis=0) == row_sum.astype(Complex[float64])
-      check: t_c.sum(axis=1) == col_sum.astype(Complex[float64])
+      check: t.sum(axis=0, keepDim=true) == row_sum
+      check: t.sum(axis=1, keepDim=true) == col_sum
+      check: t_c.sum(axis=0, keepDim=true) == row_sum.to(kComplexF64)
+      check: t_c.sum(axis=1, keepDim=true) == col_sum.to(kComplexF64)
 
     test "Mean":
-      check: t.astype(float).mean == 5.5 # Note: may fail due to float rounding
-      check: t_c.mean == complex(5.5) # Note: may fail due to float rounding
+      check: t.to(kFloat64).mean.item(float64) == 5.5 # Note: may fail due to float rounding
+      #check: t_c.mean.item(Complex[float64]) == complex(5.5) # Note: may fail due to float rounding
 
       let row_mean = [[4.5, 5.5, 6.5]].toTensor()
       let col_mean = [[1.0],
                       [4.0],
                       [7.0],
                       [10.0]].toTensor()
-      check: t.astype(float).mean(axis=0) == row_mean
-      check: t.astype(float).mean(axis=1) == col_mean
-      check: t_c.mean(axis=0) == row_mean.astype(Complex[float64])
-      check: t_c.mean(axis=1) == col_mean.astype(Complex[float64])
+      check: t.to(kFloat64).mean(axis=0, keepDim=true) == row_mean
+      check: t.to(kFloat64).mean(axis=1, keepDim=true) == col_mean
+      check: t_c.mean(axis=0, keepDim=true) == row_mean.to(kComplexF64)
+      check: t_c.mean(axis=1, keepDim=true) == col_mean.to(kComplexF64)
 
     test "Product":
       let a = [[1,2,4],[8,16,32]].toTensor()
-      let a_c = a.astype(Complex[float64])
-      check: t.product() == 0
-      check: a.product() == 32768
-      check: a.astype(float).product() == 32768.0
-      check: a.product(0) == [[8,32,128]].toTensor()
-      check: a.product(1) == [[8],[4096]].toTensor()
-      check: t_c.product() == complex(0.0)
-      check: a_c.product() == complex(32768.0)
-      check: a_c.product(0) == [[8,32,128]].toTensor().astype(Complex[float64])
-      check: a_c.product(1) == [[8],[4096]].toTensor().astype(Complex[float64])
+      let a_c = a.to(kComplexF64)
+      check: t.prod().item(int64) == 0
+      check: a.prod().item(int64) == 32768
+      check: a.to(kFloat64).prod().item(float64) == 32768.0
+      check: a.prod(0, keepDim=true) == [[8,32,128]].toTensor()
+      check: a.prod(1, keepDim=true) == [[8],[4096]].toTensor()
+      #check: t_c.prod().item(Complex[float64]) == complex(0.0)
+      #check: a_c.prod().item(Complex[float64]) == complex(32768.0)
+      check: a_c.prod(0, keepDim=true) == [[8,32,128]].toTensor().to(kComplexF64)
+      check: a_c.prod(1, keepDim=true) == [[8],[4096]].toTensor().to(kComplexF64)
 
     test "Min":
       let a = [2,-1,3,-3,5,0].toTensor()
-      check: a.min() == -3
-      check: a.astype(float32).min() == -3.0f
+      check: a.min().item(int64) == -3
+      check: a.to(kFloat64).min().item(float64) == -3.0f
 
       let b = [[1,2,3,-4],[0,4,-2,5]].toTensor()
-      check: b.min(0) == [[0,2,-2,-4]].toTensor()
-      check: b.min(1) == [[-4],[-2]].toTensor()
-      check: b.astype(float32).min(0) == [[0.0f,2,-2,-4]].toTensor()
-      check: b.astype(float32).min(1) == [[-4.0f],[-2.0f]].toTensor()
+      check: b.min(0, keepDim=true).get(0) == [[0,2,-2,-4]].toTensor()
+      check: b.min(1, keepDim=true).get(0) == [[-4],[-2]].toTensor()
+      check: b.to(kFloat32).min(0, keepDim=true).get(0) == [[0.0f,2,-2,-4]].toTensor()
+      check: b.to(kFloat32).min(1, keepDim=true).get(0) == [[-4.0f],[-2.0f]].toTensor()
 
     test "Max":
       let a = [2,-1,3,-3,5,0].toTensor()
-      check: a.max() == 5
-      check: a.astype(float32).max() == 5.0f
+      check: a.max().item(int64) == 5
+      check: a.to(kFloat32).max().item(float32) == 5.0f
 
       let b = [[1,2,3,-4],[0,4,-2,5]].toTensor()
-      check: b.max(0) == [[1,4,3,5]].toTensor()
-      check: b.max(1) == [[3],[5]].toTensor()
-      check: b.astype(float32).max(0) == [[1.0f,4,3,5]].toTensor()
-      check: b.astype(float32).max(1) == [[3.0f],[5.0f]].toTensor()
+      check: b.max(0, keepDim=true).get(0) == [[1,4,3,5]].toTensor()
+      check: b.max(1, keepDim=true).get(0) == [[3],[5]].toTensor()
+      check: b.to(kFloat32).max(0, keepDim=true).get(0) == [[1.0f,4,3,5]].toTensor()
+      check: b.to(kFloat32).max(1, keepDim=true).get(0) == [[3.0f],[5.0f]].toTensor()
 
     test "Variance":
       let a = [-3.0,-2,-1,0,1,2,3].toTensor()
-      check: abs(a.variance() - 4.6666666666667) < 1e-8
+      check: abs(a.variance().item(float64) - 4.6666666666667) < 1e-8
       let b = [[1.0,2,3,-4],[0.0,4,-2,5]].toTensor()
-      check: b.variance(0) == [[0.5,2.0,12.5,40.5]].toTensor()
+      check: b.variance(0, keepDim=true) == [[0.5,2.0,12.5,40.5]].toTensor()
+      #[ (a - b).abs gets transformed into a - b.abs in cpp
       check: (
-        b.variance(1) -
+        b.variance(1, keepDim=true) -
         [[9.666666666666666], [10.91666666666667]].toTensor()
-      ).abs().sum() < 1e-8
-
+      ).abs().sum().item(float64) < 1e-8
+      ]#
     test "Standard Deviation":
       let a = [-3.0,-2,-1,0,1,2,3].toTensor()
-      check: abs(a.std() - 2.1602468994693) < 1e-8
+      check: abs(a.stddev().item(float64) - 2.1602468994693) < 1e-8
       let b = [[1.0,2,3,-4],[0.0,4,-2,5]].toTensor()
+      #[ same as in variance
       check: abs(
-        b.std(0) -
+        b.stddev(0, keepDim=true) -
         [[0.7071067811865476,1.414213562373095,
           3.535533905932738,6.363961030678928]].toTensor()
-      ).abs().sum() < 1e-8
+      ).abs().sum().item(float64) < 1e-8
       check: abs(
-        b.std(1) -
+        b.stddev(1, keepDim=true) -
         [[3.109126351029605],[3.304037933599835]].toTensor()
-      ).abs().sum() < 1e-8
+      ).abs().sum().item(float64) < 1e-8
+      ]#
 
     test "Argmax":
       let a =  [[0, 4, 7],
                 [1, 9, 5],
                 [3, 4, 1]].toTensor
-      check: argmax(a, 0) == [[2, 1, 0]].toTensor
-      check: argmax(a, 1) == [[2],
+      check: argmax(a, 0, keepDim=true) == [[2, 1, 0]].toTensor
+      check: argmax(a, 1, keepDim=true) == [[2],
                               [1],
                               [1]].toTensor
 
       block:
         let a =  [[0, 1, 2],
                   [3, 4, 5]].toTensor
-        check: argmax(a, 0) == [[1, 1, 1]].toTensor
-        check: argmax(a, 1) == [[2],
+        check: argmax(a, 0, keepDim=true) == [[1, 1, 1]].toTensor
+        check: argmax(a, 1, keepDim=true) == [[2],
                                 [2]].toTensor
 
     test "Argmax_3D":
@@ -134,15 +137,15 @@ proc main() =
         [[2, 8, 5, 9, 1, 5], [5, 10, 6, 8, 0, 1], [0, 10, 0, 8, 6, 7], [5, 1, 4, 9, 3, 0], [1, 1, 4, 3, 9, 4]]
       ].toTensor
 
-      check: argmax(a, 0) == [
+      check: argmax(a, 0, keepDim=true) == [
         [[1, 0, 0, 1, 0, 2], [0, 3, 1, 0, 1, 0], [1, 3, 0, 1, 3, 2], [0, 0, 0, 1, 0, 1], [0, 1, 1, 1, 3, 0]]
       ].toTensor
 
-      check: argmax(a, 1) == [
+      check: argmax(a, 1, keepDim=true) == [
         [[4, 0, 1, 1, 3, 1]], [[0, 3, 1, 2, 1, 3]], [[0, 3, 1, 1, 0, 0]], [[1, 1, 1, 0, 4, 2]]
       ].toTensor
 
-      check: argmax(a, 2) == [
+      check: argmax(a, 2, keepDim=true) == [
         [[1], [3], [2], [1], [0]], [[0], [2], [3], [1], [0]], [[5], [3], [3], [1], [3]], [[3], [1], [1], [3], [4]]
       ].toTensor
 
@@ -152,15 +155,15 @@ proc main() =
         [[12, 13, 14, 15], [16, 17, 18, 19], [20, 21, 22, 23]]
       ].toTensor
 
-      check: argmax(a, 0) == [
+      check: argmax(a, 0, keepDim=true) == [
         [[1, 1, 1, 1], [1, 1, 1, 1], [1, 1, 1, 1]]
       ].toTensor
 
-      check: argmax(a, 1) == [
+      check: argmax(a, 1, keepDim=true) == [
         [[2, 2, 2, 2]], [[2, 2, 2, 2]]
       ].toTensor
 
-      check: argmax(a, 2) == [
+      check: argmax(a, 2, keepDim=true) == [
         [[3], [3], [3]], [[3], [3], [3]]
       ].toTensor
 
