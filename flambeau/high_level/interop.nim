@@ -26,7 +26,7 @@ type Metadata = DynamicStackArray[int64]
 {.experimental:"views".}
 
 template asNimView*[T](ar: ArrayRef[T]): openarray[T] =
-  toOpenArray(ar.data, 0, ar.size.int - 1)
+  toOpenArray(ar.data.unsafeAddr, 0, ar.size.int - 1)
 
 template asTorchView*[T](oa: openarray[T]): ArrayRef[T] =
   ArrayRef[T].init(oa[0].unsafeAddr, oa.len)
