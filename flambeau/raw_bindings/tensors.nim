@@ -372,21 +372,21 @@ func step*(s: TorchSlice): int64 {.importcpp: "#.step()".}
 # Operators
 # -----------------------------------------------------------------------
 
-func `not`*(t: Tensor): Tensor {.importcpp: "~#".}
-func `-`*(t: Tensor): Tensor {.importcpp: "-#".}
+func `not`*(t: Tensor): Tensor {.importcpp: "(~#)".}
+func `-`*(t: Tensor): Tensor {.importcpp: "(-#)".}
 
 func `+`*(a: Tensor, b: Tensor): Tensor {.importcpp: "(# + #)".}
 func `-`*(a: Tensor, b: Tensor): Tensor {.importcpp: "(# - #)".}
 func `*`*(a: Tensor, b: Tensor): Tensor {.importcpp: "(# * #)".}
 
-func `+=`*(a: var Tensor, b: Tensor) {.importcpp: "# += #".}
-func `+=`*(a: var Tensor, s: Scalar) {.importcpp: "# += #".}
-func `-=`*(a: var Tensor, b: Tensor) {.importcpp: "# -= #".}
-func `-=`*(a: var Tensor, s: Scalar) {.importcpp: "# -= #".}
-func `*=`*(a: var Tensor, b: Tensor) {.importcpp: "# *= #".}
-func `*=`*(a: var Tensor, s: Scalar) {.importcpp: "# *= #".}
-func `/=`*(a: var Tensor, b: Tensor) {.importcpp: "# /= #".}
-func `/=`*(a: var Tensor, s: Scalar) {.importcpp: "# /= #".}
+func `+=`*(a: var Tensor, b: Tensor) {.importcpp: "(# += #)".}
+func `+=`*(a: var Tensor, s: Scalar) {.importcpp: "(# += #)".}
+func `-=`*(a: var Tensor, b: Tensor) {.importcpp: "(# -= #)".}
+func `-=`*(a: var Tensor, s: Scalar) {.importcpp: "(# -= #)".}
+func `*=`*(a: var Tensor, b: Tensor) {.importcpp: "(# *= #)".}
+func `*=`*(a: var Tensor, s: Scalar) {.importcpp: "(# *= #)".}
+func `/=`*(a: var Tensor, b: Tensor) {.importcpp: "(# /= #)".}
+func `/=`*(a: var Tensor, s: Scalar) {.importcpp: "(# /= #)".}
 
 func `and`*(a: Tensor, b: Tensor): Tensor {.importcpp: "#.bitwise_and(#)".}
   ## bitwise `and`.
