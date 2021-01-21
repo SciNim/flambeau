@@ -375,9 +375,9 @@ func step*(s: TorchSlice): int64 {.importcpp: "#.step()".}
 func `not`*(t: Tensor): Tensor {.importcpp: "~#".}
 func `-`*(t: Tensor): Tensor {.importcpp: "-#".}
 
-func `+`*(a: Tensor, b: Tensor): Tensor {.importcpp: "# + #".}
-func `-`*(a: Tensor, b: Tensor): Tensor {.importcpp: "# - #".}
-func `*`*(a: Tensor, b: Tensor): Tensor {.importcpp: "# * #".}
+func `+`*(a: Tensor, b: Tensor): Tensor {.importcpp: "(# + #)".}
+func `-`*(a: Tensor, b: Tensor): Tensor {.importcpp: "(# - #)".}
+func `*`*(a: Tensor, b: Tensor): Tensor {.importcpp: "(# * #)".}
 
 func `+=`*(a: var Tensor, b: Tensor) {.importcpp: "# += #".}
 func `+=`*(a: var Tensor, s: Scalar) {.importcpp: "# += #".}

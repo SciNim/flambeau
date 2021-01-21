@@ -91,17 +91,14 @@ proc main() =
       check: abs(a.variance().item(float64) - 4.6666666666667) < 1e-8
       let b = [[1.0,2,3,-4],[0.0,4,-2,5]].toTensor()
       check: b.variance(0, keepDim=true) == [[0.5,2.0,12.5,40.5]].toTensor()
-      #[ (a - b).abs gets transformed into a - b.abs in cpp
       check: (
         b.variance(1, keepDim=true) -
         [[9.666666666666666], [10.91666666666667]].toTensor()
       ).abs().sum().item(float64) < 1e-8
-      ]#
     test "Standard Deviation":
       let a = [-3.0,-2,-1,0,1,2,3].toTensor()
       check: abs(a.stddev().item(float64) - 2.1602468994693) < 1e-8
       let b = [[1.0,2,3,-4],[0.0,4,-2,5]].toTensor()
-      #[ same as in variance
       check: abs(
         b.stddev(0, keepDim=true) -
         [[0.7071067811865476,1.414213562373095,
@@ -111,7 +108,6 @@ proc main() =
         b.stddev(1, keepDim=true) -
         [[3.109126351029605],[3.304037933599835]].toTensor()
       ).abs().sum().item(float64) < 1e-8
-      ]#
 
     test "Argmax":
       let a =  [[0, 4, 7],
