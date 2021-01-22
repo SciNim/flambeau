@@ -23,18 +23,18 @@ type
 
 func len*(s: CppString): int {.importcpp: "#.length()".}
   ## Returns the length of a C++ std::string
-func data*(s: CppString): lent char {.importcpp: "#.data()".}
+func data*(s: CppString): ptr char {.importcpp: "const_cast<char*>(#.data())".}
   ## Returns a pointer to the raw data of a C++ std::string
 func cstring*(s: CppString): cstring {.importcpp: "#.c_str()"}
 
+{.pop.}
+
 # Interop
 # ------------------------------
-
 func `$`*(s: CppString): string =
   result = newString(s.len)
-  copyMem(result[0].addr, s.data.unsafeAddr, s.len)
+  copyMem(result[0].addr, s.data, s.len)
 
-{.pop.}
 
 # std::shared_ptr<T>
 # -----------------------------------------------------------------------

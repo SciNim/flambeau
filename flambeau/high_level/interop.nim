@@ -147,3 +147,17 @@ func toTensor*[T: seq|array](oa: openarray[T]): Tensor =
   let data = result.data_ptr(BaseType)
   for i, val in enumerate(flatIter(oa)):
     data[i] = val
+
+# CppString -> Nim string
+
+func toCppString*(t: Tensor): CppString =
+  ## Tensors don't have a `$` equivilent so we have to put it into
+  ## a ostringstream and convert it to a CppString.
+  {.emit: """
+  std::ostringstream stream;
+  stream << `t`;
+  result = stream.str();
+  """.}
+
+proc `$`*(t: Tensor): string =
+  $t.toCppString
