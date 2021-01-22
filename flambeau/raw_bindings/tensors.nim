@@ -227,6 +227,7 @@ func to*(a: Tensor, device: Device): Tensor {.importcpp: "#.to(#)".}
 # -----------------------------------------------------------------------
 
 func to*(a: Tensor, dtype: ScalarKind): Tensor {.importcpp: "#.to(#)".}
+func scalarType*(t: Tensor): ScalarKind {.importcpp: "#.scalar_type()".}
 
 # Constructors
 # -----------------------------------------------------------------------
