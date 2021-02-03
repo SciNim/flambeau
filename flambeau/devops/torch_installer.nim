@@ -72,7 +72,8 @@ proc uncompress(targetDir, filename: string, delete = false) =
   else:
     echo "Not deleting \"", tmp, "\""
 
-  echo "[Important]: Make sure that '" & targetDir & DirSep & libtorch & DirSep & lib & "' is in your PATH or LD_LIBRARY_PATH"
+  let libPath = targetDir & DirSep & "libtorch" & DirSep & "lib"
+  echo "[Important]: Make sure that '" & libPath & "' is in your PATH or LD_LIBRARY_PATH"
 
 when isMainModule:
   let (url, filename) = getUrlAndFilename()

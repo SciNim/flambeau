@@ -14,6 +14,14 @@ is not setup.
 
 The library is not ready for general use at the moment.
 
+## External dependencies
+
+On Ubuntu :
+``sudo apt-get install ffmpeg libpng-dev libjpeg-dev libzip-dev``
+
+On OpenSuse :
+``sudo zypper install ffmpeg libpng-dev libjpeg-dev libzip-dev``
+
 ## Limitations
 
 Compared to Numpy and Arraymancer, Flambeau inherits the following PyTorch limitations:
