@@ -3,4 +3,4 @@
 build/*
 nimcache/*
 install/vendor
-install/devops/torch_installer
+install/torch_installer

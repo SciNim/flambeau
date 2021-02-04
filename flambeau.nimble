@@ -32,7 +32,7 @@ task build_torchvision, "Build the dependency torchvision":
   else:
     const libName = "libtorchvision.so"
 
-  const libBuilder = "install/devops/torchvision_build.nim"
+  const libBuilder = "install/torchvision_build.nim"
 
   if not dirExists "install/vendor/lib":
     mkDir "install/vendor/lib"
@@ -45,7 +45,7 @@ task build_torchvision, "Build the dependency torchvision":
 
 task install_libtorch, "Download and install libtorch":
   switch("skipParentCfg", "on")
-  const libInstaller = "install/devops/torch_installer.nim"
+  const libInstaller = "install/torch_installer.nim"
   setCommand "cpp", libInstaller
   switch("run")
 
