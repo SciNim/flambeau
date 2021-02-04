@@ -77,5 +77,6 @@ proc uncompress(targetDir, filename: string, delete = false) =
 
 when isMainModule:
   let (url, filename) = getUrlAndFilename()
-  downloadLibTorch(url, getProjectDir(), filename)
-  uncompress(getProjectDir(), filename)
+  let target = getProjectDir().parentDir() & DirSep & "vendor"
+  downloadLibTorch(url, target, filename)
+  uncompress(target, filename)

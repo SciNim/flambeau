@@ -10,9 +10,11 @@ version       = "0.0.1"
 author        = "Mamy André-Ratsimbazafy"
 description   = "A state-of-the-art tensor and deep learning backend on CPU, Nvidia Cuda, AMD HIP, OpenCL, Vulkan, OpenGL"
 license       = "MIT or Apache License 2.0"
+srcDir        = "src"
 
 ### Dependencies
 requires "nim >= 1.4.2"
+requires "zip"
 
 when defined(nimdistros):
   import distros
@@ -30,7 +32,7 @@ task build_torchvision, "Build the dependency torchvision":
   else:
     const libName = "libtorchvision.so"
 
-  const libBuilder = "flambeau/devops/torchvision_build.nim"
+  const libBuilder = "install/devops/torchvision_build.nim"
 
   if not dirExists "vendor/lib":
     mkDir "vendor/lib"
@@ -40,3 +42,10 @@ task build_torchvision, "Build the dependency torchvision":
   switch("noMain")
   switch("gc", "none")
   setCommand "cpp", libBuilder
+
+task install_libtorch, "Download and install libtorch":
+  switch("skipParentCfg", "on")
+  const libInstaller = "install/devops/torch_installer.nim"
+  setCommand "cpp", libInstaller
+  switch("run")
+
