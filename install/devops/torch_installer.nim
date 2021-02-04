@@ -55,13 +55,13 @@ proc getUrlAndFilename(version = "1.7.1", accel = Cuda110, abi = Cpp11): tuple[u
   result.url = &"https://download.pytorch.org/libtorch/{accel}/{result.filename}"
 
 proc genNimsConfig(includePath, libPath: string) =
-  var configFile = open("nim.cfg", fmWrite)
+  var configFile = open("install/config.nim", fmWrite)
   configFile.writeLine(&"## Generated file during torch_installer execution -- {now()}")
   configFile.writeLine("## Do not modify unless you know what you're doing")
   configFile.writeLine(&"""
-  --passC:-I{includePath}
-  --passL:-Wl,-rpath,{libPath}
-  --passL:-ltorch
+switch("passC","-I{includePath}")
+switch("passL","-Wl,-rpath,{libPath}")
+switch("passL","-ltorch")
   """)
 
 proc downloadLibTorch(url, targetDir, filename: string) =

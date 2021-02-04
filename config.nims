@@ -4,3 +4,4 @@
 # we need a global switch.
 when not defined(torchInstaller):
   switch("experimental", "views")
+include install/config
