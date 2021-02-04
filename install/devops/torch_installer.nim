@@ -63,8 +63,7 @@ proc genNimsConfig(installPath: string) =
   configFile.writeLine(&"""
 switch("passC","-I{includePath}")
 switch("passL","-L{libPath}")
-switch("passL","-Wl,-rpath,{libPath}")
-  """)
+switch("passL","-Wl,-rpath,{libPath}")""")
 
 proc downloadLibTorch(url, targetDir, filename: string) =
   waitFor url.downloadTo(targetDir, filename)
