@@ -26,8 +26,10 @@ On OpenSuse :
 
 ``git clone https://github.com/SciNim/flambeau``
 ``cd flambeau``
-``nimble install_libtorch``
-``nimble install``
+``nimble install`` or ``nimble develop`` 
+
+Torchvision can now be built : 
+
 ``nimble build_torchvision``
 
 ## Limitations
