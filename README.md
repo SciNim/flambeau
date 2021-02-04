@@ -25,7 +25,9 @@ On OpenSuse :
 ### Installation from git clone
 
 ``git clone https://github.com/SciNim/flambeau``
+
 ``cd flambeau``
+
 ``nimble install`` or ``nimble develop`` 
 
 Torchvision can now be built : 
