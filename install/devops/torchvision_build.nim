@@ -18,8 +18,8 @@
 
 import
   std/[strutils, os, macros],
-  flambeau/config,
-  flambeau/libtorch
+  ../../src/flambeau/config,
+  ../../src/flambeau/libtorch
 
 const rel_path = "../vendor/vision/torchvision/csrc/"
 const cppSrcPath = currentSourcePath.rsplit(DirSep, 1)[0] & rel_path
