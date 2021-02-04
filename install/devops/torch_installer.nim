@@ -60,8 +60,8 @@ proc genNimsConfig(includePath, libPath: string) =
   configFile.writeLine("## Do not modify unless you know what you're doing")
   configFile.writeLine(&"""
 switch("passC","-I{includePath}")
+switch("passL","-L{libPath}")
 switch("passL","-Wl,-rpath,{libPath}")
-switch("passL","-ltorch")
   """)
 
 proc downloadLibTorch(url, targetDir, filename: string) =
