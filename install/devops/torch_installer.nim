@@ -7,7 +7,7 @@
 
 import
   std/[asyncdispatch, httpclient,
-       strformat, strutils, os],
+       strformat, strutils, os, times],
   zip/zipfiles
 
 type
@@ -54,6 +54,16 @@ proc getUrlAndFilename(version = "1.7.1", accel = Cuda110, abi = Cpp11): tuple[u
 
   result.url = &"https://download.pytorch.org/libtorch/{accel}/{result.filename}"
 
+proc genNimsConfig(includePath, libPath: string) =
+  var configFile = open("nim.cfg", fmWrite)
+  configFile.writeLine(&"## Generated file during torch_installer execution -- {now()}")
+  configFile.writeLine("## Do not modify unless you know what you're doing")
+  configFile.writeLine(&"""
+  --passC:-I{includePath}
+  --passL:-Wl,-rpath,{libPath}
+  --passL:-ltorch
+  """)
+
 proc downloadLibTorch(url, targetDir, filename: string) =
   waitFor url.downloadTo(targetDir, filename)
 
@@ -72,11 +82,19 @@ proc uncompress(targetDir, filename: string, delete = false) =
   else:
     echo "Not deleting \"", tmp, "\""
 
+  let includePath = targetDir & DirSep & "libtorch" & DirSep & "include"
   let libPath = targetDir & DirSep & "libtorch" & DirSep & "lib"
-  echo "[Important]: Make sure that '" & libPath & "' is in your LIBRARY_PATH."
+  genNimsConfig(includePath, libPath)
+  # echo "[Important]: Make sure that '" & libPath & "' is in your LIBRARY_PATH."
+
+proc localTest(targetDir: string) =
+  let includePath = targetDir & DirSep & "libtorch" & DirSep & "include"
+  let libPath = targetDir & DirSep & "libtorch" & DirSep & "lib"
+  genNimsConfig(includePath, libPath)
 
 when isMainModule:
   let (url, filename) = getUrlAndFilename()
   let target = getProjectDir().parentDir() & DirSep & "vendor"
-  downloadLibTorch(url, target, filename)
-  uncompress(target, filename)
+  # downloadLibTorch(url, target, filename)
+  # uncompress(target, filename)
+  localTest(target)

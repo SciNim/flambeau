@@ -1,5 +1,5 @@
 import unittest
-import ../flambeau
+import flambeau
 
 proc main() =
   suite "Test precedence":

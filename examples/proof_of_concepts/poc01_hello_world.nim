@@ -1,4 +1,4 @@
-import ../flambeau
+import flambeau
 
 var t = eye(3)
 t.print()

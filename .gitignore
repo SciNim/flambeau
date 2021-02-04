@@ -1,5 +1,7 @@
-build/*
-install/vendor
 *.zip
-nimcache/*
 *.pt
+build/*
+nimcache/*
+install/vendor
+install/devops/torch_installer
+nim.cfg

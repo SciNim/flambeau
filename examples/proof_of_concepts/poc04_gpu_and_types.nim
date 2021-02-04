@@ -1,4 +1,4 @@
-import ../flambeau
+import flambeau
 
 let t_cuda = eye(5, kCuda)
 t_cuda.print()

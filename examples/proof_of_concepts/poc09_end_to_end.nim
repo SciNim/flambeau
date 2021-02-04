@@ -2,7 +2,7 @@
 # at https://pytorch.org/cppdocs/frontend.html
 
 import
-  ../flambeau_nn,
+  flambeau/flambeau_nn,
   std/[enumerate, strformat]
 
 # Inline C++
