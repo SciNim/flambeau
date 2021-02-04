@@ -54,7 +54,9 @@ proc getUrlAndFilename(version = "1.7.1", accel = Cuda110, abi = Cpp11): tuple[u
 
   result.url = &"https://download.pytorch.org/libtorch/{accel}/{result.filename}"
 
-proc genNimsConfig(includePath, libPath: string) =
+proc genNimsConfig(installPath: string) =
+  let includePath = installPath & DirSep & "include"
+  let libPath = installPath & DirSep & "lib"
   var configFile = open("install/config.nim", fmWrite)
   configFile.writeLine(&"## Generated file during torch_installer execution -- {now()}")
   configFile.writeLine("## Do not modify unless you know what you're doing")
@@ -82,15 +84,13 @@ proc uncompress(targetDir, filename: string, delete = false) =
   else:
     echo "Not deleting \"", tmp, "\""
 
-  let includePath = targetDir & DirSep & "libtorch" & DirSep & "include"
-  let libPath = targetDir & DirSep & "libtorch" & DirSep & "lib"
-  genNimsConfig(includePath, libPath)
+  let insPath = targetDir & DirSep & "libtorch"
+  genNimsConfig(insPath)
   # echo "[Important]: Make sure that '" & libPath & "' is in your LIBRARY_PATH."
 
 proc localTest(targetDir: string) =
-  let includePath = targetDir & DirSep & "libtorch" & DirSep & "include"
-  let libPath = targetDir & DirSep & "libtorch" & DirSep & "lib"
-  genNimsConfig(includePath, libPath)
+  let installPath = targetDir & DirSep & "libtorch"
+  genNimsConfig(installPath)
 
 when isMainModule:
   let (url, filename) = getUrlAndFilename()
