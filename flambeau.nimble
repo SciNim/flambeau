@@ -49,3 +49,8 @@ task install_libtorch, "Download and install libtorch":
   setCommand "cpp", libInstaller
   switch("run")
 
+before install:
+  install_libtorchTask()
+
+before develop:
+  install_libtorchTask()
