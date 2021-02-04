@@ -57,7 +57,7 @@ proc getUrlAndFilename(version = "1.7.1", accel = Cuda110, abi = Cpp11): tuple[u
 proc downloadLibTorch(url, targetDir, filename: string) =
   waitFor url.downloadTo(targetDir, filename)
 
-proc uncompress(targetDir, filename, outdir: string, delete = false) =
+proc uncompress(targetDir, filename: string, delete = false) =
   var z: ZipArchive
   let tmp = targetDir / filename
   if not z.open(tmp):
@@ -77,6 +77,6 @@ proc uncompress(targetDir, filename, outdir: string, delete = false) =
 
 when isMainModule:
   let (url, filename) = getUrlAndFilename()
-  let target = getProjectDir().parentDir() & DirSep & "vendor"
+  let target = getProjectDir()
   downloadLibTorch(url, target, filename)
   uncompress(target, filename)

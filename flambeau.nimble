@@ -10,7 +10,6 @@ version       = "0.0.1"
 author        = "Mamy André-Ratsimbazafy"
 description   = "A state-of-the-art tensor and deep learning backend on CPU, Nvidia Cuda, AMD HIP, OpenCL, Vulkan, OpenGL"
 license       = "MIT or Apache License 2.0"
-srcDir        = "src"
 
 ### Dependencies
 requires "nim >= 1.4.2"
@@ -34,9 +33,9 @@ task build_torchvision, "Build the dependency torchvision":
 
   const libBuilder = "install/torchvision_build.nim"
 
-  if not dirExists "install/vendor/lib":
-    mkDir "install/vendor/lib"
-  switch("out", "install/vendor/lib/" & libName)
+  if not dirExists "vendor/lib":
+    mkDir "vendor/lib"
+  switch("out", "vendor/lib/" & libName)
   switch("define", "danger")
   switch("app", "lib")
   switch("noMain")
