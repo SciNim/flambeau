@@ -7,7 +7,7 @@
 
 import
   std/[asyncdispatch, httpclient,
-       strformat, strutils, os, times],
+       strformat, strutils, os],
   zip/zipfiles
 
 type
