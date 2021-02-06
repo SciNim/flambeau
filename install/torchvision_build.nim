@@ -21,8 +21,9 @@ import
   ../flambeau/config,
   ../flambeau/libtorch
 
-const rel_path = "/vision/torchvision/csrc/"
-const cppSrcPath = currentSourcePath.rsplit(DirSep, 1)[0] & rel_path
+const rel_path = "vendor" / "vision" / "torchvision" / "csrc" & DirSep
+const cppSrcPath = currentSourcePath.rsplit(DirSep, 1)[0].parentDir() / rel_path
+
 
 # ############################################################
 #

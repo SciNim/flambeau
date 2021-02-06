@@ -20,8 +20,8 @@ import
 # Libraries
 # -----------------------------------------------------------------------
 
-const libTorchPath* = currentSourcePath.rsplit(DirSep, 1)[0] & "/../install/libtorch"
-const librariesPath* = libTorchPath & "/lib"
+const libTorchPath* = currentSourcePath.rsplit(DirSep, 1)[0].parentDir() / "install" / "libtorch"
+const librariesPath* = libTorchPath / "lib"
 
 # TODO: proper build system on "nimble install" (put libraries in .nimble/bin?)
 # if the libPath is not in LD_LIBRARY_PATH
@@ -39,11 +39,11 @@ when false or defined(windows): # Static linking
     const libSuffix = ".a" # BSD / Linux
     const libPrefix = "lib"
 
-  {.link: librariesPath & "/" & libPrefix & "c10" & libSuffix.}
-  {.link: librariesPath & "/" & libPrefix & "torch_cpu" & libSuffix.}
+  {.link: librariesPath / libPrefix & "c10" & libSuffix.}
+  {.link: librariesPath / libPrefix & "torch_cpu" & libSuffix.}
 
   when UseCuda:
-    {.link: librariesPath & "/" & libPrefix & "torch_cuda" & libSuffix.}
+    {.link: librariesPath / libPrefix & "torch_cuda" & libSuffix.}
 else: # Dynamic linking
   # Standard GCC compatible linker
   {.passL: "-L" & librariesPath & " -lc10 -ltorch_cpu ".}
@@ -69,9 +69,9 @@ else: # Dynamic linking
 # Headers
 # -----------------------------------------------------------------------
 
-const headersPath* = libTorchPath & "/include"
-const torchHeadersPath* = headersPath / "torch/csrc/api/include"
-const torchHeader* = torchHeadersPath / "torch/torch.h"
+const headersPath* = libTorchPath / "include"
+const torchHeadersPath* = headersPath / "torch" / "csrc" / "api" / "include"
+const torchHeader* = torchHeadersPath / "torch" / "torch.h"
 
 {.passC: "-I" & headersPath.}
 {.passC: "-I" & torchHeadersPath.}
