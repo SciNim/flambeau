@@ -7,7 +7,7 @@
 
 import
   std/[asyncdispatch, httpclient,
-       strformat, strutils, os],
+     strformat, strutils, os],
   zip/zipfiles
 
 type
@@ -77,6 +77,6 @@ proc uncompress(targetDir, filename: string, delete = false) =
 
 when isMainModule:
   let (url, filename) = getUrlAndFilename()
-  let target = getProjectDir()
+  let target = getProjectDir().parentDir() / "vendor"
   downloadLibTorch(url, target, filename)
   uncompress(target, filename)

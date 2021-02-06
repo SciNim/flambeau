@@ -20,7 +20,7 @@ import
 # Libraries
 # -----------------------------------------------------------------------
 
-const libTorchPath* = currentSourcePath.rsplit(DirSep, 1)[0].parentDir() / "install" / "libtorch"
+const libTorchPath* = currentSourcePath.rsplit(DirSep, 1)[0].parentDir() / "vendor" / "libtorch"
 const librariesPath* = libTorchPath / "lib"
 
 # TODO: proper build system on "nimble install" (put libraries in .nimble/bin?)
