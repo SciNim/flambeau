@@ -33,9 +33,9 @@ task build_torchvision, "Build the dependency torchvision":
 
   const libBuilder = "install/torchvision_build.nim"
 
-  if not dirExists "vendor/lib":
+  if not dirExists "vendor":
     mkDir "vendor/lib"
-  switch("out", "vendor/lib/" & libName)
+  switch("out", "vendor/" & libName)
   switch("define", "danger")
   switch("app", "lib")
   switch("noMain")

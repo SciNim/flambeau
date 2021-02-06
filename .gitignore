@@ -2,6 +2,6 @@
 *.pt
 build/*
 nimcache/*
-vendor/lib
+vendor/*
 install/libtorch
 install/torch_installer
