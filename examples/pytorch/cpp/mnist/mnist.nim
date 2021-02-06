@@ -1,5 +1,5 @@
 import
-  ../../../../flambeau_nn,
+  flambeau/flambeau_nn,
   std/[math, strutils, strformat, os]
 
 # Where to find the MNIST dataset.

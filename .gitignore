@@ -1,6 +1,7 @@
-build/*
-vendor/libtorch
-vendor/lib
 *.zip
-nimcache/*
 *.pt
+build/*
+nimcache/*
+vendor/*
+install/libtorch
+install/torch_installer

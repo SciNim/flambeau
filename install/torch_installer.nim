@@ -7,7 +7,7 @@
 
 import
   std/[asyncdispatch, httpclient,
-       strformat, strutils, os],
+     strformat, strutils, os],
   zip/zipfiles
 
 type
@@ -72,9 +72,11 @@ proc uncompress(targetDir, filename: string, delete = false) =
   else:
     echo "Not deleting \"", tmp, "\""
 
-  echo "[Important]: Make sure that '" & targetDir & DirSep & libtorch & DirSep & lib & "' is in your PATH or LD_LIBRARY_PATH"
+  # let insPath = targetDir & DirSep & "libtorch"
+  # echo "[Important]: Make sure that '" & insPath & DirSep & "lib" & "' is in your LIBRARY_PATH."
 
 when isMainModule:
   let (url, filename) = getUrlAndFilename()
-  downloadLibTorch(url, getProjectDir(), filename)
-  uncompress(getProjectDir(), filename)
+  let target = getProjectDir().parentDir() / "vendor"
+  downloadLibTorch(url, target, filename)
+  uncompress(target, filename)

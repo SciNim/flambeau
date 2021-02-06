@@ -1,6 +1,6 @@
 # Testing C++ tuples and QR decomposition
 
-import ../flambeau
+import flambeau/flambeau_nn
 
 proc main() =
   let a = [[12.0, -51, 4], [6.0, 167, -68], [-4.0, 24, -41]].toTensor()

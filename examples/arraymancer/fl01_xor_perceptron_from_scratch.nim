@@ -1,4 +1,4 @@
-import ../../flambeau_nn
+import flambeau/flambeau_nn
 
 # Learning XOR function with a neural network.
 

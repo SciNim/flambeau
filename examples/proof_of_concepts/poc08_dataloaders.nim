@@ -1,4 +1,4 @@
-import ../flambeau_nn
+import flambeau/flambeau_nn
 
 proc main() =
   let mnist = mnist("build/mnist")

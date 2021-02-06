@@ -13,6 +13,7 @@ license       = "MIT or Apache License 2.0"
 
 ### Dependencies
 requires "nim >= 1.4.2"
+requires "zip"
 
 when defined(nimdistros):
   import distros
@@ -30,13 +31,25 @@ task build_torchvision, "Build the dependency torchvision":
   else:
     const libName = "libtorchvision.so"
 
-  const libBuilder = "flambeau/devops/torchvision_build.nim"
+  const libBuilder = "install/torchvision_build.nim"
 
-  if not dirExists "vendor/lib":
+  if not dirExists "vendor":
     mkDir "vendor/lib"
-  switch("out", "vendor/lib/" & libName)
+  switch("out", "vendor/" & libName)
   switch("define", "danger")
   switch("app", "lib")
   switch("noMain")
   switch("gc", "none")
   setCommand "cpp", libBuilder
+
+task install_libtorch, "Download and install libtorch":
+  switch("skipParentCfg", "on")
+  const libInstaller = "install/torch_installer.nim"
+  setCommand "cpp", libInstaller
+  switch("run")
+
+before install:
+  install_libtorchTask()
+
+before develop:
+  install_libtorchTask()

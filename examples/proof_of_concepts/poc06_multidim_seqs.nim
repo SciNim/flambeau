@@ -1,4 +1,4 @@
-import ../flambeau, std/math
+import flambeau, std/math
 
 const
     x = @[1, 2, 3, 4, 5]
