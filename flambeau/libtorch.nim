@@ -44,6 +44,7 @@ when false or defined(windows): # Static linking
 
   when UseCuda:
     {.link: librariesPath / libPrefix & "torch_cuda" & libSuffix.}
+
 else: # Dynamic linking
   # Standard GCC compatible linker
   {.passL: "-L" & librariesPath & " -lc10 -ltorch_cpu ".}

@@ -15,6 +15,7 @@ license       = "MIT or Apache License 2.0"
 requires "nim >= 1.4.2"
 requires "zip"
 
+import os
 when defined(nimdistros):
   import distros
   foreignDep "libjpeg"
@@ -34,7 +35,7 @@ task build_torchvision, "Build the dependency torchvision":
   const libBuilder = "install/torchvision_build.nim"
 
   if not dirExists "vendor":
-    mkDir "vendor/lib"
+    mkDir "vendor"
   switch("out", "vendor/" & libName)
   switch("define", "danger")
   switch("app", "lib")
@@ -42,14 +43,21 @@ task build_torchvision, "Build the dependency torchvision":
   switch("gc", "none")
   setCommand "cpp", libBuilder
 
+
 task install_libtorch, "Download and install libtorch":
-  switch("skipParentCfg", "on")
   const libInstaller = "install/torch_installer.nim"
-  setCommand "cpp", libInstaller
-  switch("run")
+  # Using-b:cpp r avoir creating a local binary
+  selfExec("-b:cpp r --skipParentCfg:on " & libInstaller)
+
+task setup, "Setup repo":
+  if not dirExists "vendor" / "vision" / "torchvision" / "csrc":
+    exec("git submodule update --init --recursive")
+
+  if not dirExists "vendor" / "libtorch":
+    install_libtorchTask()
 
 before install:
-  install_libtorchTask()
+  setupTask()
 
 before develop:
-  install_libtorchTask()
+  setupTask()
