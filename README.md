@@ -20,7 +20,7 @@ On Ubuntu :
 ``sudo apt-get install ffmpeg libpng-dev libjpeg-dev libzip-dev``
 
 On OpenSuse :
-``sudo zypper install ffmpeg libpng-dev libjpeg-dev libzip-dev``
+``sudo zypper install libpng16-devel libjpeg62-devel libzip-devel ffmpeg``
 
 ### Installation from git clone
 
