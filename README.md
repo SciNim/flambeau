@@ -2,17 +2,14 @@
 
 Flambeau provides Nim bindings to libtorch C++ API and torchvision.
 
-## Installation
+The library is not ready for general use at the moment.
 
-TODO.
+## Installation
 
 The library installation including:
 - auto-downloading and deploying of libtorch
 - optional auto-compiling of torchvision into a shared library (if requested)
 
-is not setup.
-
-The library is not ready for general use at the moment.
 
 ### External dependencies
 
@@ -33,7 +30,10 @@ On OpenSuse :
 
 ``nimble install`` or ``nimble develop`` 
 
-Torchvision can now be built : 
+Note that install and develop will download and build libtorch so it may take a while.
+
+
+Torchvision can now be built if desired: 
 
 ``nimble build_torchvision``
 

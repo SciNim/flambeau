@@ -46,7 +46,7 @@ task build_torchvision, "Build the dependency torchvision":
 
 task install_libtorch, "Download and install libtorch":
   const libInstaller = "install/torch_installer.nim"
-  # Using-b:cpp r avoir creating a local binary
+  # Using -b:cpp r avoir creating a local binary
   selfExec("-b:cpp r --skipParentCfg:on " & libInstaller)
 
 task setup, "Setup repo":
