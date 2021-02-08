@@ -17,7 +17,7 @@ The library is not ready for general use at the moment.
 ### External dependencies
 
 Initialize submodule : 
-``git submodule init --update --recursive``
+``git submodule update --init --recursive``
 
 On Ubuntu :
 ``sudo apt-get install ffmpeg libpng-dev libjpeg-dev libzip-dev``
