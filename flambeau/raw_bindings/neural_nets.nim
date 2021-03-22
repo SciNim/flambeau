@@ -175,28 +175,56 @@ type
     #   Nim inheritable objects have runtime type information pointer
     #   as a hidden first field.
     #   {.pure, inheritable.} removes that to make the object C++ compatible.
+  ModuleHolder* {.bycopy, pure, inheritable, importcpp: "torch::nn::ModuleHolder".} = object
 
-proc register_module*[ParMod, ChildMod: Module](
+  SharedModule*[T: Module] = CppSharedPtr[T]
+
+proc register_module*[ParMod: ModuleHolder, ChildMod: ModuleHolder](
        parent: var ParMod, name: cstring, child: var ChildMod)
        {.importcpp: "#.register_module(@)".}
   ## Register a submodule to a parent module.
 
-proc register_module*[ParMod, ChildMod: Module](
+proc register_module*[ParMod: ModuleHolder, ChildMod: ModuleHolder](
        parent: var ParMod, name: cstring, child: sink ChildMod): ChildMod
        {.importcpp: "#.register_module(@)".}
+  ## Register a submodule to a parent module.
+
+proc register_module*[ParMod: Module, ChildMod: ModuleHolder](
+       parent: var SharedModule[ParMod], name: cstring, child: var ChildMod)
+       {.importcpp: "#->register_module(@)".}
+  ## Register a submodule to a parent module.
+
+proc register_module*[ParMod: Module, ChildMod: ModuleHolder](
+       parent: var SharedModule[ParMod], name: cstring, child: sink ChildMod): ChildMod
+       {.importcpp: "#->register_module(@)".}
+  ## Register a submodule to a parent module.
+
+proc register_module*[ParMod: Module, ChildMod: Module](
+       parent: var SharedModule[ParMod], name: cstring, child: var SharedModule[ChildMod])
+       {.importcpp: "#->register_module(@)".}
+  ## Register a submodule to a parent module.
+
+proc register_module*[ParMod: Module, ChildMod: Module](
+       parent: var SharedModule[ParMod], name: cstring, child: sink SharedModule[ChildMod]): SharedModule[ChildMod]
+       {.importcpp: "#->register_module(@)".}
+  ## Register a submodule to a parent module.
+
+proc register_parameter*[ParMod: Module](
+       parent: var SharedModule[ParMod], name: cstring, child: sink Tensor): Tensor
+       {.importcpp: "#->register_parameter(@)".}
   ## Register a submodule to a parent module.
 
 func parameters*(module: Module, recurse = true): CppVector[Tensor]{.importcpp: "#.parameters(#)".}
 
 func is_training*(module: Module): bool {.importcpp: "#.is_training()".}
 
-proc to*(module: Module, device: DeviceKind) {.importcpp: "#.to(#)".}
-proc to*(module: Module, device: Device) {.importcpp: "#.to(#)".}
+proc to*(module: ModuleHolder or SharedModule, device: DeviceKind) {.importcpp: "#->to(#)".}
+proc to*(module: ModuleHolder or SharedModule, device: Device) {.importcpp: "#->to(#)".}
 
-func train*(module: var Module, on = true) {.importcpp: "#.train(#)".}
+func train*(module: var ModuleHolder or SharedModule, on = true) {.importcpp: "#->train(#)".}
   ## Enable training mode
 
-func eval*(module: var Module) {.importcpp: "#.eval()".}
+func eval*(module: var Module or SharedModule) {.importcpp: "#->eval()".}
   ## Enable evaluation mode
 
 # Linear layer
@@ -206,7 +234,7 @@ func eval*(module: var Module) {.importcpp: "#.eval()".}
 type
   LinearOptions* {.bycopy, importcpp: "torch::nn::LinearOptions".} = object
 
-  Linear* {.pure, bycopy, importcpp: "torch::nn::Linear".} = object of Module
+  Linear* {.pure, bycopy, importcpp: "torch::nn::Linear".} = object of ModuleHolder
     # Linear is a shared_ptr underneath.
     # The ptr is bycopy which results in the actual data being byref.
     options*{.importc.}: LinearOptions
@@ -236,7 +264,7 @@ func forward*(linear: Linear, input: Tensor): Tensor {.importcpp: "#->forward(#)
 type
   Conv2dOptions* {.bycopy, importcpp: "torch::nn::Conv2dOptions".} = object
 
-  Conv2d* {.pure, bycopy, importcpp: "torch::nn::Conv2d".} = object of Module
+  Conv2d* {.pure, bycopy, importcpp: "torch::nn::Conv2d".} = object of ModuleHolder
     # Conv2d is a shared_ptr underneath.
     # The ptr is bycopy which results in the actual data being byref.
     options*{.importc.}: Conv2DOptions
@@ -268,11 +296,11 @@ func forward*(conv2d: Conv2d, input: Tensor): Tensor {.importcpp: "#->forward(#)
 type
   DropoutOptions* {.bycopy, importcpp: "torch::nn::DropoutOptions".} = object
 
-  Dropout* {.pure, bycopy, importcpp: "torch::nn::Dropout".} = object of Module
+  Dropout* {.pure, bycopy, importcpp: "torch::nn::Dropout".} = object of ModuleHolder
     options*{.importc.}: DropoutOptions
-  Dropout2d* {.pure, bycopy, importcpp: "torch::nn::Dropout2d".} = object of Module
+  Dropout2d* {.pure, bycopy, importcpp: "torch::nn::Dropout2d".} = object of ModuleHolder
     options*{.importc.}: DropoutOptions
-  Dropout3d* {.pure, bycopy, importcpp: "torch::nn::Dropout3d".} = object of Module
+  Dropout3d* {.pure, bycopy, importcpp: "torch::nn::Dropout3d".} = object of ModuleHolder
     options*{.importc.}: DropoutOptions
 
   SomeDropout* = Dropout or Dropout2d or Dropout3d
