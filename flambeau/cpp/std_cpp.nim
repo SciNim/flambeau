@@ -79,6 +79,25 @@ macro `.()`*[T](p: CppUniquePtr[T] or CppSharedPtr[T], fieldOrFunc: untyped, arg
   )
   copyChildrenTo(args, result)
 
+macro `.`*[T](p: CppUniquePtr[T] or CppSharedPtr[T], fieldOrFunc: untyped, args: varargs[untyped]): untyped =
+  result = nnkDotExpr.newTree(
+      newCall(bindSym"deref", p),
+      fieldOrFunc
+    )
+  #echo result.repr
+  #copyChildrenTo(args, result)
+
+macro `.=`*[T](p: CppUniquePtr[T] or CppSharedPtr[T], fieldOrFunc: untyped, args: untyped): untyped =
+  result = newAssignment(
+    nnkDotExpr.newTree(
+      newCall(bindSym"deref", p),
+      fieldOrFunc
+    ),
+    args
+  )
+  #echo result.repr
+  #copyChildrenTo(args, result)
+
 # std::vector<T>
 # -----------------------------------------------------------------------
 
