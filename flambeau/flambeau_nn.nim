@@ -42,5 +42,9 @@ export std_cpp, emitters
 # Convenience helpers
 # ----------------------------------------------------------------
 
-import ./flambeau/high_level/[indexing, interop]
-export indexing, interop
+import ./flambeau/high_level/[indexing, interop, moduleSugar]
+export indexing, interop, moduleSugar
+
+import ./flambeau/raw_bindings/c10
+export c10
+
