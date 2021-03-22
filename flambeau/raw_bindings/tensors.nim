@@ -380,6 +380,9 @@ func `+`*(a: Tensor, b: Tensor): Tensor {.importcpp: "(# + #)".}
 func `-`*(a: Tensor, b: Tensor): Tensor {.importcpp: "(# - #)".}
 func `*`*(a: Tensor, b: Tensor): Tensor {.importcpp: "(# * #)".}
 
+func `*`*(a: cfloat or cdouble, b: Tensor): Tensor {.importcpp: "(# * #)".}
+func `*`*(a: Tensor, b: cfloat or cdouble): Tensor {.importcpp: "(# * #)".}
+
 func `+=`*(a: var Tensor, b: Tensor) {.importcpp: "(# += #)".}
 func `+=`*(a: var Tensor, s: Scalar) {.importcpp: "(# += #)".}
 func `-=`*(a: var Tensor, b: Tensor) {.importcpp: "(# -= #)".}
