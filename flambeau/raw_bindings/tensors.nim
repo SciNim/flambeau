@@ -552,4 +552,9 @@ func fft*(t: Tensor): Tensor {.importcpp: "torch::fft_fft(@)".}
 func fft*(t: Tensor, n: int64, axis: int64 = -1): Tensor {.importcpp: "torch::fft_fft(@)".}
 func fft*(t: Tensor, n: int64, axis: int64 = -1, norm: CppString): Tensor {.importcpp: "torch::fft_fft(@)".}
 
+func fftn*(t: Tensor): Tensor {.importcpp: "torch::fft_fftn(@)".}
+func ifftn*(t: Tensor): Tensor {.importcpp: "torch::fft_ifftn(@)".}
+func fftshift*(t: Tensor): Tensor {.importcpp: "torch::fft_fftshift(@)".}
+func ifftshift*(t: Tensor): Tensor {.importcpp: "torch::fft_ifftshift(@)".}
+
 #func convolution*(t: Tensor, weight: Tensor, bias: Tensor, stride, padding, dilation: int64, transposed: bool, outputPadding: int64, groups: int64): Tensor {.importcpp: "torch::convolution(@)".}
