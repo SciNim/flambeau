@@ -424,6 +424,7 @@ func eq*(a, b: Tensor): Tensor {.importcpp: "#.eq(#)".}
 func equal*(a, b: Tensor): bool {.importcpp: "#.equal(#)".}
 template `==`*(a, b: Tensor): bool =
   a.equal(b)
+
 # Functions.h
 # -----------------------------------------------------------------------
 
@@ -474,6 +475,7 @@ func arange*(start, stop, step: Scalar, options: Device) {.importcpp: "torch::ar
 func arange*(start, stop, step: Scalar) {.importcpp: "torch::arange(@)"}
 
 # Operations
+# -----------------------------------------------------------------------
 func add*(t: Tensor, other: Tensor, alpha: Scalar = 1): Tensor {.importcpp: "#.add(@)".}
 func add*(t: Tensor, other: Scalar, alpha: Scalar = 1): Tensor {.importcpp: "#.add(@)".}
 func addmv*(t: Tensor, mat: Tensor, vec: Tensor, beta: Scalar = 1, alpha: Scalar = 1): Tensor {.importcpp: "#.addmv(@)".}
@@ -505,6 +507,7 @@ func argmin*(t: Tensor): Tensor {.importcpp: "#.argmin()".}
 func argmin*(t: Tensor, axis: int64, keepdim: bool = false): Tensor {.importcpp: "#.argmin(@)".}
 
 # aggregate
+# -----------------------------------------------------------------------
 
 # sum needs wrapper procs/templates to allow for using nim arrays and single axis.
 func sum*(t: Tensor): Tensor {.importcpp: "#.sum()".}
@@ -548,6 +551,7 @@ func stddev*(t: Tensor, axis: int64, unbiased: bool = true, keepdim: bool = fals
 func stddev*(t: Tensor, axis: IntArrayRef, unbiased: bool = true, keepdim: bool = false): Tensor {.importcpp: "#.std(@)".}
 
 # algorithms:
+# -----------------------------------------------------------------------
 
 func sort*(t: Tensor, axis: int64 = -1, descending: bool = false): CppTuple2[Tensor, Tensor] {.importcpp: "#.sort(@)".}
   ## Sorts the elements of the input tensor along a given dimension in ascending order by value.
@@ -557,6 +561,7 @@ func sort*(t: Tensor, axis: int64 = -1, descending: bool = false): CppTuple2[Ten
 func argsort*(t: Tensor, axis: int64 = -1, descending: bool = false): Tensor {.importcpp: "#.argsort(@)".}
 
 # math
+# -----------------------------------------------------------------------
 func abs*(t: Tensor): Tensor {.importcpp: "#.abs()".}
 func absolute*(t: Tensor): Tensor {.importcpp: "#.absolute()".}
 func angle*(t: Tensor): Tensor {.importcpp: "#.angle()".}
@@ -593,13 +598,91 @@ func squeeze*(t: Tensor): Tensor {.importcpp: "#.squeeze()".}
 func squeeze*(t: Tensor, axis: int64): Tensor {.importcpp: "#.squeeze(@)".}
 func unsqueeze*(t: Tensor, axis: int64): Tensor {.importcpp: "#.unsqueeze(@)".}
 
-func fft*(t: Tensor): Tensor {.importcpp: "torch::fft_fft(@)".}
-func fft*(t: Tensor, n: int64, axis: int64 = -1): Tensor {.importcpp: "torch::fft_fft(@)".}
-func fft*(t: Tensor, n: int64, axis: int64 = -1, norm: CppString): Tensor {.importcpp: "torch::fft_fft(@)".}
+# FFT
+# -----------------------------------------------------------------------
 
+func fft*(t: Tensor, n: int64, dim: int64 = -1, norm: CppString = "backward"): Tensor {.importcpp: "torch::fft_fft(@)".}
+## Compute the 1-D Fourier transform
+## ``n`` represents signal size. If given, each dimension dim[i] will either be zero padded or trimmed to the length s[i] before computing the FFT.
+## ``norm`` can be :
+##    * "forward" normalize by 1/n
+##    * "backward" no normalization
+##    * "ortho" normalize by 1/sqrt(n)
+func fft*(t: Tensor, n: int64, dim: int64 = -1): Tensor {.importcpp: "torch::fft_fft(@)".}
+## Compute the 1-D Fourier transform
+func fft*(t: Tensor): Tensor {.importcpp: "torch::fft_fft(@)".}
+## Compute the 1-D Fourier transform
+
+func ifft*(t: Tensor, n: int64, dim: int64 = -1, norm: CppString = "backward"): Tensor {.importcpp: "torch::ifft_ifft(@)".}
+## Compute the 1-D Fourier transform
+## ``norm`` can be :
+##   * "forward" - No normalization
+##   * "backward" - normalization by 1/n
+##   * "ortho" - normalization by 1/sqrt(n)
+func ifft*(t: Tensor, n: int64, dim: int64 = -1): Tensor {.importcpp: "torch::ifft_ifft(@)".}
+## Compute the 1-D Fourier transform
+func ifft*(t: Tensor): Tensor {.importcpp: "torch::ifft_ifft(@)".}
+## Compute the 1-D Fourier transform
+
+
+func fft2*(t: Tensor, s: IntArrayRef, dim: IntArrayRef, norm: CppString = "backward"): Tensor {.importcpp: "torch::fft_fft2(@)".}
+## Compute the 2-D Fourier transform
+## ``s`` represents signal size. If given, each dimension dim[i] will either be zero padded or trimmed to the length s[i] before computing the FFT.
+## ``norm`` can be :
+##    * "forward" normalize by 1/n
+##    * "backward" no normalization
+##    * "ortho" normalize by 1/sqrt(n)
+## With n the logical FFT size: ``n = prod(s)``.
+func fft2*(t: Tensor, s: IntArrayRef, dim: IntArrayRef): Tensor {.importcpp: "torch::fft_fft2(@)".}
+## Compute the 2-D Fourier transform
+## ``s`` represents signal size. If given, each dimension dim[i] will either be zero padded or trimmed to the length s[i] before computing the FFT.
+func fft2*(t: Tensor): Tensor {.importcpp: "torch::fft_fft2(@)".}
+## Compute the 2-D Fourier transform
+
+func ifft2*(t: Tensor, s: IntArrayRef, dim: IntArrayRef, norm: CppString = "backward"): Tensor {.importcpp: "torch::fft_ifft2(@)".}
+## Compute the 2-D Inverse Fourier transform
+## ``s`` represents signal size. If given, each dimension dim[i] will either be zero padded or trimmed to the length s[i] before computing the FFT.
+## ``norm`` can be :
+##   * "forward" - No normalization
+##   * "backward" - normalization by 1/n
+##   * "ortho" - normalization by 1/sqrt(n)
+## With n the logical FFT size: ``n = prod(s)``.
+func ifft2*(t: Tensor, s: IntArrayRef, dim: IntArrayRef): Tensor {.importcpp: "torch::fft_ifft2(@)".}
+## ``s`` represents signal size. If given, each dimension dim[i] will either be zero padded or trimmed to the length s[i] before computing the FFT.
+func ifft2*(t: Tensor): Tensor {.importcpp: "torch::fft_ifft2(@)".}
+
+func fftn*(t: Tensor, s: IntArrayRef, dim: IntArrayRef, norm: CppString = "backward"): Tensor {.importcpp: "torch::fft_fftn(@)".}
+## Compute the N-D Fourier transform
+## ``s`` represents signal size. If given, each dimension dim[i] will either be zero padded or trimmed to the length s[i] before computing the FFT.
+## ``norm`` can be :
+##    * "forward" normalize by 1/n
+##    * "backward" no normalization
+##    * "ortho" normalize by 1/sqrt(n)
+## With n the logical FFT size: ``n = prod(s)``.
+func fftn*(t: Tensor, s: IntArrayRef, dim: IntArrayRef): Tensor {.importcpp: "torch::fft_fftn(@)".}
+## Compute the N-D Fourier transform
+## ``s`` represents signal size. If given, each dimension dim[i] will either be zero padded or trimmed to the length s[i] before computing the FFT.
 func fftn*(t: Tensor): Tensor {.importcpp: "torch::fft_fftn(@)".}
+## Compute the N-D Fourier transform
+
+func ifftn*(t: Tensor, s: IntArrayRef, dim: IntArrayRef, norm: CppString = "backward"): Tensor {.importcpp: "torch::fft_ifftn(@)".}
+## Compute the N-D Inverse Fourier transform
+## ``s`` represents signal size. If given, each dimension dim[i] will either be zero padded or trimmed to the length s[i] before computing the FFT.
+## ``norm`` can be :
+##   * "forward" - No normalization
+##   * "backward" - normalization by 1/n
+##   * "ortho" - normalization by 1/sqrt(n)
+## With n the logical FFT size: ``n = prod(s)``.
+func ifftn*(t: Tensor, s: IntArrayRef, dim: IntArrayRef): Tensor {.importcpp: "torch::fft_ifftn(@)".}
+## Compute the N-D Inverse Fourier transform
+## ``s`` represents signal size. If given, each dimension dim[i] will either be zero padded or trimmed to the length s[i] before computing the FFT.
 func ifftn*(t: Tensor): Tensor {.importcpp: "torch::fft_ifftn(@)".}
+## Compute the N-D Inverse Fourier transform
+
+
 func fftshift*(t: Tensor): Tensor {.importcpp: "torch::fft_fftshift(@)".}
-func ifftshift*(t: Tensor): Tensor {.importcpp: "torch::fft_ifftshift(@)".}
+func fftshift*(t: Tensor, dim: IntArrayRef): Tensor {.importcpp: "torch::fft_ifftshift(@)".}
+func ifftshift*(t: Tensor): Tensor {.importcpp: "torch::fft_fftshift(@)".}
+func ifftshift*(t: Tensor, dim: IntArrayRef): Tensor {.importcpp: "torch::fft_ifftshift(@)".}
 
 #func convolution*(t: Tensor, weight: Tensor, bias: Tensor, stride, padding, dilation: int64, transposed: bool, outputPadding: int64, groups: int64): Tensor {.importcpp: "torch::convolution(@)".}

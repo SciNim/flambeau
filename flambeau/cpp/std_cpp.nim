@@ -18,6 +18,7 @@ import std/macros
 
 {.push header: "<string>".}
 
+# TODO : Use nim-cppstl ?
 type
   CppString* {.importcpp: "std::string", bycopy.} = object
 
@@ -25,7 +26,18 @@ func len*(s: CppString): int {.importcpp: "#.length()".}
   ## Returns the length of a C++ std::string
 func data*(s: CppString): ptr char {.importcpp: "const_cast<char*>(#.data())".}
   ## Returns a pointer to the raw data of a C++ std::string
-func cstring*(s: CppString): cstring {.importcpp: "#.c_str()"}
+func toCstring*(s: CppString): cstring {.importcpp: "#.c_str()".}
+
+proc initCppString*(s: cstring): CppString {.importcpp: "std::string(@)".}
+proc initCppString*(s: cstring, n: csize_t): CppString {.importcpp: "std::string(@)".}
+
+# Converter: cstring -> String
+# Used for fft norm
+converter CStringToCppString*(s: cstring): CppString {.inline.} = initCppString(s)
+
+# Converter: string -> String
+converter StringToCppString*(s: string): CppString = initCppString(s.cstring)
+
 
 {.pop.}
 
@@ -125,10 +137,10 @@ proc `[]`*[T](v: var CppVector[T], idx: int): var T{.importcpp: "#[#]", header: 
 
 {.push header: "<tuple>".}
 type
-  CppTuple2* [T0, T1] {.importcpp: "std::tuple".}= object
-  CppTuple3* [T0, T1, T2] {.importcpp: "std::tuple".} = object
-  CppTuple4* [T0, T1, T2, T3] {.importcpp: "std::tuple".} = object
-  CppTuple5* [T0, T1, T2, T3, T4] {.importcpp: "std::tuple".} = object
+  CppTuple2*[T0, T1] {.importcpp: "std::tuple".} = object
+  CppTuple3*[T0, T1, T2] {.importcpp: "std::tuple".} = object
+  CppTuple4*[T0, T1, T2, T3] {.importcpp: "std::tuple".} = object
+  CppTuple5*[T0, T1, T2, T3, T4] {.importcpp: "std::tuple".} = object
 
   CppTuple = CppTuple2|CppTuple3|CppTuple4|CppTuple5
 

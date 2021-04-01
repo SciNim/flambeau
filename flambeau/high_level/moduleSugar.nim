@@ -87,25 +87,24 @@ macro defModule*(s: untyped): untyped =
               @typeNameSection is (Ident(strVal: @typeName) | Postfix[Ident(strVal: "*"), Ident(strVal: @typeName)]),
               Pragma[all @pragmas]
             ]
-            _ 
+            _
             ObjectTy:
               _
               OfInherit:
                 Ident(strVal: "Module")
               @typeFields
         ):
-          echo "Jooooohooooooooo!!!!"
           var newFields = nnkRecList.newTree
           var builtinNets: seq[(string, string)]
           var customNets: seq[(string, string)] # (fieldName, typeName)
           var paramsList: seq[string]
-          var initParams: seq[(string, string, seq[NimNode], NetTypes)] # (fieldName, fieldType, params, custom) 
+          var initParams: seq[(string, string, seq[NimNode], NetTypes)] # (fieldName, fieldType, params, custom)
           for f in typeFields:
             let fieldNameSection = f[0]
             fieldNameSection.assertMatch(Ident(strVal: @fieldName) | Postfix[Ident(strVal: "*"), Ident(strVal: @fieldName)])
             if f[2].matches(Command[Ident(strVal: "custom"), @a] | Call[Ident(strVal: "custom"), @a]): # custom Linear or custom(Linear)
               if a.kind == nnkIdent: # fc1 = custom Linear
-                let typeName = a.strVal 
+                let typeName = a.strVal
                 customNets.add (fieldName, typeName)
                 initParams.add (fieldName, typeName, @[], netCustom)
                 newFields.add nnkIdentDefs.newTree(fieldNameSection, ident(typeName), newEmptyNode())
@@ -122,7 +121,7 @@ macro defModule*(s: untyped): untyped =
             else: # not custom net
               let callStmt = f[2]
               if callStmt.kind == nnkIdent: # fc1 = Linear
-                let typeName = callStmt.strVal 
+                let typeName = callStmt.strVal
                 builtinNets.add (fieldName, typeName)
                 initParams.add (fieldName, typeName, @[], netBuiltin)
                 newFields.add nnkIdentDefs.newTree(fieldNameSection, ident(typeName), newEmptyNode())
@@ -137,9 +136,9 @@ macro defModule*(s: untyped): untyped =
           var pragmaList = concat(pragmas, @[ident"pure", ident"importcpp"])
           var newPragma = newTree(nnkPragmaExpr, typeNameSection.changeTypeName(typeName & "Impl"), nnkPragma.newTree(pragmaList))
           newTypeDef[0] = newPragma
-          newTypeDef[2][2] = newFields          
+          newTypeDef[2][2] = newFields
           newTypeSection.add newTypeDef
-          
+
           # add typeName = CppSharedPtr[typeNameImpl]
           let pragma2 = newTree(nnkPragmaExpr, typeNameSection, nnkPragma.newTree(pragmas))
           var newSharedType = nnkTypeDef.newTree(
@@ -153,7 +152,6 @@ macro defModule*(s: untyped): untyped =
           newTypeSection.add newSharedType
           initProcs.add genInitProc(typeName, initParams)
         else:
-          echo "Noooooooooooo"
           newTypeSection.add tDef
       typeSections.add newTypeSection
     else:
@@ -165,4 +163,4 @@ macro defModule*(s: untyped): untyped =
   result.add emitSection
   result.add typeSections
   result.add initProcs
-  echo result.repr
+  # echo result.repr
