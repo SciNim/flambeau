@@ -614,15 +614,17 @@ func fft*(t: Tensor, n: int64, dim: int64 = -1, norm: CppString = "backward"): T
 ##    * "forward" normalize by 1/n
 ##    * "backward" no normalization
 ##    * "ortho" normalize by 1/sqrt(n)
+func fft*(t: Tensor, dim: int64 = -1, norm: CppString = "backward"): Tensor {.importcpp: "torch::fft_fft(@)".}
+## Compute the 1-D Fourier transform
 
-func ifft*(t: Tensor, n: int64, dim: int64 = -1, norm: CppString = "backward"): Tensor {.
-    importcpp: "torch::ifft_ifft(@)".}
+func ifft*(t: Tensor, n: int64, dim: int64 = -1, norm: CppString = "backward"): Tensor {.importcpp: "torch::ifft_ifft(@)".}
 ## Compute the 1-D Fourier transform
 ## ``norm`` can be :
 ##   * "forward" - No normalization
 ##   * "backward" - normalization by 1/n
 ##   * "ortho" - normalization by 1/sqrt(n)
-
+func ifft*(t: Tensor, dim: int64 = -1, norm: CppString = "backward"): Tensor {.importcpp: "torch::ifft_ifft(@)".}
+## Compute the 1-D Fourier transform
 
 func fft2*(t: Tensor, s: IntArrayRef, dim: IntArrayRef, norm: CppString = "backward"): Tensor {.
     importcpp: "torch::fft_fft2(@)".}
@@ -696,5 +698,91 @@ func fftshift*(t: Tensor): Tensor {.importcpp: "torch::fft_fftshift(@)".}
 func fftshift*(t: Tensor, dim: IntArrayRef): Tensor {.importcpp: "torch::fft_ifftshift(@)".}
 func ifftshift*(t: Tensor): Tensor {.importcpp: "torch::fft_fftshift(@)".}
 func ifftshift*(t: Tensor, dim: IntArrayRef): Tensor {.importcpp: "torch::fft_ifftshift(@)".}
+
+func rfft*(t: Tensor, n: int64, dim: int64 = -1, norm: CppString = "backward"): Tensor {.importcpp: "torch::fft_rfft".}
+## Computes the one dimensional Fourier transform of real-valued input.
+func rfft*(t: Tensor, dim: int64 = -1, norm: CppString = "backward"): Tensor {.importcpp: "torch::fft_rfft".}
+## Computes the one dimensional Fourier transform of real-valued input.
+
+func irfft*(t: Tensor, n: int64, dim: int64 = -1, norm: CppString = "backward"): Tensor {.importcpp: "torch::fft_irfft".}
+## Computes the one dimensional Fourier transform of real-valued input.
+func irfft*(t: Tensor, dim: int64 = -1, norm: CppString = "backward"): Tensor {.importcpp: "torch::fft_irfft".}
+## Computes the one dimensional Fourier transform of real-valued input.
+
+func rfft2*(t: Tensor, s: IntArrayRef, dim: IntArrayRef, norm: CppString = "backward"): Tensor {.importcpp: "torch::fft_rfft2(@)".}
+## Compute the N-D Fourier transform
+## ``s`` represents signal size. If given, each dimension dim[i] will either be zero padded or trimmed to the length s[i] before computing the FFT.
+## ``norm`` can be :
+##    * "forward" normalize by 1/n
+##    * "backward" no normalization
+##    * "ortho" normalize by 1/sqrt(n)
+## With n the logical FFT size: ``n = prod(s)``.
+func rfft2*(t: Tensor, s: IntArrayRef, norm: CppString = "backward"): Tensor {.importcpp: "torch::fft_rfft2(@)".}
+## Compute the N-D Fourier transform
+## ``s`` represents signal size. If given, each dimension dim[i] will either be zero padded or trimmed to the length s[i] before computing the FFT.
+func rfft2*(t: Tensor, dim: IntArrayRef, norm: CppString = "backward"): Tensor {.importcpp: "torch::fft_rfft2(@)".}
+## Compute the N-D Fourier transform
+func rfft2*(t: Tensor, norm: CppString = "backward"): Tensor {.importcpp: "torch::fft_rfft2(@)".}
+## Compute the N-D Fourier transform
+
+func irfft2*(t: Tensor, s: IntArrayRef, dim: IntArrayRef, norm: CppString = "backward"): Tensor {.
+    importcpp: "torch::fft_irfft2(@)".}
+## Compute the N-D Inverse Fourier transform
+## ``s`` represents signal size. If given, each dimension dim[i] will either be zero padded or trimmed to the length s[i] before computing the FFT.
+## ``norm`` can be :
+##   * "forward" - No normalization
+##   * "backward" - normalization by 1/n
+##   * "ortho" - normalization by 1/sqrt(n)
+## With n the logical FFT size: ``n = prod(s)``.
+func irfft2*(t: Tensor, s: IntArrayRef, norm: CppString = "backward"): Tensor {.importcpp: "torch::fft_irfft2(@)".}
+## Compute the N-D Inverse Fourier transform
+## ``s`` represents signal size. If given, each dimension dim[i] will either be zero padded or trimmed to the length s[i] before computing the FFT.
+func irfft2*(t: Tensor, dim: IntArrayRef, norm: CppString = "backward"): Tensor {.importcpp: "torch::fft_irfft2(@)".}
+## Compute the N-D Inverse Fourier transform
+func irfft2*(t: Tensor, norm: CppString = "backward"): Tensor {.importcpp: "torch::fft_irfft2(@)".}
+## Compute the N-D Inverse Fourier transform
+
+
+func rfftn*(t: Tensor, s: IntArrayRef, dim: IntArrayRef, norm: CppString = "backward"): Tensor {.importcpp: "torch::fft_rfftn(@)".}
+## Compute the N-D Fourier transform
+## ``s`` represents signal size. If given, each dimension dim[i] will either be zero padded or trimmed to the length s[i] before computing the FFT.
+## ``norm`` can be :
+##    * "forward" normalize by 1/n
+##    * "backward" no normalization
+##    * "ortho" normalize by 1/sqrt(n)
+## With n the logical FFT size: ``n = prod(s)``.
+func rfftn*(t: Tensor, s: IntArrayRef, norm: CppString = "backward"): Tensor {.importcpp: "torch::fft_rfftn(@)".}
+## Compute the N-D Fourier transform
+## ``s`` represents signal size. If given, each dimension dim[i] will either be zero padded or trimmed to the length s[i] before computing the FFT.
+func rfftn*(t: Tensor, dim: IntArrayRef, norm: CppString = "backward"): Tensor {.importcpp: "torch::fft_rfftn(@)".}
+## Compute the N-D Fourier transform
+func rfftn*(t: Tensor, norm: CppString = "backward"): Tensor {.importcpp: "torch::fft_rfftn(@)".}
+## Compute the N-D Fourier transform
+
+func irfftn*(t: Tensor, s: IntArrayRef, dim: IntArrayRef, norm: CppString = "backward"): Tensor {.
+    importcpp: "torch::fft_irfftn(@)".}
+## Compute the N-D Inverse Fourier transform
+## ``s`` represents signal size. If given, each dimension dim[i] will either be zero padded or trimmed to the length s[i] before computing the FFT.
+## ``norm`` can be :
+##   * "forward" - No normalization
+##   * "backward" - normalization by 1/n
+##   * "ortho" - normalization by 1/sqrt(n)
+## With n the logical FFT size: ``n = prod(s)``.
+func irfftn*(t: Tensor, s: IntArrayRef, norm: CppString = "backward"): Tensor {.importcpp: "torch::fft_irfftn(@)".}
+## Compute the N-D Inverse Fourier transform
+## ``s`` represents signal size. If given, each dimension dim[i] will either be zero padded or trimmed to the length s[i] before computing the FFT.
+func irfftn*(t: Tensor, dim: IntArrayRef, norm: CppString = "backward"): Tensor {.importcpp: "torch::fft_irfftn(@)".}
+## Compute the N-D Inverse Fourier transform
+func irfftn*(t: Tensor, norm: CppString = "backward"): Tensor {.importcpp: "torch::fft_irfftn(@)".}
+## Compute the N-D Inverse Fourier transform
+
+func hfft*(t: Tensor, n: int64, dim: int64 = -1, norm: CppString = "backward") : Tensor {.importcpp: "torch::hfft".}
+## Computes the 1 dimensional FFT of a onesided Hermitian signal.
+func hfft*(t: Tensor, dim: int64 = -1, norm: CppString = "backward") : Tensor {.importcpp: "torch::hfft".}
+## Computes the 1 dimensional FFT of a onesided Hermitian signal.
+func ihfft*(t: Tensor, n: int64, dim: int64 = -1, norm: CppString = "backward") : Tensor {.importcpp: "torch::ihfft".}
+## Computes the inverse FFT of a real-valued Fourier domain signal.
+func ihfft*(t: Tensor, dim: int64 = -1, norm: CppString = "backward") : Tensor {.importcpp: "torch::ihfft".}
+## Computes the inverse FFT of a real-valued Fourier domain signal.
 
 #func convolution*(t: Tensor, weight: Tensor, bias: Tensor, stride, padding, dilation: int64, transposed: bool, outputPadding: int64, groups: int64): Tensor {.importcpp: "torch::convolution(@)".}
