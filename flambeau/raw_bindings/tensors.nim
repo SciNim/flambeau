@@ -273,6 +273,19 @@ func random_mut*(a: var Tensor, start, stopEx: int64) {.importcpp: "#.random_(@)
 func randint*(start, stopEx: int64): Tensor {.varargs, importcpp: "torch::randint(#, #, {@})".}
 func randint*(start, stopEx: int64, size: IntArrayRef): Tensor {.importcpp: "torch::randint(@)".}
 
+func rand_like*(t: Tensor, options: TensorOptions): Tensor {.importcpp: "torch::rand_like(@)"}
+func rand_like*(t: Tensor, options: ScalarKind): Tensor {.importcpp: "torch::rand_like(@)"}
+func rand_like*(t: Tensor, options: DeviceKind): Tensor {.importcpp: "torch::rand_like(@)"}
+func rand_like*(t: Tensor, options: Device): Tensor {.importcpp: "torch::rand_like(@)"}
+func rand_like*(t: Tensor): Tensor {.importcpp: "torch::rand_like(@)"}
+
+
+# func rand*(size: IntArrayRef, options: TensorOptions): Tensor {.importcpp: "torch::rand(@)"}
+func rand*(size: IntArrayRef, options: ScalarKind): Tensor {.importcpp: "torch::rand(@)"}
+# func rand*(size: IntArrayRef, options: DeviceKind): Tensor {.importcpp: "torch::rand(@)"}
+# func rand*(size: IntArrayRef, options: Device): Tensor {.importcpp: "torch::rand(@)"}
+func rand*(size: IntArrayRef): Tensor {.importcpp: "torch::rand(@)"}
+
 # Indexing
 # -----------------------------------------------------------------------
 # libtorch/include/ATen/TensorIndexing.h
@@ -429,6 +442,38 @@ func zeros*(dim: IntArrayRef, options: TensorOptions): Tensor {.importcpp: "torc
 func zeros*(dim: IntArrayRef, scalarKind: ScalarKind): Tensor {.importcpp: "torch::zeros(@)".}
 func zeros*(dim: IntArrayRef, device: DeviceKind): Tensor {.importcpp: "torch::zeros(@)".}
 
+func linspace*(start, stop: Scalar, steps: int64, options: TensorOptions) {.importcpp: "#.linspace(@)".}
+func linspace*(start, stop: Scalar, steps: int64, options: ScalarKind) {.importcpp: "#.linspace(@)".}
+func linspace*(start, stop: Scalar, steps: int64, options: DeviceKind) {.importcpp: "#.linspace(@)".}
+func linspace*(start, stop: Scalar, steps: int64, options: Device) {.importcpp: "#.linspace(@)".}
+func linspace*(start, stop: Scalar, steps: int64) {.importcpp: "torch::linspace(@)".}
+func linspace*(start, stop: Scalar) {.importcpp: "torch::linspace(@)".}
+
+func logspace*(start, stop: Scalar, steps, base: int64, options: TensorOptions) {.importcpp: "torch::logspace(@)".}
+func logspace*(start, stop: Scalar, steps, base: int64, options: ScalarKind) {.importcpp: "torch::logspace(@)".}
+func logspace*(start, stop: Scalar, steps, base: int64, options: DeviceKind) {.importcpp: "torch::logspace(@)".}
+func logspace*(start, stop: Scalar, steps, base: int64, options: Device) {.importcpp: "torch::logspace(@)".}
+func logspace*(start, stop: Scalar, steps, base: int64) {.importcpp: "torch::logspace(@)".}
+func logspace*(start, stop: Scalar, steps: int64) {.importcpp: "torch::logspace(@)".}
+func logspace*(start, stop: Scalar) {.importcpp: "torch::logspace(@)".}
+
+func arange*(stop: Scalar, options: TensorOptions) {.importcpp: "torch::arange(@)"}
+func arange*(stop: Scalar, options: ScalarKind) {.importcpp: "torch::arange(@)"}
+func arange*(stop: Scalar, options: DeviceKind) {.importcpp: "torch::arange(@)"}
+func arange*(stop: Scalar, options: Device) {.importcpp: "torch::arange(@)"}
+func arange*(stop: Scalar) {.importcpp: "torch::arange(@)"}
+func arange*(start, stop: Scalar, options: TensorOptions) {.importcpp: "torch::arange(@)"}
+func arange*(start, stop: Scalar, options: ScalarKind) {.importcpp: "torch::arange(@)"}
+func arange*(start, stop: Scalar, options: DeviceKind) {.importcpp: "torch::arange(@)"}
+func arange*(start, stop: Scalar, options: Device) {.importcpp: "torch::arange(@)"}
+func arange*(start, stop: Scalar) {.importcpp: "torch::arange(@)"}
+func arange*(start, stop, step: Scalar, options: TensorOptions) {.importcpp: "torch::arange(@)"}
+func arange*(start, stop, step: Scalar, options: ScalarKind) {.importcpp: "torch::arange(@)"}
+func arange*(start, stop, step: Scalar, options: DeviceKind) {.importcpp: "torch::arange(@)"}
+func arange*(start, stop, step: Scalar, options: Device) {.importcpp: "torch::arange(@)"}
+func arange*(start, stop, step: Scalar) {.importcpp: "torch::arange(@)"}
+
+# Operations
 func add*(t: Tensor, other: Tensor, alpha: Scalar = 1): Tensor {.importcpp: "#.add(@)".}
 func add*(t: Tensor, other: Scalar, alpha: Scalar = 1): Tensor {.importcpp: "#.add(@)".}
 func addmv*(t: Tensor, mat: Tensor, vec: Tensor, beta: Scalar = 1, alpha: Scalar = 1): Tensor {.importcpp: "#.addmv(@)".}
