@@ -47,18 +47,18 @@ type Torch* = object
 # Random Number Generation
 # -----------------------------------------------------------------------
 
-proc manual_seed*(_: type Torch, seed: uint64) {.sideeffect, importcpp:"torch::manual_seed(@)".}
+proc manual_seed*(_: type Torch, seed: uint64) {.sideeffect, importcpp: "torch::manual_seed(@)".}
   ## Set torch random number generator seed
 
 # Backends
 # -----------------------------------------------------------------------
 
-proc hasCuda*(_: type Torch): bool{.sideeffect, importcpp:"torch::hasCuda()".}
+proc hasCuda*(_: type Torch): bool{.sideeffect, importcpp: "torch::hasCuda()".}
   ## Returns true if libtorch was compiled with CUDA support
-proc cuda_is_available*(_: type Torch): bool{.sideeffect, importcpp:"torch::cuda::is_available()".}
+proc cuda_is_available*(_: type Torch): bool{.sideeffect, importcpp: "torch::cuda::is_available()".}
   ## Returns true if libtorch was compiled with CUDA support
   ## and at least one CUDA device is available
-proc cudnn_is_available*(_: type Torch): bool {.sideeffect, importcpp:"torch::cuda::cudnn_is_available()".}
+proc cudnn_is_available*(_: type Torch): bool {.sideeffect, importcpp: "torch::cuda::cudnn_is_available()".}
   ## Returns true if libtorch was compiled with CUDA and CuDNN support
   ## and at least one CUDA device is available
 
@@ -104,22 +104,22 @@ func init*(T: type Device, kind: DeviceKind): T {.constructor, importcpp: "torch
 type
   ScalarKind* {.importc: "torch::ScalarType",
                 size: sizeof(int8).} = enum
-    kUint8 = 0 # kByte
-    kInt8 = 1 # kChar
-    kInt16 = 2 # kShort
-    kInt32 = 3 # kInt
-    kInt64 = 4 # kLong
-    kFloat16 = 5 # kHalf
-    kFloat32 = 6 # kFloat
-    kFloat64 = 7 # kDouble
-    kComplexF16 = 8 # kComplexHalf
-    kComplexF32 = 9 # kComplexFloat
+    kUint8 = 0       # kByte
+    kInt8 = 1        # kChar
+    kInt16 = 2       # kShort
+    kInt32 = 3       # kInt
+    kInt64 = 4       # kLong
+    kFloat16 = 5     # kHalf
+    kFloat32 = 6     # kFloat
+    kFloat64 = 7     # kDouble
+    kComplexF16 = 8  # kComplexHalf
+    kComplexF32 = 9  # kComplexFloat
     kComplexF64 = 10 # kComplexDouble
     kBool = 11
-    kQint8 = 12 # Quantized int8
-    kQuint8 = 13 # Quantized uint8
-    kQint32 = 14 # Quantized int32
-    kBfloat16 = 15 # Brain float16
+    kQint8 = 12      # Quantized int8
+    kQuint8 = 13     # Quantized uint8
+    kQint32 = 14     # Quantized int32
+    kBfloat16 = 15   # Brain float16
 
 
   SomeTorchType* = uint8|byte or SomeSignedInt or
@@ -132,7 +132,7 @@ type
 type
   TensorOptions* {.importcpp: "torch::TensorOptions", bycopy.} = object
 
-func init*(T: type TensorOptions): TensorOptions {.constructor,importcpp: "torch::TensorOptions".}
+func init*(T: type TensorOptions): TensorOptions {.constructor, importcpp: "torch::TensorOptions".}
 
 # Scalars
 # -----------------------------------------------------------------------
@@ -178,9 +178,9 @@ func is_same*(a, b: Tensor): bool {.importcpp: "#.is_same(#)".}
   ## Reference equality
   ## Do the tensors use the same memory.
 
-func sizes*(a: Tensor): IntArrayRef {.importcpp:"#.sizes()".}
+func sizes*(a: Tensor): IntArrayRef {.importcpp: "#.sizes()".}
   ## This is Arraymancer and Numpy "shape"
-func strides*(a: Tensor): IntArrayRef {.importcpp:"#.strides()".}
+func strides*(a: Tensor): IntArrayRef {.importcpp: "#.strides()".}
 
 func ndimension*(t: Tensor): int64 {.importcpp: "#.ndimension()".}
 func nbytes*(t: Tensor): uint {.importcpp: "#.nbytes()".}
@@ -234,7 +234,7 @@ func scalarType*(t: Tensor): ScalarKind {.importcpp: "#.scalar_type()".}
 
 # DeviceType and ScalarType are auto-convertible to TensorOptions
 
-func init*(T: type Tensor): Tensor {.constructor,importcpp: "torch::Tensor".}
+func init*(T: type Tensor): Tensor {.constructor, importcpp: "torch::Tensor".}
 
 func from_blob*(data: pointer, sizes: IntArrayRef, options: TensorOptions): Tensor {.importcpp: "torch::from_blob(@)".}
 func from_blob*(data: pointer, sizes: IntArrayRef, scalarKind: ScalarKind): Tensor {.importcpp: "torch::from_blob(@)".}
@@ -244,17 +244,20 @@ func from_blob*(data: pointer, sizes: int64, options: TensorOptions): Tensor {.i
 func from_blob*(data: pointer, sizes: int64, scalarKind: ScalarKind): Tensor {.importcpp: "torch::from_blob(@)".}
 func from_blob*(data: pointer, sizes: int64, device: DeviceKind): Tensor {.importcpp: "torch::from_blob(@)".}
 
-func from_blob*(data: pointer, sizes, strides: IntArrayRef, options: TensorOptions): Tensor {.importcpp: "torch::from_blob(@)".}
-func from_blob*(data: pointer, sizes, strides: IntArrayRef, scalarKind: ScalarKind): Tensor {.importcpp: "torch::from_blob(@)".}
-func from_blob*(data: pointer, sizes, strides: IntArrayRef, device: DeviceKind): Tensor {.importcpp: "torch::from_blob(@)".}
+func from_blob*(data: pointer, sizes, strides: IntArrayRef, options: TensorOptions): Tensor {.
+    importcpp: "torch::from_blob(@)".}
+func from_blob*(data: pointer, sizes, strides: IntArrayRef, scalarKind: ScalarKind): Tensor {.
+    importcpp: "torch::from_blob(@)".}
+func from_blob*(data: pointer, sizes, strides: IntArrayRef, device: DeviceKind): Tensor {.
+    importcpp: "torch::from_blob(@)".}
 
-func empty*(size: IntArrayRef, options: TensorOptions): Tensor {.importcpp:"torch::empty(@)"}
+func empty*(size: IntArrayRef, options: TensorOptions): Tensor {.importcpp: "torch::empty(@)".}
   ## Create an uninitialized tensor of shape `size`
   ## The tensor data must be filled manually
   ##
   ## The output tensor will be row major (C contiguous)
-func empty*(size: IntArrayRef, scalarKind: ScalarKind): Tensor {.importcpp:"torch::empty(@)"}
-func empty*(size: IntArrayRef, device: DeviceKind): Tensor {.importcpp:"torch::empty(@)"}
+func empty*(size: IntArrayRef, scalarKind: ScalarKind): Tensor {.importcpp: "torch::empty(@)".}
+func empty*(size: IntArrayRef, device: DeviceKind): Tensor {.importcpp: "torch::empty(@)".}
   ## Create an uninitialized tensor of shape `size`
   ## The tensor data must be filled manually.
   ##
@@ -273,18 +276,18 @@ func random_mut*(a: var Tensor, start, stopEx: int64) {.importcpp: "#.random_(@)
 func randint*(start, stopEx: int64): Tensor {.varargs, importcpp: "torch::randint(#, #, {@})".}
 func randint*(start, stopEx: int64, size: IntArrayRef): Tensor {.importcpp: "torch::randint(@)".}
 
-func rand_like*(t: Tensor, options: TensorOptions): Tensor {.importcpp: "torch::rand_like(@)"}
-func rand_like*(t: Tensor, options: ScalarKind): Tensor {.importcpp: "torch::rand_like(@)"}
-func rand_like*(t: Tensor, options: DeviceKind): Tensor {.importcpp: "torch::rand_like(@)"}
-func rand_like*(t: Tensor, options: Device): Tensor {.importcpp: "torch::rand_like(@)"}
-func rand_like*(t: Tensor): Tensor {.importcpp: "torch::rand_like(@)"}
+func rand_like*(t: Tensor, options: TensorOptions): Tensor {.importcpp: "torch::rand_like(@)".}
+func rand_like*(t: Tensor, options: ScalarKind): Tensor {.importcpp: "torch::rand_like(@)".}
+func rand_like*(t: Tensor, options: DeviceKind): Tensor {.importcpp: "torch::rand_like(@)".}
+func rand_like*(t: Tensor, options: Device): Tensor {.importcpp: "torch::rand_like(@)".}
+func rand_like*(t: Tensor): Tensor {.importcpp: "torch::rand_like(@)".}
 
 
 # func rand*(size: IntArrayRef, options: TensorOptions): Tensor {.importcpp: "torch::rand(@)"}
-func rand*(size: IntArrayRef, options: ScalarKind): Tensor {.importcpp: "torch::rand(@)"}
+func rand*(size: IntArrayRef, options: ScalarKind): Tensor {.importcpp: "torch::rand(@)".}
 # func rand*(size: IntArrayRef, options: DeviceKind): Tensor {.importcpp: "torch::rand(@)"}
 # func rand*(size: IntArrayRef, options: Device): Tensor {.importcpp: "torch::rand(@)"}
-func rand*(size: IntArrayRef): Tensor {.importcpp: "torch::rand(@)"}
+func rand*(size: IntArrayRef): Tensor {.importcpp: "torch::rand(@)".}
 
 # Indexing
 # -----------------------------------------------------------------------
@@ -318,13 +321,16 @@ func index_put*(a: var Tensor, i0, i1: auto, val: Scalar or Tensor) {.importcpp:
 func index_put*(a: var Tensor, i0, i1, i2: auto, val: Scalar or Tensor) {.importcpp: "#.index_put_({#, #, #}, #)".}
   ## Tensor mutation at index. It is recommended
   ## to Nimify this in a high-level wrapper.
-func index_put*(a: var Tensor, i0, i1, i2, i3: auto, val: Scalar or Tensor) {.importcpp: "#.index_put_({#, #, #, #}, #)".}
+func index_put*(a: var Tensor, i0, i1, i2, i3: auto, val: Scalar or Tensor) {.
+    importcpp: "#.index_put_({#, #, #, #}, #)".}
   ## Tensor mutation at index. It is recommended
   ## to Nimify this in a high-level wrapper.
-func index_put*(a: var Tensor, i0, i1, i2, i3, i4: auto, val: Scalar or Tensor) {.importcpp: "#.index_put_({#, #, #, #, #}, #)".}
+func index_put*(a: var Tensor, i0, i1, i2, i3, i4: auto, val: Scalar or Tensor) {.
+    importcpp: "#.index_put_({#, #, #, #, #}, #)".}
   ## Tensor mutation at index. It is recommended
   ## to Nimify this in a high-level wrapper.
-func index_put*(a: var Tensor, i0, i1, i2, i3, i4, i5: auto, val: Scalar or Tensor) {.importcpp: "#.index_put_({#, #, #, #, #, #}, #)".}
+func index_put*(a: var Tensor, i0, i1, i2, i3, i4, i5: auto, val: Scalar or Tensor) {.
+    importcpp: "#.index_put_({#, #, #, #, #, #}, #)".}
   ## Tensor mutation at index. It is recommended
   ## to Nimify this in a high-level wrapper.
 
@@ -458,21 +464,21 @@ func logspace*(start, stop: Scalar, steps, base: int64) {.importcpp: "torch::log
 func logspace*(start, stop: Scalar, steps: int64) {.importcpp: "torch::logspace(@)".}
 func logspace*(start, stop: Scalar) {.importcpp: "torch::logspace(@)".}
 
-func arange*(stop: Scalar, options: TensorOptions) {.importcpp: "torch::arange(@)"}
-func arange*(stop: Scalar, options: ScalarKind) {.importcpp: "torch::arange(@)"}
-func arange*(stop: Scalar, options: DeviceKind) {.importcpp: "torch::arange(@)"}
-func arange*(stop: Scalar, options: Device) {.importcpp: "torch::arange(@)"}
-func arange*(stop: Scalar) {.importcpp: "torch::arange(@)"}
-func arange*(start, stop: Scalar, options: TensorOptions) {.importcpp: "torch::arange(@)"}
-func arange*(start, stop: Scalar, options: ScalarKind) {.importcpp: "torch::arange(@)"}
-func arange*(start, stop: Scalar, options: DeviceKind) {.importcpp: "torch::arange(@)"}
-func arange*(start, stop: Scalar, options: Device) {.importcpp: "torch::arange(@)"}
-func arange*(start, stop: Scalar) {.importcpp: "torch::arange(@)"}
-func arange*(start, stop, step: Scalar, options: TensorOptions) {.importcpp: "torch::arange(@)"}
-func arange*(start, stop, step: Scalar, options: ScalarKind) {.importcpp: "torch::arange(@)"}
-func arange*(start, stop, step: Scalar, options: DeviceKind) {.importcpp: "torch::arange(@)"}
-func arange*(start, stop, step: Scalar, options: Device) {.importcpp: "torch::arange(@)"}
-func arange*(start, stop, step: Scalar) {.importcpp: "torch::arange(@)"}
+func arange*(stop: Scalar, options: TensorOptions) {.importcpp: "torch::arange(@)".}
+func arange*(stop: Scalar, options: ScalarKind) {.importcpp: "torch::arange(@)".}
+func arange*(stop: Scalar, options: DeviceKind) {.importcpp: "torch::arange(@)".}
+func arange*(stop: Scalar, options: Device) {.importcpp: "torch::arange(@)".}
+func arange*(stop: Scalar) {.importcpp: "torch::arange(@)".}
+func arange*(start, stop: Scalar, options: TensorOptions) {.importcpp: "torch::arange(@)".}
+func arange*(start, stop: Scalar, options: ScalarKind) {.importcpp: "torch::arange(@)".}
+func arange*(start, stop: Scalar, options: DeviceKind) {.importcpp: "torch::arange(@)".}
+func arange*(start, stop: Scalar, options: Device) {.importcpp: "torch::arange(@)".}
+func arange*(start, stop: Scalar) {.importcpp: "torch::arange(@)".}
+func arange*(start, stop, step: Scalar, options: TensorOptions) {.importcpp: "torch::arange(@)".}
+func arange*(start, stop, step: Scalar, options: ScalarKind) {.importcpp: "torch::arange(@)".}
+func arange*(start, stop, step: Scalar, options: DeviceKind) {.importcpp: "torch::arange(@)".}
+func arange*(start, stop, step: Scalar, options: Device) {.importcpp: "torch::arange(@)".}
+func arange*(start, stop, step: Scalar) {.importcpp: "torch::arange(@)".}
 
 # Operations
 # -----------------------------------------------------------------------
@@ -586,7 +592,7 @@ func exp*(t: Tensor): Tensor {.importcpp: "#.exp()".}
 func exp2*(t: Tensor): Tensor {.importcpp: "#.exp2()".}
 func erf*(t: Tensor): Tensor {.importcpp: "#.erf()".}
 func erfc*(t: Tensor): Tensor {.importcpp: "#.erfc()".}
-func reciprocal*(t: Tensor): Tensor {.importcpp: "#.reciprocal()"}
+func reciprocal*(t: Tensor): Tensor {.importcpp: "#.reciprocal()".}
 func neg*(t: Tensor): Tensor {.importcpp: "#.neg()".}
 func clamp*(t: Tensor, min, max: Scalar): Tensor {.importcpp: "#.clamp(@)".}
 func clampMin*(t: Tensor, min: Scalar): Tensor {.importcpp: "#.clamp_min(@)".}
@@ -608,24 +614,18 @@ func fft*(t: Tensor, n: int64, dim: int64 = -1, norm: CppString = "backward"): T
 ##    * "forward" normalize by 1/n
 ##    * "backward" no normalization
 ##    * "ortho" normalize by 1/sqrt(n)
-func fft*(t: Tensor, n: int64, dim: int64 = -1): Tensor {.importcpp: "torch::fft_fft(@)".}
-## Compute the 1-D Fourier transform
-func fft*(t: Tensor): Tensor {.importcpp: "torch::fft_fft(@)".}
-## Compute the 1-D Fourier transform
 
-func ifft*(t: Tensor, n: int64, dim: int64 = -1, norm: CppString = "backward"): Tensor {.importcpp: "torch::ifft_ifft(@)".}
+func ifft*(t: Tensor, n: int64, dim: int64 = -1, norm: CppString = "backward"): Tensor {.
+    importcpp: "torch::ifft_ifft(@)".}
 ## Compute the 1-D Fourier transform
 ## ``norm`` can be :
 ##   * "forward" - No normalization
 ##   * "backward" - normalization by 1/n
 ##   * "ortho" - normalization by 1/sqrt(n)
-func ifft*(t: Tensor, n: int64, dim: int64 = -1): Tensor {.importcpp: "torch::ifft_ifft(@)".}
-## Compute the 1-D Fourier transform
-func ifft*(t: Tensor): Tensor {.importcpp: "torch::ifft_ifft(@)".}
-## Compute the 1-D Fourier transform
 
 
-func fft2*(t: Tensor, s: IntArrayRef, dim: IntArrayRef, norm: CppString = "backward"): Tensor {.importcpp: "torch::fft_fft2(@)".}
+func fft2*(t: Tensor, s: IntArrayRef, dim: IntArrayRef, norm: CppString = "backward"): Tensor {.
+    importcpp: "torch::fft_fft2(@)".}
 ## Compute the 2-D Fourier transform
 ## ``s`` represents signal size. If given, each dimension dim[i] will either be zero padded or trimmed to the length s[i] before computing the FFT.
 ## ``norm`` can be :
@@ -633,13 +633,16 @@ func fft2*(t: Tensor, s: IntArrayRef, dim: IntArrayRef, norm: CppString = "backw
 ##    * "backward" no normalization
 ##    * "ortho" normalize by 1/sqrt(n)
 ## With n the logical FFT size: ``n = prod(s)``.
-func fft2*(t: Tensor, s: IntArrayRef, dim: IntArrayRef): Tensor {.importcpp: "torch::fft_fft2(@)".}
+func fft2*(t: Tensor, s: IntArrayRef, norm: CppString = "backward"): Tensor {.importcpp: "torch::fft_fft2(@)".}
 ## Compute the 2-D Fourier transform
 ## ``s`` represents signal size. If given, each dimension dim[i] will either be zero padded or trimmed to the length s[i] before computing the FFT.
-func fft2*(t: Tensor): Tensor {.importcpp: "torch::fft_fft2(@)".}
+func fft2*(t: Tensor, dim: IntArrayRef, norm: CppString = "backward"): Tensor {.importcpp: "torch::fft_fft2(@)".}
+## Compute the 2-D Fourier transform
+func fft2*(t: Tensor, norm: CppString = "backward"): Tensor {.importcpp: "torch::fft_fft2(@)".}
 ## Compute the 2-D Fourier transform
 
-func ifft2*(t: Tensor, s: IntArrayRef, dim: IntArrayRef, norm: CppString = "backward"): Tensor {.importcpp: "torch::fft_ifft2(@)".}
+func ifft2*(t: Tensor, s: IntArrayRef, dim: IntArrayRef, norm: CppString = "backward"): Tensor {.
+    importcpp: "torch::fft_ifft2(@)".}
 ## Compute the 2-D Inverse Fourier transform
 ## ``s`` represents signal size. If given, each dimension dim[i] will either be zero padded or trimmed to the length s[i] before computing the FFT.
 ## ``norm`` can be :
@@ -647,11 +650,16 @@ func ifft2*(t: Tensor, s: IntArrayRef, dim: IntArrayRef, norm: CppString = "back
 ##   * "backward" - normalization by 1/n
 ##   * "ortho" - normalization by 1/sqrt(n)
 ## With n the logical FFT size: ``n = prod(s)``.
-func ifft2*(t: Tensor, s: IntArrayRef, dim: IntArrayRef): Tensor {.importcpp: "torch::fft_ifft2(@)".}
+func ifft2*(t: Tensor, s: IntArrayRef, norm: CppString = "backward"): Tensor {.importcpp: "torch::fft_ifft2(@)".}
+## Compute the 2-D Inverse Fourier transform
 ## ``s`` represents signal size. If given, each dimension dim[i] will either be zero padded or trimmed to the length s[i] before computing the FFT.
-func ifft2*(t: Tensor): Tensor {.importcpp: "torch::fft_ifft2(@)".}
+func ifft2*(t: Tensor, dim: IntArrayRef, norm: CppString = "backward"): Tensor {.importcpp: "torch::fft_ifft2(@)".}
+## Compute the 2-D Inverse Fourier transform
+func ifft2*(t: Tensor, norm: CppString = "backward"): Tensor {.importcpp: "torch::fft_ifft2(@)".}
+## Compute the 2-D Inverse Fourier transform
 
-func fftn*(t: Tensor, s: IntArrayRef, dim: IntArrayRef, norm: CppString = "backward"): Tensor {.importcpp: "torch::fft_fftn(@)".}
+func fftn*(t: Tensor, s: IntArrayRef, dim: IntArrayRef, norm: CppString = "backward"): Tensor {.
+    importcpp: "torch::fft_fftn(@)".}
 ## Compute the N-D Fourier transform
 ## ``s`` represents signal size. If given, each dimension dim[i] will either be zero padded or trimmed to the length s[i] before computing the FFT.
 ## ``norm`` can be :
@@ -659,13 +667,16 @@ func fftn*(t: Tensor, s: IntArrayRef, dim: IntArrayRef, norm: CppString = "backw
 ##    * "backward" no normalization
 ##    * "ortho" normalize by 1/sqrt(n)
 ## With n the logical FFT size: ``n = prod(s)``.
-func fftn*(t: Tensor, s: IntArrayRef, dim: IntArrayRef): Tensor {.importcpp: "torch::fft_fftn(@)".}
+func fftn*(t: Tensor, s: IntArrayRef, norm: CppString = "backward"): Tensor {.importcpp: "torch::fft_fftn(@)".}
 ## Compute the N-D Fourier transform
 ## ``s`` represents signal size. If given, each dimension dim[i] will either be zero padded or trimmed to the length s[i] before computing the FFT.
-func fftn*(t: Tensor): Tensor {.importcpp: "torch::fft_fftn(@)".}
+func fftn*(t: Tensor, dim: IntArrayRef, norm: CppString = "backward"): Tensor {.importcpp: "torch::fft_fftn(@)".}
+## Compute the N-D Fourier transform
+func fftn*(t: Tensor, norm: CppString = "backward"): Tensor {.importcpp: "torch::fft_fftn(@)".}
 ## Compute the N-D Fourier transform
 
-func ifftn*(t: Tensor, s: IntArrayRef, dim: IntArrayRef, norm: CppString = "backward"): Tensor {.importcpp: "torch::fft_ifftn(@)".}
+func ifftn*(t: Tensor, s: IntArrayRef, dim: IntArrayRef, norm: CppString = "backward"): Tensor {.
+    importcpp: "torch::fft_ifftn(@)".}
 ## Compute the N-D Inverse Fourier transform
 ## ``s`` represents signal size. If given, each dimension dim[i] will either be zero padded or trimmed to the length s[i] before computing the FFT.
 ## ``norm`` can be :
@@ -673,12 +684,13 @@ func ifftn*(t: Tensor, s: IntArrayRef, dim: IntArrayRef, norm: CppString = "back
 ##   * "backward" - normalization by 1/n
 ##   * "ortho" - normalization by 1/sqrt(n)
 ## With n the logical FFT size: ``n = prod(s)``.
-func ifftn*(t: Tensor, s: IntArrayRef, dim: IntArrayRef): Tensor {.importcpp: "torch::fft_ifftn(@)".}
+func ifftn*(t: Tensor, s: IntArrayRef, norm: CppString = "backward"): Tensor {.importcpp: "torch::fft_ifftn(@)".}
 ## Compute the N-D Inverse Fourier transform
 ## ``s`` represents signal size. If given, each dimension dim[i] will either be zero padded or trimmed to the length s[i] before computing the FFT.
-func ifftn*(t: Tensor): Tensor {.importcpp: "torch::fft_ifftn(@)".}
+func ifftn*(t: Tensor, dim: IntArrayRef, norm: CppString = "backward"): Tensor {.importcpp: "torch::fft_ifftn(@)".}
 ## Compute the N-D Inverse Fourier transform
-
+func ifftn*(t: Tensor, norm: CppString = "backward"): Tensor {.importcpp: "torch::fft_ifftn(@)".}
+## Compute the N-D Inverse Fourier transform
 
 func fftshift*(t: Tensor): Tensor {.importcpp: "torch::fft_fftshift(@)".}
 func fftshift*(t: Tensor, dim: IntArrayRef): Tensor {.importcpp: "torch::fft_ifftshift(@)".}
