@@ -8,9 +8,8 @@
 import
   # Standard library
   std/complex,
-  # External
-  cppstl/string,
   # Internal
+  ../cpp/std_cpp,
   ../libtorch,
   ./c10
 
@@ -607,7 +606,7 @@ func unsqueeze*(t: Tensor, axis: int64): Tensor {.importcpp: "#.unsqueeze(@)".}
 
 # FFT
 # -----------------------------------------------------------------------
-const defaultNorm : CppString = initCppString("backward")
+let defaultNorm : CppString = initCppString("backward")
 func fft*(t: Tensor, n: int64, dim: int64 = -1, norm: CppString = defaultNorm): Tensor {.importcpp: "torch::fft_fft(@)".}
 ## Compute the 1-D Fourier transform
 ## ``n`` represents signal size. If given, each dimension dim[i] will either be zero padded or trimmed to the length s[i] before computing the FFT.
