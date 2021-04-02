@@ -641,11 +641,9 @@ func fft2*(t: Tensor, s: IntArrayRef, dim: IntArrayRef, norm: CppString = defaul
 ##    * "backward" - no normalization
 ##    * "ortho" - normalize by 1/sqrt(n)
 ## With n the logical FFT size: ``n = prod(s)``.
-func fft2*(t: Tensor, s, dim: IntArrayRef): Tensor {.importcpp: "torch::fft_fft2(@)".}
-## Compute the 2-D Fourier transform
-## ``s`` represents signal size. If given, each dimension dim[i] will either be zero padded or trimmed to the length s[i] before computing the FFT.
 func fft2*(t: Tensor, s: IntArrayRef): Tensor {.importcpp: "torch::fft_fft2(@)".}
 ## Compute the 2-D Fourier transform
+## ``s`` represents signal size. If given, each dimension dim[i] will either be zero padded or trimmed to the length s[i] before computing the FFT.
 func fft2*(t: Tensor): Tensor {.importcpp: "torch::fft_fft2(@)".}
 ## Compute the 2-D Fourier transform
 
@@ -658,11 +656,9 @@ func ifft2*(t: Tensor, s: IntArrayRef, dim: IntArrayRef, norm: CppString = defau
 ##   * "backward" - normalization by 1/n
 ##   * "ortho" - normalization by 1/sqrt(n)
 ## With n the logical FFT size: ``n = prod(s)``.
-func ifft2*(t: Tensor, s, dim: IntArrayRef): Tensor {.importcpp: "torch::fft_ifft2(@)".}
-## Compute the 2-D Inverse Fourier transform
-## ``s`` represents signal size. If given, each dimension dim[i] will either be zero padded or trimmed to the length s[i] before computing the FFT.
 func ifft2*(t: Tensor, s: IntArrayRef): Tensor {.importcpp: "torch::fft_ifft2(@)".}
 ## Compute the 2-D Inverse Fourier transform
+## ``s`` represents signal size. If given, each dimension dim[i] will either be zero padded or trimmed to the length s[i] before computing the FFT.
 func ifft2*(t: Tensor): Tensor {.importcpp: "torch::fft_ifft2(@)".}
 ## Compute the 2-D Inverse Fourier transform
 
@@ -674,11 +670,9 @@ func fftn*(t: Tensor, s: IntArrayRef, dim: IntArrayRef, norm: CppString = defaul
 ##    * "backward" - no normalization
 ##    * "ortho" normalize by 1/sqrt(n)
 ## With n the logical FFT size: ``n = prod(s)``.
-func fftn*(t: Tensor, s, dim: IntArrayRef): Tensor {.importcpp: "torch::fft_fftn(@)".}
-## Compute the N-D Fourier transform
-## ``s`` represents signal size. If given, each dimension dim[i] will either be zero padded or trimmed to the length s[i] before computing the FFT.
 func fftn*(t: Tensor, s: IntArrayRef): Tensor {.importcpp: "torch::fft_fftn(@)".}
 ## Compute the N-D Fourier transform
+## ``s`` represents signal size. If given, each dimension dim[i] will either be zero padded or trimmed to the length s[i] before computing the FFT.
 func fftn*(t: Tensor): Tensor {.importcpp: "torch::fft_fftn(@)".}
 ## Compute the N-D Fourier transform
 
@@ -690,11 +684,9 @@ func ifftn*(t: Tensor, s: IntArrayRef, dim: IntArrayRef, norm: CppString = defau
 ##   * "backward" - normalization by 1/n
 ##   * "ortho" - normalization by 1/sqrt(n)
 ## With n the logical FFT size: ``n = prod(s)``.
-func ifftn*(t: Tensor, s, dim: IntArrayRef): Tensor {.importcpp: "torch::fft_ifftn(@)".}
-## Compute the N-D Inverse Fourier transform
-## ``s`` represents signal size. If given, each dimension dim[i] will either be zero padded or trimmed to the length s[i] before computing the FFT.
 func ifftn*(t: Tensor, s: IntArrayRef): Tensor {.importcpp: "torch::fft_ifftn(@)".}
 ## Compute the N-D Inverse Fourier transform
+## ``s`` represents signal size. If given, each dimension dim[i] will either be zero padded or trimmed to the length s[i] before computing the FFT.
 func ifftn*(t: Tensor): Tensor {.importcpp: "torch::fft_ifftn(@)".}
 ## Compute the N-D Inverse Fourier transform
 
@@ -716,11 +708,9 @@ func rfft2*(t: Tensor, s: IntArrayRef, dim: IntArrayRef, norm: CppString = defau
 ##    * "backward" - no normalization
 ##    * "ortho" - normalize by 1/sqrt(n)
 ## With n the logical FFT size: ``n = prod(s)``.
-func rfft2*(t: Tensor, s, dim: IntArrayRef): Tensor {.importcpp: "torch::fft_rfft2(@)".}
-## Compute the N-D Fourier transform
-## ``s`` represents signal size. If given, each dimension dim[i] will either be zero padded or trimmed to the length s[i] before computing the FFT.
 func rfft2*(t: Tensor, s: IntArrayRef): Tensor {.importcpp: "torch::fft_rfft2(@)".}
 ## Compute the N-D Fourier transform
+## ``s`` represents signal size. If given, each dimension dim[i] will either be zero padded or trimmed to the length s[i] before computing the FFT.
 func rfft2*(t: Tensor): Tensor {.importcpp: "torch::fft_rfft2(@)".}
 ## Compute the N-D Fourier transform
 
@@ -733,11 +723,9 @@ func irfft2*(t: Tensor, s: IntArrayRef, dim: IntArrayRef, norm: CppString = defa
 ##   * "backward" - normalization by 1/n
 ##   * "ortho" - normalization by 1/sqrt(n)
 ## With n the logical FFT size: ``n = prod(s)``.
-func irfft2*(t: Tensor, s, dim: IntArrayRef): Tensor {.importcpp: "torch::fft_irfft2(@)".}
-## Compute the N-D Inverse Fourier transform
-## ``s`` represents signal size. If given, each dimension dim[i] will either be zero padded or trimmed to the length s[i] before computing the FFT.
 func irfft2*(t: Tensor, s: IntArrayRef): Tensor {.importcpp: "torch::fft_irfft2(@)".}
 ## Compute the N-D Inverse Fourier transform
+## ``s`` represents signal size. If given, each dimension dim[i] will either be zero padded or trimmed to the length s[i] before computing the FFT.
 func irfft2*(t: Tensor): Tensor {.importcpp: "torch::fft_irfft2(@)".}
 ## Compute the N-D Inverse Fourier transform
 
@@ -750,11 +738,9 @@ func rfftn*(t: Tensor, s: IntArrayRef, dim: IntArrayRef, norm: CppString = defau
 ##    * "backward" - no normalization
 ##    * "ortho" - normalize by 1/sqrt(n)
 ## With n the logical FFT size: ``n = prod(s)``.
-func rfftn*(t: Tensor, s, dim: IntArrayRef): Tensor {.importcpp: "torch::fft_rfftn(@)".}
-## Compute the N-D Fourier transform
-## ``s`` represents signal size. If given, each dimension dim[i] will either be zero padded or trimmed to the length s[i] before computing the FFT.
 func rfftn*(t: Tensor, s: IntArrayRef): Tensor {.importcpp: "torch::fft_rfftn(@)".}
 ## Compute the N-D Fourier transform
+## ``s`` represents signal size. If given, each dimension dim[i] will either be zero padded or trimmed to the length s[i] before computing the FFT.
 func rfftn*(t: Tensor): Tensor {.importcpp: "torch::fft_rfftn(@)".}
 ## Compute the N-D Fourier transform
 
@@ -767,11 +753,9 @@ func irfftn*(t: Tensor, s: IntArrayRef, dim: IntArrayRef, norm: CppString = defa
 ##   * "backward" - normalization by 1/n
 ##   * "ortho" - normalization by 1/sqrt(n)
 ## With n the logical FFT size: ``n = prod(s)``.
-func irfftn*(t: Tensor, s, dim: IntArrayRef): Tensor {.importcpp: "torch::fft_irfftn(@)".}
-## Compute the N-D Inverse Fourier transform
-## ``s`` represents signal size. If given, each dimension dim[i] will either be zero padded or trimmed to the length s[i] before computing the FFT.
 func irfftn*(t: Tensor, s: IntArrayRef): Tensor {.importcpp: "torch::fft_irfftn(@)".}
 ## Compute the N-D Inverse Fourier transform
+## ``s`` represents signal size. If given, each dimension dim[i] will either be zero padded or trimmed to the length s[i] before computing the FFT.
 func irfftn*(t: Tensor): Tensor {.importcpp: "torch::fft_irfftn(@)".}
 ## Compute the N-D Inverse Fourier transform
 
