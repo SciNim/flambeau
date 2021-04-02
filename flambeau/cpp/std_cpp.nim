@@ -26,7 +26,7 @@ func len*(s: CppString): int {.importcpp: "#.length()".}
   ## Returns the length of a C++ std::string
 func data*(s: CppString): ptr char {.importcpp: "const_cast<char*>(#.data())".}
   ## Returns a pointer to the raw data of a C++ std::string
-func toCstring*(s: CppString): cstring {.importcpp: "#.c_str()".}
+func c_str*(s: CppString): cstring {.importcpp: "#.c_str()".}
 
 proc initCppString*(s: cstring): CppString {.importcpp: "std::string(@)".}
 proc initCppString*(s: cstring, n: csize_t): CppString {.importcpp: "std::string(@)".}
