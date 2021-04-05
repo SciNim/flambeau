@@ -14,6 +14,7 @@ license       = "MIT or Apache License 2.0"
 ### Dependencies
 requires "nim >= 1.4.2"
 requires "zip"
+requires "cppstl"
 
 import os
 when defined(nimdistros):

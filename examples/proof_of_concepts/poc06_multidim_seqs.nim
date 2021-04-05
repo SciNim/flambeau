@@ -1,5 +1,7 @@
 import flambeau, std/math
 
+{.experimental: "views".} # TODO this is ignored
+
 const
     x = @[1, 2, 3, 4, 5]
     y = @[1, 2, 3, 4, 5]
