@@ -175,7 +175,7 @@ proc print*(self: Tensor) {.sideeffect, importcpp: "torch::print(@)".}
 func dim*(self: Tensor): int64 {.importcpp: "#.dim()".}
   ## Number of dimensions
 func reset*(self: var Tensor) {.importcpp: "#.reset()".}
-func is_same*(a, b: Tensor): bool {.importcpp: "#.is_same(#)".}
+func is_same*(self, other: Tensor): bool {.importcpp: "#.is_same(#)".}
   ## Reference equality
   ## Do the tensors use the same memory.
 
@@ -326,16 +326,13 @@ func index_put*(self: var Tensor, i0, i1: auto, val: Scalar or Tensor) {.importc
 func index_put*(self: var Tensor, i0, i1, i2: auto, val: Scalar or Tensor) {.importcpp: "#.index_put_({#, #, #}, #)".}
   ## Tensor mutation at index. It is recommended
   ## to Nimify this in a high-level wrapper.
-func index_put*(self: var Tensor, i0, i1, i2, i3: auto, val: Scalar or Tensor) {.
-    importcpp: "#.index_put_({#, #, #, #}, #)".}
+func index_put*(self: var Tensor, i0, i1, i2, i3: auto, val: Scalar or Tensor) {.importcpp: "#.index_put_({#, #, #, #}, #)".}
   ## Tensor mutation at index. It is recommended
   ## to Nimify this in a high-level wrapper.
-func index_put*(self: var Tensor, i0, i1, i2, i3, i4: auto, val: Scalar or Tensor) {.
-    importcpp: "#.index_put_({#, #, #, #, #}, #)".}
+func index_put*(self: var Tensor, i0, i1, i2, i3, i4: auto, val: Scalar or Tensor) {.importcpp: "#.index_put_({#, #, #, #, #}, #)".}
   ## Tensor mutation at index. It is recommended
   ## to Nimify this in a high-level wrapper.
-func index_put*(self: var Tensor, i0, i1, i2, i3, i4, i5: auto, val: Scalar or Tensor) {.
-    importcpp: "#.index_put_({#, #, #, #, #, #}, #)".}
+func index_put*(self: var Tensor, i0, i1, i2, i3, i4, i5: auto, val: Scalar or Tensor) {.importcpp: "#.index_put_({#, #, #, #, #, #}, #)".}
   ## Tensor mutation at index. It is recommended
   ## to Nimify this in a high-level wrapper.
 
