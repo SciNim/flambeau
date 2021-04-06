@@ -16,6 +16,8 @@ import flambeau, ../testutils
 import unittest, math
 import complex except Complex64, Complex32
 
+{.experimental: "views".} # TODO
+
 proc main() =
   suite "[Core] Testing aggregation functions":
     let t = [[0, 1, 2],

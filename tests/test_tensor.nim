@@ -77,15 +77,6 @@ proc main() =
     test "matmul, mm, bmm":
       discard
 
-  suite "Reduce":
-    test "min, max, argmin, argmax":
-      discard
-    test "sum, prod":
-      discard
-    test "mean, variance, stddev":
-      discard
-
-
   suite "FFT":
     test "fft, fft2, fftn":
       discard
@@ -95,6 +86,5 @@ proc main() =
       discard
     test "irfft, irfft2, irfftn":
       discard
-
 
 main()

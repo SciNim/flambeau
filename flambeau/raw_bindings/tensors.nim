@@ -297,6 +297,7 @@ func rand*(size: IntArrayRef): Tensor {.importcpp: "torch::rand(@)".}
 
 # Indexing
 # -----------------------------------------------------------------------
+# TODO throw IndexDefect when bounds checking is active
 # libtorch/include/ATen/TensorIndexing.h
 # and https://pytorch.org/cppdocs/notes/tensor_indexing.html
 

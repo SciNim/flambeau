@@ -16,6 +16,8 @@ requires "nim >= 1.4.2"
 requires "zip"
 requires "cppstl"
 
+backend = "cpp"
+
 import os
 when defined(nimdistros):
   import distros

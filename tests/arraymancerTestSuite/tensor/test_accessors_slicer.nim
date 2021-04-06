@@ -16,6 +16,8 @@ import flambeau, ../testutils
 import unittest, math
 import complex except Complex64, Complex32
 
+{.experimental: "views".} # TODO
+
 proc main() =
   suite "Testing indexing and slice syntax":
     const
