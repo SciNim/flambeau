@@ -452,36 +452,36 @@ func zeros*(dim: IntArrayRef, options: TensorOptions): Tensor {.importcpp: "torc
 func zeros*(dim: IntArrayRef, scalarKind: ScalarKind): Tensor {.importcpp: "torch::zeros(@)".}
 func zeros*(dim: IntArrayRef, device: DeviceKind): Tensor {.importcpp: "torch::zeros(@)".}
 
-func linspace*(start, stop: Scalar, steps: int64, options: TensorOptions) {.importcpp: "#.linspace(@)".}
-func linspace*(start, stop: Scalar, steps: int64, options: ScalarKind) {.importcpp: "#.linspace(@)".}
-func linspace*(start, stop: Scalar, steps: int64, options: DeviceKind) {.importcpp: "#.linspace(@)".}
-func linspace*(start, stop: Scalar, steps: int64, options: Device) {.importcpp: "#.linspace(@)".}
-func linspace*(start, stop: Scalar, steps: int64) {.importcpp: "torch::linspace(@)".}
-func linspace*(start, stop: Scalar) {.importcpp: "torch::linspace(@)".}
+func linspace*(start, stop: Scalar, steps: int64, options: TensorOptions) : Tensor {.importcpp: "#.linspace(@)".}
+func linspace*(start, stop: Scalar, steps: int64, options: ScalarKind) : Tensor {.importcpp: "#.linspace(@)".}
+func linspace*(start, stop: Scalar, steps: int64, options: DeviceKind) : Tensor {.importcpp: "#.linspace(@)".}
+func linspace*(start, stop: Scalar, steps: int64, options: Device) : Tensor {.importcpp: "#.linspace(@)".}
+func linspace*(start, stop: Scalar, steps: int64) : Tensor {.importcpp: "torch::linspace(@)".}
+func linspace*(start, stop: Scalar) : Tensor {.importcpp: "torch::linspace(@)".}
 
-func logspace*(start, stop: Scalar, steps, base: int64, options: TensorOptions) {.importcpp: "torch::logspace(@)".}
-func logspace*(start, stop: Scalar, steps, base: int64, options: ScalarKind) {.importcpp: "torch::logspace(@)".}
+func logspace*(start, stop: Scalar, steps, base: int64, options: TensorOptions) : Tensor {.importcpp: "torch::logspace(@)".}
+func logspace*(start, stop: Scalar, steps, base: int64, options: ScalarKind) : Tensor {.importcpp: "torch::logspace(@)".}
 func logspace*(start, stop: Scalar, steps, base: int64, options: DeviceKind) {.importcpp: "torch::logspace(@)".}
-func logspace*(start, stop: Scalar, steps, base: int64, options: Device) {.importcpp: "torch::logspace(@)".}
-func logspace*(start, stop: Scalar, steps, base: int64) {.importcpp: "torch::logspace(@)".}
-func logspace*(start, stop: Scalar, steps: int64) {.importcpp: "torch::logspace(@)".}
-func logspace*(start, stop: Scalar) {.importcpp: "torch::logspace(@)".}
+func logspace*(start, stop: Scalar, steps, base: int64, options: Device)  : Tensor {.importcpp: "torch::logspace(@)".}
+func logspace*(start, stop: Scalar, steps, base: int64) : Tensor {.importcpp: "torch::logspace(@)".}
+func logspace*(start, stop: Scalar, steps: int64)  : Tensor {.importcpp: "torch::logspace(@)".}
+func logspace*(start, stop: Scalar)  : Tensor {.importcpp: "torch::logspace(@)".}
 
-func arange*(stop: Scalar, options: TensorOptions) {.importcpp: "torch::arange(@)".}
-func arange*(stop: Scalar, options: ScalarKind) {.importcpp: "torch::arange(@)".}
-func arange*(stop: Scalar, options: DeviceKind) {.importcpp: "torch::arange(@)".}
-func arange*(stop: Scalar, options: Device) {.importcpp: "torch::arange(@)".}
-func arange*(stop: Scalar) {.importcpp: "torch::arange(@)".}
-func arange*(start, stop: Scalar, options: TensorOptions) {.importcpp: "torch::arange(@)".}
-func arange*(start, stop: Scalar, options: ScalarKind) {.importcpp: "torch::arange(@)".}
-func arange*(start, stop: Scalar, options: DeviceKind) {.importcpp: "torch::arange(@)".}
-func arange*(start, stop: Scalar, options: Device) {.importcpp: "torch::arange(@)".}
-func arange*(start, stop: Scalar) {.importcpp: "torch::arange(@)".}
-func arange*(start, stop, step: Scalar, options: TensorOptions) {.importcpp: "torch::arange(@)".}
-func arange*(start, stop, step: Scalar, options: ScalarKind) {.importcpp: "torch::arange(@)".}
-func arange*(start, stop, step: Scalar, options: DeviceKind) {.importcpp: "torch::arange(@)".}
-func arange*(start, stop, step: Scalar, options: Device) {.importcpp: "torch::arange(@)".}
-func arange*(start, stop, step: Scalar) {.importcpp: "torch::arange(@)".}
+func arange*(stop: Scalar, options: TensorOptions) : Tensor  {.importcpp: "torch::arange(@)".}
+func arange*(stop: Scalar, options: ScalarKind) : Tensor  {.importcpp: "torch::arange(@)".}
+func arange*(stop: Scalar, options: DeviceKind) : Tensor  {.importcpp: "torch::arange(@)".}
+func arange*(stop: Scalar, options: Device) : Tensor  {.importcpp: "torch::arange(@)".}
+func arange*(stop: Scalar) : Tensor  {.importcpp: "torch::arange(@)".}
+func arange*(start, stop: Scalar, options: TensorOptions) : Tensor  {.importcpp: "torch::arange(@)".}
+func arange*(start, stop: Scalar, options: ScalarKind) : Tensor  {.importcpp: "torch::arange(@)".}
+func arange*(start, stop: Scalar, options: DeviceKind) : Tensor  {.importcpp: "torch::arange(@)".}
+func arange*(start, stop: Scalar, options: Device) : Tensor  {.importcpp: "torch::arange(@)".}
+func arange*(start, stop: Scalar) : Tensor  {.importcpp: "torch::arange(@)".}
+func arange*(start, stop, step: Scalar, options: TensorOptions) : Tensor  {.importcpp: "torch::arange(@)".}
+func arange*(start, stop, step: Scalar, options: ScalarKind) : Tensor  {.importcpp: "torch::arange(@)".}
+func arange*(start, stop, step: Scalar, options: DeviceKind) : Tensor  {.importcpp: "torch::arange(@)".}
+func arange*(start, stop, step: Scalar, options: Device) : Tensor  {.importcpp: "torch::arange(@)".}
+func arange*(start, stop, step: Scalar) : Tensor  {.importcpp: "torch::arange(@)".}
 
 # Operations
 # -----------------------------------------------------------------------

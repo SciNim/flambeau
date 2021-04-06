@@ -18,11 +18,21 @@ proc main() =
       check (a + b).abs == [[0, 0], [0, 0]].toTensor
 
   suite "Tensor creation":
-    test "eye, zeros":
+    test "eye":
       let t = eye(2, kInt64)
       check t == [[1, 0], [0, 1]].toTensor
 
-    test "linspace, logspace, arange":
+    test "zeros":
+      let shape = [2'i64, 3]
+      let t = zeros(shape.asTorchView(), kFloat32)
+      check t == [[0.0'f32, 0.0, 0.0], [0.0'f32, 0.0, 0.0]].toTensor
+
+    test "linspace":
+      let t = linspace(0.0, 1.0, 100'i64, kFloat64)
+      echo t
+    test "logspace":
+      discard
+    test "arange":
       discard
 
   suite "Tensor utils":
@@ -36,7 +46,6 @@ proc main() =
       let
         s = t.sort()
         args = t.argsort()
-
       check s.get(0) == [1, 2, 3, 4, 5, 6].toTensor
       check s.get(1) == args
       check args == [3, 0, 1, 2, 4, 5].toTensor
@@ -52,6 +61,8 @@ proc main() =
       discard
     test "matmul, mm, bmm":
       discard
+
+  suite "Reduce":
     test "min, max, argmin, argmax":
       discard
     test "sum, prod":
