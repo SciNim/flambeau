@@ -124,6 +124,7 @@ type
 
   SomeTorchType* = uint8|byte or SomeSignedInt or
                    SomeFloat or Complex[float32] or Complex[float64]
+  ## Torch Tensor type mapped to Nim type
 
 # TensorOptions
 # -----------------------------------------------------------------------

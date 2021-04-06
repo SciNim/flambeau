@@ -1,8 +1,11 @@
 import unittest
 import flambeau
 
+{.experimental: "views".} # TODO
+
+
 proc main() =
-  suite "Test precedence":
+  suite "Operator precedence":
     test "+ and *":
       let a = [[1, 2], [3, 4]].toTensor
       let b = -a
@@ -14,22 +17,38 @@ proc main() =
       check a + b.abs == [[2, 4],[6, 8]].toTensor
       check (a + b).abs == [[0, 0], [0, 0]].toTensor
 
-  suite "Tensor Indexing":
-    test "Print":
-      let t = eye([2, 2, 2].asTorchView)
-      echo t
-    test "sort, argsort":
+  suite "Tensor creation":
+    test "eye, zeros":
+      let t = eye(2, kInt64)
+      check t == [[1, 0], [0, 1]].toTensor
+
+    test "linspace, logspace, arange":
       discard
+
+  suite "Tensor utils":
+    test "Print":
+      let shape = [2'i64, 3, 4]
+      let t = rand(shape.asTorchView(), kfloat64)
+      echo t
+
+    test "sort, argsort":
+      let t = [2, 3, 4, 1, 5, 6].toTensor
+      let
+        s = t.sort()
+        args = t.argsort()
+
+      check s.get(0) == [1, 2, 3, 4, 5, 6].toTensor
+      check s.get(1) == args
+      check args == [3, 0, 1, 2, 4, 5].toTensor
+
     test "all, any":
       discard
 
-    test "Indexing":
-      discard
     test "squeezen unsqueeze":
       discard
 
   suite "Operations":
-    test "add, addmv, addmm:
+    test "add, addmv, addmm":
       discard
     test "matmul, mm, bmm":
       discard
@@ -40,12 +59,6 @@ proc main() =
     test "mean, variance, stddev":
       discard
 
-  suite "Tensor creation":
-    test "eye, zeros":
-      discard
-
-    test "linspace, logspace, arange":
-      discard
 
   suite "FFT":
     test "fft, fft2, fftn":
