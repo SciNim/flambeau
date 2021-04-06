@@ -64,6 +64,9 @@ func toScalarKind(T: typedesc[SomeTorchType]): static ScalarKind =
   else:
     {.error: "Unsupported type in libtorch: " & $T.}
 
+converter convertTypeDef*(T: typedesc[SomeTorchType]) : static ScalarKind =
+  toScalarKind(T)
+
 # Nim openarrays -> Torch Tensors
 # -----------------------------------------------------
 
