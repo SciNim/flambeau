@@ -16,6 +16,8 @@ import flambeau, ../testutils
 import unittest, math
 import complex except Complex64, Complex32
 
+{.experimental: "views".} # TODO
+
 proc main() =
   suite "Accessing and setting tensor values":
     test "Accessing and setting a single value":
