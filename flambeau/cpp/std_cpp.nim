@@ -44,10 +44,10 @@ export cppstl
 
 {.push header: "<tuple>".}
 type
-  CppTuple2* [T0, T1] {.importcpp: "std::tuple".}= object
-  CppTuple3* [T0, T1, T2] {.importcpp: "std::tuple".} = object
-  CppTuple4* [T0, T1, T2, T3] {.importcpp: "std::tuple".} = object
-  CppTuple5* [T0, T1, T2, T3, T4] {.importcpp: "std::tuple".} = object
+  CppTuple2*[T0, T1] {.importcpp: "std::tuple".} = object
+  CppTuple3*[T0, T1, T2] {.importcpp: "std::tuple".} = object
+  CppTuple4*[T0, T1, T2, T3] {.importcpp: "std::tuple".} = object
+  CppTuple5*[T0, T1, T2, T3, T4] {.importcpp: "std::tuple".} = object
 
   CppTuple = CppTuple2|CppTuple3|CppTuple4|CppTuple5
 
