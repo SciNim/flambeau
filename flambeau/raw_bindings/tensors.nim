@@ -199,7 +199,7 @@ func element_size*(self: Tensor): int64 {.importcpp: "#.element_size()".}
 # Accessors
 # -----------------------------------------------------------------------
 
-func data_ptr*(self: Tensor, T: typedesc[SomeTorchType]): ptr UncheckedArray[T] {.importcpp: "#.data_ptr<'2>(#)".}
+func data_ptr*(self: Tensor, T: typedesc): ptr UncheckedArray[T] {.importcpp: "#.data_ptr<'2>(#)".}
   ## Gives raw access to a tensor data of type T.
   ##
   ## This is a very low-level procedure. You need to take care
@@ -303,6 +303,9 @@ func rand*(size: IntArrayRef): Tensor {.importcpp: "torch::rand(@)".}
 
 func item*(self: Tensor, T: typedesc): T {.importcpp: "#.item<'0>()".}
   ## Extract the scalar from a 0-dimensional tensor
+func item*(self: Tensor, T: typedesc[Complex32]): C10_Complex[float32] {.importcpp: "#.item<c10::complex<float>>()".}
+func item*(self: Tensor, T: typedesc[Complex64]): C10_Complex[float64] {.importcpp: "#.item<c10::complex<double>>()".}
+
 
 # Unsure what those corresponds to in Python
 # func `[]`*(self: Tensor, index: Scalar): Tensor {.importcpp: "#[#]".}
@@ -453,38 +456,38 @@ func zeros*(dim: IntArrayRef, options: TensorOptions): Tensor {.importcpp: "torc
 func zeros*(dim: IntArrayRef, scalarKind: ScalarKind): Tensor {.importcpp: "torch::zeros(@)".}
 func zeros*(dim: IntArrayRef, device: DeviceKind): Tensor {.importcpp: "torch::zeros(@)".}
 
-func linspace*(start, stop: Scalar, steps: int64, options: TensorOptions) : Tensor {.importcpp: "torch::linspace(@)".}
-func linspace*(start, stop: Scalar, steps: int64, options: ScalarKind) : Tensor {.importcpp: "torch::linspace(@)".}
-func linspace*(start, stop: Scalar, steps: int64, options: DeviceKind) : Tensor {.importcpp: "torch::linspace(@)".}
-func linspace*(start, stop: Scalar, steps: int64, options: Device) : Tensor {.importcpp: "torch::linspace(@)".}
-func linspace*(start, stop: Scalar, steps: int64) : Tensor {.importcpp: "torch::linspace(@)".}
-func linspace*(start, stop: Scalar) : Tensor {.importcpp: "torch::linspace(@)".}
+func linspace*(start, stop: Scalar, steps: int64, options: TensorOptions): Tensor {.importcpp: "torch::linspace(@)".}
+func linspace*(start, stop: Scalar, steps: int64, options: ScalarKind): Tensor {.importcpp: "torch::linspace(@)".}
+func linspace*(start, stop: Scalar, steps: int64, options: DeviceKind): Tensor {.importcpp: "torch::linspace(@)".}
+func linspace*(start, stop: Scalar, steps: int64, options: Device): Tensor {.importcpp: "torch::linspace(@)".}
+func linspace*(start, stop: Scalar, steps: int64): Tensor {.importcpp: "torch::linspace(@)".}
+func linspace*(start, stop: Scalar): Tensor {.importcpp: "torch::linspace(@)".}
 
-func logspace*(start, stop: Scalar, steps, base: int64, options: TensorOptions) : Tensor {.importcpp: "torch::logspace(@)".}
-func logspace*(start, stop: Scalar, steps, base: int64, options: ScalarKind) : Tensor {.importcpp: "torch::logspace(@)".}
+func logspace*(start, stop: Scalar, steps, base: int64, options: TensorOptions): Tensor {.importcpp: "torch::logspace(@)".}
+func logspace*(start, stop: Scalar, steps, base: int64, options: ScalarKind): Tensor {.importcpp: "torch::logspace(@)".}
 func logspace*(start, stop: Scalar, steps, base: int64, options: DeviceKind) {.importcpp: "torch::logspace(@)".}
-func logspace*(start, stop: Scalar, steps, base: int64, options: Device)  : Tensor {.importcpp: "torch::logspace(@)".}
-func logspace*(start, stop: Scalar, steps, base: int64) : Tensor {.importcpp: "torch::logspace(@)".}
-func logspace*(start, stop: Scalar, steps: int64)  : Tensor {.importcpp: "torch::logspace(@)".}
-func logspace*(start, stop: Scalar)  : Tensor {.importcpp: "torch::logspace(@)".}
+func logspace*(start, stop: Scalar, steps, base: int64, options: Device): Tensor {.importcpp: "torch::logspace(@)".}
+func logspace*(start, stop: Scalar, steps, base: int64): Tensor {.importcpp: "torch::logspace(@)".}
+func logspace*(start, stop: Scalar, steps: int64): Tensor {.importcpp: "torch::logspace(@)".}
+func logspace*(start, stop: Scalar): Tensor {.importcpp: "torch::logspace(@)".}
 
-func arange*(stop: Scalar, options: TensorOptions) : Tensor  {.importcpp: "torch::arange(@)".}
-func arange*(stop: Scalar, options: ScalarKind) : Tensor  {.importcpp: "torch::arange(@)".}
-func arange*(stop: Scalar, options: DeviceKind) : Tensor  {.importcpp: "torch::arange(@)".}
-func arange*(stop: Scalar, options: Device) : Tensor  {.importcpp: "torch::arange(@)".}
-func arange*(stop: Scalar) : Tensor  {.importcpp: "torch::arange(@)".}
+func arange*(stop: Scalar, options: TensorOptions): Tensor {.importcpp: "torch::arange(@)".}
+func arange*(stop: Scalar, options: ScalarKind): Tensor {.importcpp: "torch::arange(@)".}
+func arange*(stop: Scalar, options: DeviceKind): Tensor {.importcpp: "torch::arange(@)".}
+func arange*(stop: Scalar, options: Device): Tensor {.importcpp: "torch::arange(@)".}
+func arange*(stop: Scalar): Tensor {.importcpp: "torch::arange(@)".}
 
-func arange*(start, stop: Scalar, options: TensorOptions) : Tensor  {.importcpp: "torch::arange(@)".}
-func arange*(start, stop: Scalar, options: ScalarKind) : Tensor  {.importcpp: "torch::arange(@)".}
-func arange*(start, stop: Scalar, options: DeviceKind) : Tensor  {.importcpp: "torch::arange(@)".}
-func arange*(start, stop: Scalar, options: Device) : Tensor  {.importcpp: "torch::arange(@)".}
-func arange*(start, stop: Scalar) : Tensor  {.importcpp: "torch::arange(@)".}
+func arange*(start, stop: Scalar, options: TensorOptions): Tensor {.importcpp: "torch::arange(@)".}
+func arange*(start, stop: Scalar, options: ScalarKind): Tensor {.importcpp: "torch::arange(@)".}
+func arange*(start, stop: Scalar, options: DeviceKind): Tensor {.importcpp: "torch::arange(@)".}
+func arange*(start, stop: Scalar, options: Device): Tensor {.importcpp: "torch::arange(@)".}
+func arange*(start, stop: Scalar): Tensor {.importcpp: "torch::arange(@)".}
 
-func arange*(start, stop, step: Scalar, options: TensorOptions) : Tensor  {.importcpp: "torch::arange(@)".}
-func arange*(start, stop, step: Scalar, options: ScalarKind) : Tensor  {.importcpp: "torch::arange(@)".}
-func arange*(start, stop, step: Scalar, options: DeviceKind) : Tensor  {.importcpp: "torch::arange(@)".}
-func arange*(start, stop, step: Scalar, options: Device) : Tensor  {.importcpp: "torch::arange(@)".}
-func arange*(start, stop, step: Scalar) : Tensor  {.importcpp: "torch::arange(@)".}
+func arange*(start, stop, step: Scalar, options: TensorOptions): Tensor {.importcpp: "torch::arange(@)".}
+func arange*(start, stop, step: Scalar, options: ScalarKind): Tensor {.importcpp: "torch::arange(@)".}
+func arange*(start, stop, step: Scalar, options: DeviceKind): Tensor {.importcpp: "torch::arange(@)".}
+func arange*(start, stop, step: Scalar, options: Device): Tensor {.importcpp: "torch::arange(@)".}
+func arange*(start, stop, step: Scalar): Tensor {.importcpp: "torch::arange(@)".}
 
 # Operations
 # -----------------------------------------------------------------------
@@ -617,25 +620,26 @@ func fftshift*(self: Tensor, dim: IntArrayRef): Tensor {.importcpp: "torch::fft_
 func ifftshift*(self: Tensor): Tensor {.importcpp: "torch::fft_fftshift(@)".}
 func ifftshift*(self: Tensor, dim: IntArrayRef): Tensor {.importcpp: "torch::fft_ifftshift(@)".}
 
-let defaultNorm : CppString = initCppString("backward")
+let defaultNorm: CppString = initCppString("backward")
 
 func fft*(self: Tensor, n: int64, dim: int64 = -1, norm: CppString = defaultNorm): Tensor {.importcpp: "torch::fft_fft(@)".}
 ## Compute the 1-D Fourier transform
-## ``n`` represents signal size. If given, each dimension dim[i] will either be zero padded or trimmed to the length s[i] before computing the FFT.
+## ``n`` represent Signal length. If given, the input will either be zero-padded or trimmed to this length before computing the FFT.
 ## ``norm`` can be :
 ##    * "forward" - normalize by 1/n
 ##    * "backward" - no normalization
 ##    * "ortho" - normalize by 1/sqrt(n)
-func fft*(self: Tensor, dim: int64 = -1, norm: CppString = defaultNorm): Tensor {.importcpp: "torch::fft_fft(@)".}
+func fft*(self: Tensor): Tensor {.importcpp: "torch::fft_fft(@)".}
 ## Compute the 1-D Fourier transform
 
-func ifft*(self: Tensor, n: int64, dim: int64 = -1, norm: CppString = defaultNorm): Tensor {.importcpp: "torch::ifft_ifft(@)".}
+func ifft*(self: Tensor, n: int64, dim: int64 = -1, norm: CppString = defaultNorm): Tensor {.importcpp: "torch::fft_ifft(@)".}
 ## Compute the 1-D Fourier transform
+## ``n`` represent Signal length. If given, the input will either be zero-padded or trimmed to this length before computing the FFT.
 ## ``norm`` can be :
 ##   * "forward" - no normalization
 ##   * "backward" - normalization by 1/n
 ##   * "ortho" - normalization by 1/sqrt(n)
-func ifft*(self: Tensor, dim: int64 = -1, norm: CppString = defaultNorm): Tensor {.importcpp: "torch::ifft_ifft(@)".}
+func ifft*(self: Tensor): Tensor {.importcpp: "torch::fft_ifft(@)".}
 ## Compute the 1-D Fourier transform
 
 func fft2*(self: Tensor, s: IntArrayRef, dim: IntArrayRef, norm: CppString = defaultNorm): Tensor {.
@@ -765,13 +769,13 @@ func irfftn*(self: Tensor, s: IntArrayRef): Tensor {.importcpp: "torch::fft_irff
 func irfftn*(self: Tensor): Tensor {.importcpp: "torch::fft_irfftn(@)".}
 ## Compute the N-D Inverse Fourier transform
 
-func hfft*(self: Tensor, n: int64, dim: int64 = -1, norm: CppString = defaultNorm) : Tensor {.importcpp: "torch::hfft".}
+func hfft*(self: Tensor, n: int64, dim: int64 = -1, norm: CppString = defaultNorm): Tensor {.importcpp: "torch::hfft".}
 ## Computes the 1 dimensional FFT of a onesided Hermitian signal.
-func hfft*(self: Tensor, dim: int64 = -1, norm: CppString = defaultNorm) : Tensor {.importcpp: "torch::hfft".}
+func hfft*(self: Tensor, dim: int64 = -1, norm: CppString = defaultNorm): Tensor {.importcpp: "torch::hfft".}
 ## Computes the 1 dimensional FFT of a onesided Hermitian signal.
-func ihfft*(self: Tensor, n: int64, dim: int64 = -1, norm: CppString = defaultNorm) : Tensor {.importcpp: "torch::ihfft".}
+func ihfft*(self: Tensor, n: int64, dim: int64 = -1, norm: CppString = defaultNorm): Tensor {.importcpp: "torch::ihfft".}
 ## Computes the inverse FFT of a real-valued Fourier domain signal.
-func ihfft*(self: Tensor, dim: int64 = -1, norm: CppString = defaultNorm) : Tensor {.importcpp: "torch::ihfft".}
+func ihfft*(self: Tensor, dim: int64 = -1, norm: CppString = defaultNorm): Tensor {.importcpp: "torch::ihfft".}
 ## Computes the inverse FFT of a real-valued Fourier domain signal.
-
+{.pop.}
 #func convolution*(self: Tensor, weight: Tensor, bias: Tensor, stride, padding, dilation: int64, transposed: bool, outputPadding: int64, groups: int64): Tensor {.importcpp: "torch::convolution(@)".}

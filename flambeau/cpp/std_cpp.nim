@@ -6,7 +6,9 @@
 # at your option. This file may not be copied, modified, or distributed except according to those terms.
 
 import std/macros
+import ../raw_bindings/c10
 import cppstl
+# Avoid breaking import
 export cppstl
 
 # ############################################################
@@ -22,65 +24,11 @@ export cppstl
 
 # std::shared_ptr<T>
 # -----------------------------------------------------------------------
-
-{.push header: "<memory>".}
-
-type
-  CppSharedPtr*[T]{.importcpp: "std::shared_ptr", bycopy.} = object
-
-func make_shared*(T: typedesc): CppSharedPtr[T] {.importcpp: "std::make_shared<'*0>()".}
-
-{.pop.}
+# See cppstl
 
 # std::unique_ptr<T>
 # -----------------------------------------------------------------------
-
-{.push header: "<memory>".}
-
-type
-  CppUniquePtr*[T]{.importcpp: "std::unique_ptr", header: "<memory>", bycopy.} = object
-
-# func `=copy`*[T](dst: var CppUniquePtr[T], src: CppUniquePtr[T]) {.error: "A unique ptr cannot be copied".}
-# func `=destroy`*[T](dst: var CppUniquePtr[T]){.importcpp: "#.~'*1()".}
-# func `=sink`*[T](dst: var CppUniquePtr[T], src: CppUniquePtr[T]){.importcpp: "# = std::move(#)".}
-func make_unique*(T: typedesc): CppUniquePtr[T] {.importcpp: "std::make_unique<'*0>()".}
-
-{.pop.}
-
-# Seamless pointer access
-# -----------------------------------------------------------------------
-{.experimental: "dotOperators".}
-
-# This returns var T but with strictFunc it shouldn't
-func deref*[T](p: CppUniquePtr[T] or CppSharedPtr[T]): var T {.noInit, importcpp: "(* #)", header: "<memory>".}
-
-macro `.()`*[T](p: CppUniquePtr[T] or CppSharedPtr[T], fieldOrFunc: untyped, args: varargs[untyped]): untyped =
-  result = nnkCall.newTree(
-    nnkDotExpr.newTree(
-      newCall(bindSym"deref", p),
-      fieldOrFunc
-    )
-  )
-  copyChildrenTo(args, result)
-
-macro `.`*[T](p: CppUniquePtr[T] or CppSharedPtr[T], fieldOrFunc: untyped, args: varargs[untyped]): untyped =
-  result = nnkDotExpr.newTree(
-      newCall(bindSym"deref", p),
-      fieldOrFunc
-    )
-  #echo result.repr
-  #copyChildrenTo(args, result)
-
-macro `.=`*[T](p: CppUniquePtr[T] or CppSharedPtr[T], fieldOrFunc: untyped, args: untyped): untyped =
-  result = newAssignment(
-    nnkDotExpr.newTree(
-      newCall(bindSym"deref", p),
-      fieldOrFunc
-    ),
-    args
-  )
-  #echo result.repr
-  #copyChildrenTo(args, result)
+# See cppstl
 
 # std::vector<T>
 # -----------------------------------------------------------------------
@@ -122,3 +70,8 @@ template get*(tup: CppTuple, index: static int): auto =
   tupGet(index, tup, typeGet(tup.typeof, index))
 
 {.pop.}
+
+converter toCppComplex*[T: SomeFloat](c: C10_Complex[T]): CppComplex[T] {.inline.} =
+  result = initCppComplex(c.real(), c.imag())
+converter toC10_Complex*[T: SomeFloat](c: CppComplex[T]): C10_Complex[T] {.inline.} =
+  result = initC10_Complex(c.real(), c.imag())
