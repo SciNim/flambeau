@@ -12,7 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-import flambeau, ../testutils
+import flambeau
 import unittest, math
 import complex except Complex64, Complex32
 

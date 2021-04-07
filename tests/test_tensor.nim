@@ -1,5 +1,6 @@
 import unittest
 import sequtils
+import complex
 import sugar
 
 import flambeau
@@ -47,8 +48,9 @@ proc main() =
         let refval : float64 = i.float64 / 130.0
         check (val - refval) < 1e-12
 
-    test "logspace":
-      discard
+    # test "inv":
+    #   let t = [[1, 2], [3, 4]].toTensor
+    #   echo t.inv()
 
   suite "Tensor utils":
     test "Print":
@@ -77,14 +79,55 @@ proc main() =
     test "matmul, mm, bmm":
       discard
 
-  suite "FFT":
-    test "fft, fft2, fftn":
+  suite "FFT1D":
+    setup:
+      let shape = [8'i64]
+      var f64input = rand(shape.asTorchView(), kfloat64)
+      var c64input = rand(shape.asTorchView(), kComplexF64)
+
+    test "fft, ifft":
+      let fftout = fft(c64input)
+      # echo fftout
+      let ifftout = ifft(fftout)
+      # echo ifftout
+      let m = max(ifftout).item(Complex64)
+      echo ">> 1", m.real()
+      echo ">> 1", m.imag()
+      # let mean_rel_err = (mean(ifftout - c64input).item(Complex64) / m)
+      # echo ">> 2", mean_rel_err.real()
+      # echo ">> 2", mean_rel_err.imag()
+      # check mean_rel_err.re < 1e-12
+      # check mean_rel_err.im < 1e-12
+
+    test "rfft, irfft":
       discard
-    test "ifft, ifft2, ifftn":
+
+  suite "FFT2D":
+    setup: discard
+      # let shape = [3'i64, 5]
+      # var input = rand(shape.asTorchView(), kfloat64)
+
+    test "fft2":
       discard
-    test "rfft, rfft2, rfftn":
+    test "ifft2":
       discard
-    test "irfft, irfft2, irfftn":
+    test "rfft2":
+      discard
+    test "irfft2":
+      discard
+
+  suite "FFT3D":
+    setup: discard
+      # let shape = [3'i64, 4, 5]
+      # var input = rand(shape.asTorchView(), kfloat64)
+
+    test "fftn":
+      discard
+    test "ifftn":
+      discard
+    test "rfftn":
+      discard
+    test "irfftn":
       discard
 
 main()
