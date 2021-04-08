@@ -27,7 +27,7 @@ const librariesPath* = libTorchPath / "lib"
 # if the libPath is not in LD_LIBRARY_PATH
 # The libraries won't be loaded at runtime
 
-when false or defined(windows): # Static linking
+when defined(windows): # Static linking
   when defined(windows):
     const libSuffix = ".lib"
     const libPrefix = ""
@@ -38,9 +38,8 @@ when false or defined(windows): # Static linking
   else:
     const libSuffix = ".a" # BSD / Linux
     const libPrefix = "lib"
-
-  {.link: librariesPath / libPrefix & "c10" & libSuffix.}
-  {.link: librariesPath / libPrefix & "torch_cpu" & libSuffix.}
+  {.link: librariesPath / (libPrefix & "c10" & libSuffix).}
+  {.link: librariesPath / (libPrefix & "torch_cpu" & libSuffix).}
 
   when UseCuda:
     {.link: librariesPath / libPrefix & "torch_cuda" & libSuffix.}
