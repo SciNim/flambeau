@@ -517,7 +517,7 @@ macro slice_typed_dispatch(t: typed, args: varargs[typed]): untyped =
       type FancyTensorType = typeof(toTensor(`selector`))
     else:
       type FancyTensorType = FancyType
-    when FancyTensorType is Tensor[bool]:
+    if `t`.scalarType == kBool:
       when FancySelectorKind(`fancy`) == FancyUnknownFull:
         `lateBind_masked_select`(`t`, `selector`)
       elif FancySelectorKind(`fancy`) == FancyUnknownAxis:
@@ -591,7 +591,7 @@ macro slice_typed_dispatch_mut(t: typed, args: varargs[typed], val: typed): unty
       type FancyTensorType = typeof(toTensor(`selector`))
     else:
       type FancyTensorType = FancyType
-    when FancyTensorType is Tensor[bool]:
+    if `t`.scalarType == kBool:
       when FancySelectorKind(`fancy`) == FancyUnknownFull:
         `lateBind_masked_fill`(`t`, `selector`, `val`)
       elif FancySelectorKind(`fancy`) == FancyUnknownAxis:
