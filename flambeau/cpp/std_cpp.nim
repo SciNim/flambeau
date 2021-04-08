@@ -6,6 +6,8 @@
 # at your option. This file may not be copied, modified, or distributed except according to those terms.
 
 import std/macros
+import cppstl
+export cppstl
 
 # ############################################################
 #
@@ -13,28 +15,10 @@ import std/macros
 #
 # ############################################################
 
+
 # std::string
 # -----------------------------------------------------------------------
-
-{.push header: "<string>".}
-
-type
-  CppString* {.importcpp: "std::string", bycopy.} = object
-
-func len*(s: CppString): int {.importcpp: "#.length()".}
-  ## Returns the length of a C++ std::string
-func data*(s: CppString): ptr char {.importcpp: "const_cast<char*>(#.data())".}
-  ## Returns a pointer to the raw data of a C++ std::string
-func cstring*(s: CppString): cstring {.importcpp: "#.c_str()"}
-
-{.pop.}
-
-# Interop
-# ------------------------------
-func `$`*(s: CppString): string =
-  result = newString(s.len)
-  copyMem(result[0].addr, s.data, s.len)
-
+# See cppstl
 
 # std::shared_ptr<T>
 # -----------------------------------------------------------------------
@@ -100,20 +84,7 @@ macro `.=`*[T](p: CppUniquePtr[T] or CppSharedPtr[T], fieldOrFunc: untyped, args
 
 # std::vector<T>
 # -----------------------------------------------------------------------
-
-{.push header: "<memory>".}
-
-type
-  CppVector*[T]{.importcpp"std::vector", header: "<vector>", bycopy.} = object
-
-proc init*(V: type CppVector): V {.importcpp: "std::vector<'*0>()", header: "<vector>", constructor.}
-proc init*(V: type CppVector, size: int): V {.importcpp: "std::vector<'*0>(#)", header: "<vector>", constructor.}
-proc len*(v: CppVector): int {.importcpp: "#.size()", header: "<vector>".}
-proc add*[T](v: var CppVector[T], elem: T){.importcpp: "#.push_back(#)", header: "<vector>".}
-proc `[]`*[T](v: CppVector[T], idx: int): T{.importcpp: "#[#]", header: "<vector>".}
-proc `[]`*[T](v: var CppVector[T], idx: int): var T{.importcpp: "#[#]", header: "<vector>".}
-
-{.pop.}
+# See cppstl
 
 # std::tuple
 # -----------------------------------------------------------------------

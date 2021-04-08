@@ -5,10 +5,7 @@
 #   * Apache v2 license (license terms in the root directory or at http://www.apache.org/licenses/LICENSE-2.0).
 # at your option. This file may not be copied, modified, or distributed except according to those terms.
 
-import
-  std/complex,
-  ../libtorch,
-  ../cpp/std_cpp
+import ../libtorch
 
 # c10 is a collection of utilities in PyTorch
 
@@ -61,6 +58,6 @@ func init*[T](AR: type ArrayRef[T]): ArrayRef[T] {.constructor, varargs, importc
 
 type
   Optional*[T] {.bycopy, importcpp: "c10::optional".} = object
-  Nullopt_t {.bycopy, importcpp: "c10::nullopt_t".} = object
+  Nullopt_t* {.bycopy, importcpp: "c10::nullopt_t".} = object
 
 func value*[T](o: Optional[T]): T {.importcpp: "#.value()".}

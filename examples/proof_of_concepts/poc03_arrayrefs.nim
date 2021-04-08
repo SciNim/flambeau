@@ -1,5 +1,6 @@
 import flambeau
 
+{.experimental: "views".}
 var t = eye(5)
 t.print()
 echo "\n-------------------------"
