@@ -136,19 +136,6 @@ proc main() =
       # But it'll do for this simple case
       check mean(rel_diff).item(float64) < 1e-12
 
-    test "rfft2, irfft2":
-      let fft2out = rfft2(f64input)
-      # echo fft2out
-      let ifft2out = irfft2(fft2out)
-      # echo ifft2out
-      let max_input = max(abs(ifft2out)).item(float64)
-      # Compare abs of Complex values
-      var rel_diff = abs(ifft2out - f64input)
-      rel_diff /= max_input
-      # This isn't a perfect way of checking if Complex number are close enough
-      # But it'll do for this simple case
-      check mean(rel_diff).item(float64) < 1e-12
-
   suite "FFTND":
     setup:
       let shape = [3'i64, 4, 5]
@@ -163,19 +150,6 @@ proc main() =
       let max_input = max(abs(ifftnout)).item(float64)
       # Compare abs of Complex values
       var rel_diff = abs(ifftnout - c64input)
-      rel_diff /= max_input
-      # This isn't a perfect way of checking if Complex number are close enough
-      # But it'll do for this simple case
-      check mean(rel_diff).item(float64) < 1e-12
-
-    test "rfftn, irfftn":
-      let fftnout = rfftn(f64input)
-      # echo fftnout
-      let ifftnout = irfftn(fftnout)
-      # echo ifftnout
-      let max_input = max(abs(ifftnout)).item(float64)
-      # Compare abs of Complex values
-      var rel_diff = abs(ifftnout - f64input)
       rel_diff /= max_input
       # This isn't a perfect way of checking if Complex number are close enough
       # But it'll do for this simple case
