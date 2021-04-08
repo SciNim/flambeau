@@ -85,35 +85,46 @@ proc main() =
       var f64input = rand(shape.asTorchView(), kfloat64)
       var c64input = rand(shape.asTorchView(), kComplexF64)
 
+    test "item(Complex64)":
+      # Check item for complex
+      let m = c64input[0].item(Complex64)
+      check m.real is float64
+      check m.imag is float64
+
     test "fft, ifft":
       let fftout = fft(c64input)
       # echo fftout
       let ifftout = ifft(fftout)
       # echo ifftout
-      let m = max(ifftout).item(Complex64)
-      echo ">> 1", m.real()
-      echo ">> 1", m.imag()
-      # let mean_rel_err = (mean(ifftout - c64input).item(Complex64) / m)
-      # echo ">> 2", mean_rel_err.real()
-      # echo ">> 2", mean_rel_err.imag()
-      # check mean_rel_err.re < 1e-12
-      # check mean_rel_err.im < 1e-12
+      let max_input = max(abs(ifftout)).item(float64)
+      # Compare abs of Complex values
+      var rel_diff = abs(ifftout - c64input)
+      rel_diff /= max_input
+      # This isn't a perfect way of checking if Complex number are close enough
+      # But it'll do for this simple case
+      check mean(rel_diff).item(float64) < 1e-12
 
     test "rfft, irfft":
-      discard
+      let fftout = rfft(f64input)
+      # echo fftout
+      let ifftout = irfft(fftout)
+      # echo ifftout
+      let max_input = max(abs(ifftout)).item(float64)
+      # Compare abs of Complex values
+      var rel_diff = abs(ifftout - f64input)
+      rel_diff /= max_input
+      # This isn't a perfect way of checking if Complex number are close enough
+      # But it'll do for this simple case
+      check mean(rel_diff).item(float64) < 1e-12
 
   suite "FFT2D":
     setup: discard
       # let shape = [3'i64, 5]
       # var input = rand(shape.asTorchView(), kfloat64)
 
-    test "fft2":
+    test "fft2, ifft2":
       discard
-    test "ifft2":
-      discard
-    test "rfft2":
-      discard
-    test "irfft2":
+    test "rfft2, irfft2":
       discard
 
   suite "FFT3D":
@@ -121,13 +132,9 @@ proc main() =
       # let shape = [3'i64, 4, 5]
       # var input = rand(shape.asTorchView(), kfloat64)
 
-    test "fftn":
+    test "fftn, ifftn":
       discard
-    test "ifftn":
-      discard
-    test "rfftn":
-      discard
-    test "irfftn":
+    test "rfftn, irfftn":
       discard
 
 main()

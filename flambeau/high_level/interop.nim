@@ -8,7 +8,7 @@
 import
   std/[complex, enumerate, macros],
   # External
-  cppstl/string,
+  cppstl/std_string,
   # Internal
   ../raw_bindings/[c10, tensors],
   ./internal/dynamic_stack_arrays

@@ -86,11 +86,6 @@ proc `=/`*[T: SomeFloat](self: var C10_Complex[T], arg: C10_Complex[T]) {.import
 proc `==`*[T: SomeFloat](a, b: C10_Complex[T]): bool {.importcpp: "(# == #)".}
 proc `!=`*[T: SomeFloat](a, b: C10_Complex[T]): bool {.importcpp: "(# != #)".}
 
-# func abs*[T: SomeFloat](self : C10_Complex[T]): T {.importcpp: "std::abs(@)".}
-# func arg*[T: SomeFloat](self : C10_Complex[T]): T {.importcpp: "std::arg(@)".}
-# func norm*[T: SomeFloat](self : C10_Complex[T]): T {.importcpp: "std::norm(@)".}
-
 {.pop.}
 {.pop.}
-
 

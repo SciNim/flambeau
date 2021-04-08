@@ -657,8 +657,7 @@ func fft2*(self: Tensor, s: IntArrayRef): Tensor {.importcpp: "torch::fft_fft2(@
 func fft2*(self: Tensor): Tensor {.importcpp: "torch::fft_fft2(@)".}
 ## Compute the 2-D Fourier transform
 
-func ifft2*(self: Tensor, s: IntArrayRef, dim: IntArrayRef, norm: CppString = defaultNorm): Tensor {.
-    importcpp: "torch::fft_ifft2(@)".}
+func ifft2*(self: Tensor, s: IntArrayRef, dim: IntArrayRef, norm: CppString = defaultNorm): Tensor {.importcpp: "torch::fft_ifft2(@)".}
 ## Compute the 2-D Inverse Fourier transform
 ## ``s`` represents signal size. If given, each dimension dim[i] will either be zero padded or trimmed to the length s[i] before computing the FFT.
 ## ``norm`` can be :
@@ -700,14 +699,14 @@ func ifftn*(self: Tensor, s: IntArrayRef): Tensor {.importcpp: "torch::fft_ifftn
 func ifftn*(self: Tensor): Tensor {.importcpp: "torch::fft_ifftn(@)".}
 ## Compute the N-D Inverse Fourier transform
 
-func rfft*(self: Tensor, n: int64, dim: int64 = -1, norm: CppString = defaultNorm): Tensor {.importcpp: "torch::fft_rfft".}
+func rfft*(self: Tensor, n: int64, dim: int64 = -1, norm: CppString = defaultNorm): Tensor {.importcpp: "torch::fft_rfft(@)".}
 ## Computes the one dimensional Fourier transform of real-valued input.
-func rfft*(self: Tensor, dim: int64 = -1, norm: CppString = defaultNorm): Tensor {.importcpp: "torch::fft_rfft".}
+func rfft*(self: Tensor): Tensor {.importcpp: "torch::fft_rfft(@)".}
 ## Computes the one dimensional Fourier transform of real-valued input.
 
-func irfft*(self: Tensor, n: int64, dim: int64 = -1, norm: CppString = defaultNorm): Tensor {.importcpp: "torch::fft_irfft".}
+func irfft*(self: Tensor, n: int64, dim: int64 = -1, norm: CppString = defaultNorm): Tensor {.importcpp: "torch::fft_irfft(@)".}
 ## Computes the one dimensional Fourier transform of real-valued input.
-func irfft*(self: Tensor, dim: int64 = -1, norm: CppString = defaultNorm): Tensor {.importcpp: "torch::fft_irfft".}
+func irfft*(self: Tensor): Tensor {.importcpp: "torch::fft_irfft(@)".}
 ## Computes the one dimensional Fourier transform of real-valued input.
 
 func rfft2*(self: Tensor, s: IntArrayRef, dim: IntArrayRef, norm: CppString = defaultNorm): Tensor {.importcpp: "torch::fft_rfft2(@)".}
@@ -724,8 +723,7 @@ func rfft2*(self: Tensor, s: IntArrayRef): Tensor {.importcpp: "torch::fft_rfft2
 func rfft2*(self: Tensor): Tensor {.importcpp: "torch::fft_rfft2(@)".}
 ## Compute the N-D Fourier transform
 
-func irfft2*(self: Tensor, s: IntArrayRef, dim: IntArrayRef, norm: CppString = defaultNorm): Tensor {.
-    importcpp: "torch::fft_irfft2(@)".}
+func irfft2*(self: Tensor, s: IntArrayRef, dim: IntArrayRef, norm: CppString = defaultNorm): Tensor {.importcpp: "torch::fft_irfft2(@)".}
 ## Compute the N-D Inverse Fourier transform
 ## ``s`` represents signal size. If given, each dimension dim[i] will either be zero padded or trimmed to the length s[i] before computing the FFT.
 ## ``norm`` can be :
@@ -754,8 +752,7 @@ func rfftn*(self: Tensor, s: IntArrayRef): Tensor {.importcpp: "torch::fft_rfftn
 func rfftn*(self: Tensor): Tensor {.importcpp: "torch::fft_rfftn(@)".}
 ## Compute the N-D Fourier transform
 
-func irfftn*(self: Tensor, s: IntArrayRef, dim: IntArrayRef, norm: CppString = defaultNorm): Tensor {.
-    importcpp: "torch::fft_irfftn(@)".}
+func irfftn*(self: Tensor, s: IntArrayRef, dim: IntArrayRef, norm: CppString = defaultNorm): Tensor {.importcpp: "torch::fft_irfftn(@)".}
 ## Compute the N-D Inverse Fourier transform
 ## ``s`` represents signal size. If given, each dimension dim[i] will either be zero padded or trimmed to the length s[i] before computing the FFT.
 ## ``norm`` can be :
@@ -769,13 +766,13 @@ func irfftn*(self: Tensor, s: IntArrayRef): Tensor {.importcpp: "torch::fft_irff
 func irfftn*(self: Tensor): Tensor {.importcpp: "torch::fft_irfftn(@)".}
 ## Compute the N-D Inverse Fourier transform
 
-func hfft*(self: Tensor, n: int64, dim: int64 = -1, norm: CppString = defaultNorm): Tensor {.importcpp: "torch::hfft".}
+func hfft*(self: Tensor, n: int64, dim: int64 = -1, norm: CppString = defaultNorm): Tensor {.importcpp: "torch::hfft(@)".}
 ## Computes the 1 dimensional FFT of a onesided Hermitian signal.
-func hfft*(self: Tensor, dim: int64 = -1, norm: CppString = defaultNorm): Tensor {.importcpp: "torch::hfft".}
+func hfft*(self: Tensor): Tensor {.importcpp: "torch::hfft(@)".}
 ## Computes the 1 dimensional FFT of a onesided Hermitian signal.
-func ihfft*(self: Tensor, n: int64, dim: int64 = -1, norm: CppString = defaultNorm): Tensor {.importcpp: "torch::ihfft".}
+func ihfft*(self: Tensor, n: int64, dim: int64 = -1, norm: CppString = defaultNorm): Tensor {.importcpp: "torch::ihfft(@)".}
 ## Computes the inverse FFT of a real-valued Fourier domain signal.
-func ihfft*(self: Tensor, dim: int64 = -1, norm: CppString = defaultNorm): Tensor {.importcpp: "torch::ihfft".}
+func ihfft*(self: Tensor): Tensor {.importcpp: "torch::ihfft(@)".}
 ## Computes the inverse FFT of a real-valued Fourier domain signal.
 {.pop.}
 #func convolution*(self: Tensor, weight: Tensor, bias: Tensor, stride, padding, dilation: int64, transposed: bool, outputPadding: int64, groups: int64): Tensor {.importcpp: "torch::convolution(@)".}
