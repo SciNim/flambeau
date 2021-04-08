@@ -642,8 +642,7 @@ func ifft*(self: Tensor, n: int64, dim: int64 = -1, norm: CppString = defaultNor
 func ifft*(self: Tensor): Tensor {.importcpp: "torch::fft_ifft(@)".}
 ## Compute the 1-D Fourier transform
 
-func fft2*(self: Tensor, s: IntArrayRef, dim: IntArrayRef, norm: CppString = defaultNorm): Tensor {.
-    importcpp: "torch::fft_fft2(@)".}
+func fft2*(self: Tensor, s: IntArrayRef, dim: IntArrayRef, norm: CppString = defaultNorm): Tensor {.importcpp: "torch::fft_fft2(@)".}
 ## Compute the 2-D Fourier transform
 ## ``s`` represents signal size. If given, each dimension dim[i] will either be zero padded or trimmed to the length s[i] before computing the FFT.
 ## ``norm`` can be :
