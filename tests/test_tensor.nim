@@ -45,7 +45,7 @@ proc main() =
       let t = arange(0.0, 1.0, step, float64)
       for i in 0..<130:
         let val = t[i].item(float64)
-        let refval : float64 = i.float64 / 130.0
+        let refval: float64 = i.float64 / 130.0
         check (val - refval) < 1e-12
 
     # test "inv":
@@ -82,8 +82,8 @@ proc main() =
   suite "FFT1D":
     setup:
       let shape = [8'i64]
-      var f64input = rand(shape.asTorchView(), kfloat64)
-      var c64input = rand(shape.asTorchView(), kComplexF64)
+      var f64input {.used.} = rand(shape.asTorchView(), kfloat64)
+      var c64input {.used.} = rand(shape.asTorchView(), kComplexF64)
 
     test "item(Complex64)":
       # Check item for complex
@@ -118,23 +118,67 @@ proc main() =
       check mean(rel_diff).item(float64) < 1e-12
 
   suite "FFT2D":
-    setup: discard
-      # let shape = [3'i64, 5]
-      # var input = rand(shape.asTorchView(), kfloat64)
+    setup:
+      let shape = [3'i64, 5]
+      var f64input {.used.} = rand(shape.asTorchView(), kfloat64)
+      var c64input {.used.} = rand(shape.asTorchView(), kComplexF64)
 
     test "fft2, ifft2":
-      discard
-    test "rfft2, irfft2":
-      discard
+      let fft2out = fft2(c64input)
+      # echo fft2out
+      let ifft2out = ifft2(fft2out)
+      # echo ifft2out
+      let max_input = max(abs(ifft2out)).item(float64)
+      # Compare abs of Complex values
+      var rel_diff = abs(ifft2out - c64input)
+      rel_diff /= max_input
+      # This isn't a perfect way of checking if Complex number are close enough
+      # But it'll do for this simple case
+      check mean(rel_diff).item(float64) < 1e-12
 
-  suite "FFT3D":
-    setup: discard
-      # let shape = [3'i64, 4, 5]
-      # var input = rand(shape.asTorchView(), kfloat64)
+    test "rfft2, irfft2":
+      let fft2out = rfft2(f64input)
+      # echo fft2out
+      let ifft2out = irfft2(fft2out)
+      # echo ifft2out
+      let max_input = max(abs(ifft2out)).item(float64)
+      # Compare abs of Complex values
+      var rel_diff = abs(ifft2out - f64input)
+      rel_diff /= max_input
+      # This isn't a perfect way of checking if Complex number are close enough
+      # But it'll do for this simple case
+      check mean(rel_diff).item(float64) < 1e-12
+
+  suite "FFTND":
+    setup:
+      let shape = [3'i64, 4, 5]
+      var f64input {.used.} = rand(shape.asTorchView(), kfloat64)
+      var c64input {.used.} = rand(shape.asTorchView(), kComplexF64)
 
     test "fftn, ifftn":
-      discard
+      let fftnout = fftn(c64input)
+      # echo fftnout
+      let ifftnout = ifftn(fftnout)
+      # echo ifftnout
+      let max_input = max(abs(ifftnout)).item(float64)
+      # Compare abs of Complex values
+      var rel_diff = abs(ifftnout - c64input)
+      rel_diff /= max_input
+      # This isn't a perfect way of checking if Complex number are close enough
+      # But it'll do for this simple case
+      check mean(rel_diff).item(float64) < 1e-12
+
     test "rfftn, irfftn":
-      discard
+      let fftnout = rfftn(f64input)
+      # echo fftnout
+      let ifftnout = irfftn(fftnout)
+      # echo ifftnout
+      let max_input = max(abs(ifftnout)).item(float64)
+      # Compare abs of Complex values
+      var rel_diff = abs(ifftnout - f64input)
+      rel_diff /= max_input
+      # This isn't a perfect way of checking if Complex number are close enough
+      # But it'll do for this simple case
+      check mean(rel_diff).item(float64) < 1e-12
 
 main()
