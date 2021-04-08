@@ -15,6 +15,8 @@
 import flambeau, ../testutils
 import unittest
 
+{.experimental: "views".} # TODO
+
 suite "[Core] Testing algorithm functions":
   #[ Can't find an inplace version of sort
   test "Sort":

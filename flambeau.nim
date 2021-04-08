@@ -8,6 +8,9 @@
 # Raw exports
 # ----------------------------------------------------------------
 
+when not defined(cpp):
+  {.error: "Flambeau requires C++ backend required to use Torch".}
+
 import ./flambeau/raw_bindings/tensors
   except # TODO, don't export associated proc either
     # ArrayRef,

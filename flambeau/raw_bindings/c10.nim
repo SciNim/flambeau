@@ -61,3 +61,30 @@ type
   Nullopt_t* {.bycopy, importcpp: "c10::nullopt_t".} = object
 
 func value*[T](o: Optional[T]): T {.importcpp: "#.value()".}
+
+# c10::complex
+# -----------------------------------------------------------------------
+import ../libtorch
+type
+  C10_Complex*[T: SomeFloat] {.importcpp: "c10::complex".} = object
+
+func initC10_Complex*[T: SomeFloat](re, im: T): C10_Complex[T] {.importcpp: "c10::complex".}
+func real*[T: SomeFloat](self: C10_Complex[T]): T {.importcpp: "#.real()".}
+func imag*[T: SomeFloat](self: C10_Complex[T]): T {.importcpp: "#.imag()".}
+
+proc `+`*[T: SomeFloat](a, b: C10_Complex[T]): C10_Complex[T] {.importcpp: "(# + #)".}
+proc `-`*[T: SomeFloat](a, b: C10_Complex[T]): C10_Complex[T] {.importcpp: "(# - #)".}
+proc `*`*[T: SomeFloat](a, b: C10_Complex[T]): C10_Complex[T] {.importcpp: "(# * #)".}
+proc `/`*[T: SomeFloat](a, b: C10_Complex[T]): C10_Complex[T] {.importcpp: "(# / #)".}
+
+proc `=+`*[T: SomeFloat](self: var C10_Complex[T], arg: C10_Complex[T]) {.importcpp: "(# += #)".}
+proc `=-`*[T: SomeFloat](self: var C10_Complex[T], arg: C10_Complex[T]) {.importcpp: "(# -= #)".}
+proc `=*`*[T: SomeFloat](self: var C10_Complex[T], arg: C10_Complex[T]) {.importcpp: "(# *= #)".}
+proc `=/`*[T: SomeFloat](self: var C10_Complex[T], arg: C10_Complex[T]) {.importcpp: "(# /= #)".}
+
+proc `==`*[T: SomeFloat](a, b: C10_Complex[T]): bool {.importcpp: "(# == #)".}
+proc `!=`*[T: SomeFloat](a, b: C10_Complex[T]): bool {.importcpp: "(# != #)".}
+
+{.pop.}
+{.pop.}
+

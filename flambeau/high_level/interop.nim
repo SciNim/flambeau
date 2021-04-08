@@ -8,7 +8,7 @@
 import
   std/[complex, enumerate, macros],
   # External
-  cppstl/string,
+  cppstl/std_string,
   # Internal
   ../raw_bindings/[c10, tensors],
   ./internal/dynamic_stack_arrays
@@ -63,6 +63,9 @@ func toScalarKind(T: typedesc[SomeTorchType]): static ScalarKind =
     kBool
   else:
     {.error: "Unsupported type in libtorch: " & $T.}
+
+converter convertTypeDef*(T: typedesc[SomeTorchType]) : static ScalarKind =
+  toScalarKind(T)
 
 # Nim openarrays -> Torch Tensors
 # -----------------------------------------------------
