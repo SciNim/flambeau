@@ -160,4 +160,4 @@ func toCppString*(t: Tensor): CppString =
   """.}
 
 proc `$`*(t: Tensor): string =
-  $t.toCppString
+  "Tensor\n" & $t.toCppString
