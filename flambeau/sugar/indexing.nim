@@ -607,7 +607,7 @@ macro slice_typed_dispatch_mut(t: typed, args: varargs[typed], val: typed): unty
 #
 # #######################################################################
 
-macro `[]`*(t: Tensor, args: varargs[untyped]): untyped =
+macro `[]`*(t: ATTensor, args: varargs[untyped]): untyped =
   ## Slice a Tensor
   ## Input:
   ##   - a Tensor
@@ -643,7 +643,7 @@ macro `[]`*(t: Tensor, args: varargs[untyped]): untyped =
   result = quote do:
     slice_typed_dispatch(`t`, `new_args`)
 
-macro `[]=`*(t: var Tensor, args: varargs[untyped]): untyped =
+macro `[]=`*(t: var ATTensor, args: varargs[untyped]): untyped =
   ## Modifies a tensor inplace at the corresponding location or slice
   ##
   ##
@@ -675,3 +675,4 @@ macro `[]=`*(t: var Tensor, args: varargs[untyped]): untyped =
 
   result = quote do:
     slice_typed_dispatch_mut(`t`, `new_args`,`val`)
+

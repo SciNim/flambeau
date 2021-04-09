@@ -82,7 +82,7 @@ template no_grad_mode*(body: untyped): untyped =
 # Linear Layers
 # -------------------------------------------------------------------------
 
-func linear*(input, weight: Tensor): Tensor {.importcpp: "torch::nn::functional::linear(@)".}
+func linear*(input, weight: ATTensor): ATTensor {.importcpp: "torch::nn::functional::linear(@)".}
   ## Applies a linear transformation to the incoming data:
   ##   y = input * transpose(weight)
   ##
@@ -91,7 +91,7 @@ func linear*(input, weight: Tensor): Tensor {.importcpp: "torch::nn::functional:
   ## Weight: (out_features,in_features)
   ## Output: (N,∗,out_features)
 
-func linear*(input, weight, bias: Tensor): Tensor {.importcpp: "torch::nn::functional::linear(@)".}
+func linear*(input, weight, bias: ATTensor): ATTensor {.importcpp: "torch::nn::functional::linear(@)".}
   ## Applies a linear transformation to the incoming data:
   ##   y = input * transpose(weight) + bias
   ##
@@ -104,27 +104,27 @@ func linear*(input, weight, bias: Tensor): Tensor {.importcpp: "torch::nn::funct
 # Pooling functions
 # -------------------------------------------------------------------------
 
-func max_pool2d*(input: Tensor): Tensor {.varargs, importcpp:"torch::max_pool2d(#, {@})".}
+func max_pool2d*(input: ATTensor): ATTensor {.varargs, importcpp:"torch::max_pool2d(#, {@})".}
   ## MaxPool 2D function
   ## - `input`: a Tensor
   ## - `kernel_size`: the kernel shape
 
-func max_pool2d*(input: Tensor, kernel_size: IntArrayRef): Tensor {.importcpp:"torch::max_pool2d(@)".}
+func max_pool2d*(input: ATTensor, kernel_size: IntArrayRef): ATTensor {.importcpp:"torch::max_pool2d(@)".}
 
 # Activation functions
 # -------------------------------------------------------------------------
 
-func relu*(input: Tensor): Tensor {.importcpp: "torch::relu(@)".}
-func relu_mut*(input: var Tensor) {.importcpp: "torch::relu_(@)".}
+func relu*(input: ATTensor): ATTensor {.importcpp: "torch::relu(@)".}
+func relu_mut*(input: var ATTensor) {.importcpp: "torch::relu_(@)".}
 
-func log_softmax*(input: Tensor, axis: int64): Tensor {.importcpp: "torch::log_softmax(@)".}
-func log_softmax*(input: Tensor, axis: int64, dtype: ScalarKind): Tensor {.importcpp: "torch::log_softmax(@)".}
+func log_softmax*(input: ATTensor, axis: int64): ATTensor {.importcpp: "torch::log_softmax(@)".}
+func log_softmax*(input: ATTensor, axis: int64, dtype: ScalarKind): ATTensor {.importcpp: "torch::log_softmax(@)".}
 
 # Dropout functions
 # -------------------------------------------------------------------------
 
-func dropout*(input: Tensor, p = 0.5, training=true): Tensor {.importcpp: "torch::dropout(@)".}
-func dropout_mut*(input: var Tensor, p = 0.5, training=true) {.importcpp: "torch::dropout_(@)".}
+func dropout*(input: ATTensor, p = 0.5, training=true): ATTensor {.importcpp: "torch::dropout(@)".}
+func dropout_mut*(input: var ATTensor, p = 0.5, training=true) {.importcpp: "torch::dropout_(@)".}
 
 # Loss functions
 # -------------------------------------------------------------------------
@@ -135,13 +135,13 @@ type
     Mean = 1 # (Possibly weighted) mean of losses
     Sum = 2  # Sum losses
 
-func nll_loss*(input, target: Tensor): Tensor {.importcpp: "torch::nll_loss(@)".}
-func nll_loss*(input, target: Tensor, red: Reduction): Tensor {.importcpp: "torch::nll_loss(#, #, /*weight=*/{}, #)".}
+func nll_loss*(input, target: ATTensor): ATTensor {.importcpp: "torch::nll_loss(@)".}
+func nll_loss*(input, target: ATTensor, red: Reduction): ATTensor {.importcpp: "torch::nll_loss(#, #, /*weight=*/{}, #)".}
 
-func binary_cross_entropy_with_logits*(input, target: Tensor): Tensor {.importcpp: "torch::binary_cross_entropy_with_logits(@)".}
+func binary_cross_entropy_with_logits*(input, target: ATTensor): ATTensor {.importcpp: "torch::binary_cross_entropy_with_logits(@)".}
   ## Sigmoid + Log + Negative loglikelihood
   ## PyTorch naming
-func sigmoid_cross_entropy*(input, target: Tensor): Tensor {.importcpp: "torch::binary_cross_entropy_with_logits(@)".}
+func sigmoid_cross_entropy*(input, target: ATTensor): ATTensor {.importcpp: "torch::binary_cross_entropy_with_logits(@)".}
   ## Sigmoid + Log + Negative loglikelihood
   ## Arraymancer or Tensorflow naming
 
@@ -210,11 +210,11 @@ proc register_module*[ParMod: Module, ChildMod: Module](
   ## Register a submodule to a parent module.
 
 proc register_parameter*[ParMod: Module](
-       parent: var SharedModule[ParMod], name: cstring, child: sink Tensor): Tensor
+       parent: var SharedModule[ParMod], name: cstring, child: sink ATTensor): ATTensor
        {.importcpp: "#->register_parameter(@)".}
   ## Register a submodule to a parent module.
 
-func parameters*(module: Module, recurse = true): CppVector[Tensor]{.importcpp: "#.parameters(#)".}
+func parameters*(module: Module, recurse = true): CppVector[ATTensor]{.importcpp: "#.parameters(#)".}
 
 func is_training*(module: Module): bool {.importcpp: "#.is_training()".}
 
@@ -238,8 +238,8 @@ type
     # Linear is a shared_ptr underneath.
     # The ptr is bycopy which results in the actual data being byref.
     options*{.importc.}: LinearOptions
-    weight*{.importc.}: Tensor
-    bias*{.importc.}: Tensor
+    weight*{.importc.}: ATTensor
+    bias*{.importc.}: ATTensor
 
 func init*(T: type Linear, in_features, out_features: int64): T {.constructor, importcpp:"torch::nn::Linear(@)".}
 
@@ -251,7 +251,7 @@ func reset_parameters*(linear: Linear){.importcpp: "#.reset_parameters()".}
 
 # pretty_print
 
-func forward*(linear: Linear, input: Tensor): Tensor {.importcpp: "#->forward(#)".}
+func forward*(linear: Linear, input: ATTensor): ATTensor {.importcpp: "#->forward(#)".}
   ## Transforms the ``input`` tensor
   ## by multiplying with the ``weight``
   ## and optionally adding the ``bias``,
@@ -268,8 +268,8 @@ type
     # Conv2d is a shared_ptr underneath.
     # The ptr is bycopy which results in the actual data being byref.
     options*{.importc.}: Conv2DOptions
-    weight*{.importc.}: Tensor
-    bias*{.importc.}: Tensor
+    weight*{.importc.}: ATTensor
+    bias*{.importc.}: ATTensor
 
 func init*(T: type Conv2d, in_channels, out_channels, kernel_size: int64): T {.constructor, importcpp:"torch::nn::Conv2d(@)".}
 func init*(T: type Conv2d, in_channels, out_channels,
@@ -283,7 +283,7 @@ func reset_parameters*(conv2d: Conv2d){.importcpp: "#.reset_parameters()".}
 
 # pretty_print
 
-func forward*(conv2d: Conv2d, input: Tensor): Tensor {.importcpp: "#->forward(#)".}
+func forward*(conv2d: Conv2d, input: ATTensor): ATTensor {.importcpp: "#->forward(#)".}
   ## Transforms the ``input`` tensor
   ## by multiplying with the ``weight``
   ## and optionally adding the ``bias``,
@@ -309,4 +309,4 @@ func init*(T: type Dropout, proba = 0.5): T {.constructor, importcpp:"torch::nn:
 func init*(T: type Dropout2d, proba = 0.5): T {.constructor, importcpp:"torch::nn::Dropout2d(@)".}
 func init*(T: type Dropout3d, proba = 0.5): T {.constructor, importcpp:"torch::nn::Dropout3d(@)".}
 
-func forward*(dropout: SomeDropout, input: Tensor): Tensor {.importcpp: "#->forward(#)".}
+func forward*(dropout: SomeDropout, input: ATTensor): ATTensor {.importcpp: "#->forward(#)".}

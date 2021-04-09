@@ -14,7 +14,7 @@ import
   ../private/dynamic_stack_arrays
 
 # #######################################################################
-#
+
 #               Interop between Torch and Nim
 #
 # #######################################################################
@@ -83,7 +83,7 @@ func getShape[T](s: openarray[T], parent_shape = Metadata()): Metadata =
   when (T is seq|array):
     result = getShape(s[0], result)
 
-macro getBaseType(T: typedesc): untyped =
+macro getBaseType*(T: typedesc): untyped =
   # Get the base T of a seq[T] input
   result = T.getTypeInst()[1]
   while result.kind == nnkBracketExpr and (
@@ -104,7 +104,7 @@ iterator flatIter*[T](s: openarray[T]): auto {.noSideEffect.}=
     else:
       yield item
 
-func toTensorView*[T: SomeTorchType](oa: openarray[T]): lent Tensor =
+func toATTensorView*[T: SomeTorchType](oa: openarray[T]): lent ATTensor =
   ## Interpret an openarray as a CPU Tensor
   ## Important:
   ##   the buffer is shared.
@@ -121,7 +121,7 @@ func toTensorView*[T: SomeTorchType](oa: openarray[T]): lent Tensor =
     toScalarKind(T)
   )
 
-func toTensor*[T: SomeTorchType](oa: openarray[T]): Tensor =
+func toATTensor*[T: SomeTorchType](oa: openarray[T]): ATTensor =
   ## Interpret an openarray as a CPU Tensor
   ##
   ## Input:
@@ -134,7 +134,7 @@ func toTensor*[T: SomeTorchType](oa: openarray[T]): Tensor =
     toScalarKind(T)
   ).clone()
 
-func toTensor*[T: seq|array](oa: openarray[T]): Tensor =
+func toATTensor*[T: seq|array](oa: openarray[T]): ATTensor =
   ## Interpret an openarray of openarray as a CPU Tensor
   ##
   ## Input:
@@ -154,8 +154,7 @@ func toTensor*[T: seq|array](oa: openarray[T]): Tensor =
     data[i] = val
 
 # CppString -> Nim string
-
-func toCppString*(t: Tensor): CppString =
+func toCppString*(t: ATTensor): CppString =
   ## Tensors don't have a `$` equivilent so we have to put it into
   ## a ostringstream and convert it to a CppString.
   {.emit: """
@@ -164,5 +163,5 @@ func toCppString*(t: Tensor): CppString =
   result = stream.str();
   """.}
 
-proc `$`*(t: Tensor): string =
+proc `$`*(t: ATTensor): string =
   "Tensor\n" & $t.toCppString

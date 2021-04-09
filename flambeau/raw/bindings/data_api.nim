@@ -155,7 +155,7 @@ type
   TensorTransform*[Target]
       {.bycopy, pure,
       importcpp: "torch::data::transforms::TensorTransform".}
-    = object of Transform[Example[Tensor, Target], Example[Tensor, Target]]
+    = object of Transform[Example[ATTensor, Target], Example[ATTensor, Target]]
 
   TensorLambda*[Target]
       {.bycopy, pure,
@@ -237,11 +237,11 @@ func mnist*(rootPath: cstring, mode = kTrain): Mnist {.constructor, importcpp:"t
   ## Loads the MNIST dataset from the `root` path
   ## The supplied `rootpath` should contain the *content* of the unzipped
   ## MNIST dataset, available from http://yann.lecun.com/exdb/mnist.
-func get*(dataset: Mnist, index: int): Example[Tensor, Tensor] {.importcpp:"#.get(#)".}
+func get*(dataset: Mnist, index: int): Example[ATTensor, ATTensor] {.importcpp:"#.get(#)".}
 func is_train*(): bool {.importcpp:"#.is_train()".}
-func images*(dataset: Mnist): lent Tensor {.importcpp: "#.images()".}
+func images*(dataset: Mnist): lent ATTensor {.importcpp: "#.images()".}
   ## Returns all images stacked into a single tensor
-func targets*(dataset: Mnist): lent Tensor {.importcpp: "#.targets()".}
+func targets*(dataset: Mnist): lent ATTensor {.importcpp: "#.targets()".}
 
 # libtorch/include/torch/csrc/api/include/torch/data/datasets/map.h
 # libtorch/include/torch/csrc/api/include/torch/data/datasets/base.h
@@ -302,7 +302,7 @@ type
 #       BatchDataset and Dataset have no generics attached
 #       and so we can't infer their Iterator type :/
 func start*(dl: StatelessDataLoader
-       ): TorchDataIterator[Example[Tensor, Tensor]]
+       ): TorchDataIterator[Example[ATTensor, ATTensor]]
   {.importcpp: "#.begin()".}
   ## Start an iterator
   ## Note: due to compiler bugs with C++ interop
@@ -311,14 +311,14 @@ func start*(dl: StatelessDataLoader
   ##       which is the output of the Stack transform
 
 func stop*(dl: StatelessDataLoader
-       ): TorchDataIterator[Example[Tensor, Tensor]]
+       ): TorchDataIterator[Example[ATTensor, ATTensor]]
        {.importcpp: "#.end()".}
   ## Returns a sentinel value that denotes
   ## the end of an iterator
 
 func start*[D, S](
          dl: CppUniquePtr[StatelessDataLoader[D, S]]
-       ): TorchDataIterator[Example[Tensor, Tensor]]
+       ): TorchDataIterator[Example[ATTensor, ATTensor]]
   {.importcpp: "#->begin()".}
   ## Start an iterator
   ## Note: due to compiler bugs with C++ interop
@@ -331,7 +331,7 @@ func start*[D, S](
 
 func stop*[D, S](
          dl: CppUniquePtr[StatelessDataLoader[D, S]]
-       ): TorchDataIterator[Example[Tensor, Tensor]]
+       ): TorchDataIterator[Example[ATTensor, ATTensor]]
        {.importcpp: "#->end()".}
   ## Returns a sentinel value that denotes
   ## the end of an iterator
@@ -339,7 +339,7 @@ func stop*[D, S](
   ## Overload as StatelessDataLoader has no default constructors
   ## So we don't want Nim to use temporaries
 
-iterator items*(dl: StatelessDataLoader or CppUniquePtr[StatelessDataLoader]): Example[Tensor, Tensor] =
+iterator items*(dl: StatelessDataLoader or CppUniquePtr[StatelessDataLoader]): Example[ATTensor, ATTensor] =
   # TODO: lent Example[Tensor, Tensor],
   #   borrow checker complains about 'cur' escaping it's frame
   #   but `cur.get()` already returns a borrowed view
@@ -349,7 +349,7 @@ iterator items*(dl: StatelessDataLoader or CppUniquePtr[StatelessDataLoader]): E
     yield cur.get()
     cur.next()
 
-iterator pairs*(dl: StatelessDataLoader or CppUniquePtr[StatelessDataLoader]): tuple[index: int, value: Example[Tensor, Tensor]] =
+iterator pairs*(dl: StatelessDataLoader or CppUniquePtr[StatelessDataLoader]): tuple[index: int, value: Example[ATTensor, ATTensor]] =
   # TODO: lent Example[Tensor, Tensor]
   #   borrow checker complains about 'cur' escaping it's frame
   #   but `cur.get()` already returns a borrowed view
