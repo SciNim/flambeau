@@ -5,7 +5,7 @@
 #   * Apache v2 license (license terms in the root directory or at http://www.apache.org/licenses/LICENSE-2.0).
 # at your option. This file may not be copied, modified, or distributed except according to those terms.
 
-import ../libtorch
+import ../../libtorch
 
 # c10 is a collection of utilities in PyTorch
 
@@ -64,7 +64,6 @@ func value*[T](o: Optional[T]): T {.importcpp: "#.value()".}
 
 # c10::complex
 # -----------------------------------------------------------------------
-import ../libtorch
 type
   C10_Complex*[T: SomeFloat] {.importcpp: "c10::complex".} = object
 

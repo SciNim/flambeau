@@ -8,13 +8,13 @@
 # Raw exports
 # ----------------------------------------------------------------
 
-import ./flambeau/raw/bindings/rawtensors
+import ./flambeau/raw/bindings/attensors
   except # TODO, don't export associated proc either
     # ArrayRef,
     TensorOptions,
     TorchSlice, IndexNone, IndexEllipsis, SomeSlicer, torchSlice
 
-export rawtensors # TODO, don't export low-level procs and types like C++ slices.
+export attensors # TODO, don't export low-level procs and types like C++ slices.
 
 import ./flambeau/raw/bindings/neural_nets
   except LinearOptions

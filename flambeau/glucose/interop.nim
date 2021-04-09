@@ -10,8 +10,8 @@ import
   # External
   cppstl/std_string,
   # Internal
-  ../raw/bindings/[c10, tensors],
-  ./private/dynamic_stack_arrays
+  ../raw/bindings/[c10, attensors],
+  ../private/dynamic_stack_arrays
 
 # #######################################################################
 #

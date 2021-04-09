@@ -10,7 +10,7 @@ import
   std/complex,
   # Internal
   ../cpp/std_cpp,
-  ../libtorch,
+  ../../libtorch,
   ./c10
 
 # (Almost) raw bindings to PyTorch Tensors

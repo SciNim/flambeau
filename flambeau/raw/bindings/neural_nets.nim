@@ -7,8 +7,8 @@
 
 import
   ../cpp/std_cpp,
-  ../libtorch,
-  ./tensors,
+  ../../libtorch,
+  ./attensors,
   ./c10
 
 # (Almost) raw bindings to PyTorch Neural Networks

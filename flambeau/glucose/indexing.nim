@@ -7,7 +7,7 @@
 
 import
   ../helpers/ast_utils,
-  ../raw_bindings/tensors
+  ../raw/bindings/attensors
 
 # #######################################################################
 #

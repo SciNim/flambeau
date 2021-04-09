@@ -7,8 +7,8 @@
 
 import
   ../cpp/std_cpp,
-  ../libtorch,
-  ./tensors
+  ../../libtorch,
+  ./attensors
 
 # (Almost) raw bindings to PyTorch optimizers
 # -----------------------------------------------------------------------

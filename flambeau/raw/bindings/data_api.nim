@@ -7,8 +7,8 @@
 
 import
   ../cpp/std_cpp,
-  ../libtorch,
-  ./c10, ./tensors
+  ../../libtorch,
+  ./c10, ./attensors
 
 # (Almost) raw bindings to PyTorch Data API
 # -----------------------------------------------------------------------
