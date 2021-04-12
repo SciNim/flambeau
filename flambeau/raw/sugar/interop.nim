@@ -129,7 +129,7 @@ func toRawTensor*[T: SomeTorchType](oa: openarray[T]): RawTensor =
   ## Result:
   ##      - A view Tensor of the same shape
   let shape = getShape(oa)
-  result = empty(shape, T.toScalarKind())
+  result = empty(shape.asTorchView(), T.toScalarKind())
 
   return from_blob(
     oa[0].unsafeAddr,
@@ -156,6 +156,7 @@ func toRawTensorFromSeq*[T: seq|array](oa: openarray[T]): RawTensor =
   for i, val in enumerate(flatIter(oa)):
     data[i] = val
 
+# Trick to avoid ambiguous call when using toRawTensor in to toTensor
 func toRawTensor*[T: seq|array](oa: openarray[T]): RawTensor =
   toRawTensorFromSeq[T](oa)
 

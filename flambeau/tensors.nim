@@ -17,10 +17,9 @@ func toTensor*[T: SomeTorchType](oa: openArray[T]): Tensor[T] =
 func toTensor*[T: seq|array](oa: openArray[T]): auto =
   # Get underlying type
   type U = getBaseType(T)
-  # Why is it ambiguous ?
+  # Ambiguous because of auto ?
   let res = toRawTensorFromSeq[T](oa)
   result = Tensor[U](res)
-  # result = toRawTensor[T](oa).Tensor[U]
 
 macro `[]`*[T](t: Tensor[T], args: varargs[untyped]): untyped =
   result = quote do:
@@ -31,8 +30,7 @@ macro `[]=`*[T](t: var Tensor[T], args: varargs[untyped]): untyped =
     [] = (`RawTensor(t)`, args)
 
 proc `$`*[T](t: Tensor[T]): string =
-  `$`(RawTensor(t))
-  # "Tensor\n" & $(toCppString(RawTensor(t)))
+  "Tensor\n" & $(toCppString(RawTensor(t)))
 
 # Strings & Debugging
 # -----------------------------------------------------------------------
