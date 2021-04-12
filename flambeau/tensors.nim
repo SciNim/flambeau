@@ -6,15 +6,17 @@ import std/[complex, macros]
 {.experimental: "views".} # TODO
 
 type
-  Tensor*[T] {.pure, final.} = object
+  Tensor*[T] = object
+    raw: RawTensor
 
 proc convertRawTensor[T](t: Tensor[T]) : RawTensor =
   # Is there a better way to do this ?
-  result = cast[ptr RawTensor](unsafeAddr(t))[]
+  t.raw
 
 proc convertTensor[T](t: RawTensor) : Tensor[T] =
   # Is there a better way to do this ?
-  result = cast[ptr Tensor[T]](unsafeAddr(t))[]
+  # This segfault ?
+  result.raw = t
 
 func toTensorView*[T: SomeTorchType](oa: openArray[T]): lent Tensor[T] =
   convertTensor[T](toRawTensorView[T](oa))
