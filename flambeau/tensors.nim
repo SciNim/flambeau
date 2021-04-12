@@ -6,84 +6,90 @@ import std/[complex, macros]
 {.experimental: "views".} # TODO
 
 type
-  Tensor*[T] = distinct RawTensor
+  Tensor*[T] {.pure, final.} = object
+
+proc convertRawTensor[T](t: Tensor[T]) : RawTensor =
+  result = cast[ptr RawTensor](unsafeAddr(t))[]
+
+proc convertTensor[T](t: RawTensor) : Tensor[T] =
+  result = cast[ptr Tensor[T]](unsafeAddr(t))[]
 
 func toTensorView*[T: SomeTorchType](oa: openArray[T]): lent Tensor[T] =
-  Tensor[T](toRawTensorView[T](oa))
+  convertTensor[T](toRawTensorView[T](oa))
 
 func toTensor*[T: SomeTorchType](oa: openArray[T]): Tensor[T] =
-  Tensor[T](toRawTensor[T](oa))
+  convertTensor[T](toRawTensor[T](oa))
 
 func toTensor*[T: seq|array](oa: openArray[T]): auto =
   # Get underlying type
   type U = getBaseType(T)
   # Ambiguous because of auto ?
   let res = toRawTensorFromSeq[T](oa)
-  result = Tensor[U](res)
+  result = convertTensor[U](res)
 
 macro `[]`*[T](t: Tensor[T], args: varargs[untyped]): untyped =
   result = quote do:
-    [](`RawTensor(t)`, args)
+    [](`convertRawTensor(t)`, args)
 
 macro `[]=`*[T](t: var Tensor[T], args: varargs[untyped]): untyped =
   result = quote do:
-    [] = (`RawTensor(t)`, args)
+    [] = (`convertRawTensor(t)`, args)
 
 proc `$`*[T](t: Tensor[T]): string =
-  "Tensor\n" & $(toCppString(RawTensor(t)))
+  result = "Tensor\n" & $(toCppString(convertRawTensor(t)))
 
 # Strings & Debugging
 # -----------------------------------------------------------------------
 
 proc print*[T](self: Tensor[T]) {.sideeffect, inline.} =
-  print(RawTensor(self))
+  print(convertRawTensor(self))
 
 # Metadata
 # -----------------------------------------------------------------------
 
 func dim*[T](self: Tensor[T]): int64 {.inline.} =
   ## Number of dimensions
-  dim(RawTensor(self))
+  dim(convertRawTensor(self))
 
 func reset*[T](self: var Tensor[T]) {.inline.} =
-  reset(RawTensor(self))
+  reset(convertRawTensor(self))
 
 func is_same*[T](self, other: Tensor[T]): bool {.inline.} =
   ## Reference equality
   ## Do the tensors use the same memory.
-  is_same(RawTensor(self), RawTensor(other))
+  is_same(convertRawTensor(self), convertRawTensor(other))
 
 func sizes*[T](self: Tensor[T]): IntArrayRef {.inline.} =
   ## This is Arraymancer and Numpy "shape"
-  sizes(RawTensor(self))
+  sizes(convertRawTensor(self))
 
 func shape*[T](self: Tensor[T]): seq[int64] {.inline.} =
   ## This is Arraymancer and Numpy "shape"
-  result = asNimView(sizes(RawTensor(self)))
+  result = asNimView(sizes(convertRawTensor(self)))
 
 func strides*[T](self: Tensor[T]): openArray[int64] {.inline.} =
-  strides(RawTensor(self))
+  strides(convertRawTensor(self))
 
 func ndimension*[T](self: Tensor[T]): int64 {.inline.} =
   ## This is Arraymancer rank
-  ndimension(RawTensor(self))
+  ndimension(convertRawTensor(self))
 
 func nbytes*[T](self: Tensor[T]): uint {.inline.} =
   ## Bytes-size of the Tensor
-  nbytes(RawTensor(self))
+  nbytes(convertRawTensor(self))
 
 func numel*[T](self: Tensor[T]): int64 {.inline.} =
   ## This is Arraymancer and Numpy "size"
-  numel(RawTensor(self))
+  numel(convertRawTensor(self))
 
 func size*[T](self: Tensor[T], axis: int64): int64 {.inline.} =
-  size(RawTensor(self))
+  size(convertRawTensor(self))
 
 func itemsize*[T](self: Tensor[T]): uint {.inline.} =
-  itemsize(RawTensor(self))
+  itemsize(convertRawTensor(self))
 
 func element_size*[T](self: Tensor[T]): int64 {.inline.} =
-  element_size(RawTensor(self))
+  element_size(convertRawTensor(self))
 
 # Accessors
 # -----------------------------------------------------------------------
@@ -97,61 +103,61 @@ func data_ptr*[T](self: Tensor[T]): ptr UncheckedArray[T] {.inline.} =
   ## It is recommended to use this only on contiguous tensors
   ## (freshly created or freshly cloned) and to avoid
   ## sliced tensors.
-  data_ptr(RawTensor(self), T)
+  data_ptr(convertRawTensor(self), T)
 
 # Backend
 # -----------------------------------------------------------------------
 
 func has_storage*[T](self: Tensor[T]): bool {.inline.} =
-  has_storage(RawTensor(self))
+  has_storage(convertRawTensor(self))
 
 func get_device*[T](self: Tensor[T]): int64 {.inline.} =
-  get_device(RawTensor(self))
+  get_device(convertRawTensor(self))
 
 func is_cuda*[T](self: Tensor[T]): bool {.inline.} =
-  is_cuda(RawTensor(self))
+  is_cuda(convertRawTensor(self))
 
 func is_hip*[T](self: Tensor[T]): bool {.inline.} =
-  is_hip(RawTensor(self))
+  is_hip(convertRawTensor(self))
 
 func is_sparse*[T](self: Tensor[T]): bool {.inline.} =
-  is_sparse(RawTensor(self))
+  is_sparse(convertRawTensor(self))
 
 func is_mkldnn*[T](self: Tensor[T]): bool {.inline.} =
-  is_mkldnn(RawTensor(self))
+  is_mkldnn(convertRawTensor(self))
 
 func is_vulkan*[T](self: Tensor[T]): bool {.inline.} =
-  is_vulkan(RawTensor(self))
+  is_vulkan(convertRawTensor(self))
 
 func is_quantized*[T](self: Tensor[T]): bool {.inline.} =
-  is_quantized(RawTensor(self))
+  is_quantized(convertRawTensor(self))
 
 func is_meta*[T](self: Tensor[T]): bool {.inline.} =
-  is_meta(RawTensor(self))
+  is_meta(convertRawTensor(self))
 
 func cpu*[T](self: Tensor[T]): Tensor[T] {.inline.} =
-  cpu(RawTensor(self))
+  cpu(convertRawTensor(self))
 
 func cuda*[T](self: Tensor[T]): Tensor[T] {.inline.} =
-  cuda(RawTensor(self))
+  cuda(convertRawTensor(self))
 
 func hip*[T](self: Tensor[T]): Tensor[T] {.inline.} =
-  hip(RawTensor(self))
+  hip(convertRawTensor(self))
 
 func vulkan*[T](self: Tensor[T]): Tensor[T] {.inline.} =
-  vulkan(RawTensor(self))
+  vulkan(convertRawTensor(self))
 
 func to*[T](self: Tensor[T], device: DeviceKind): Tensor[T] {.inline.} =
-  to(RawTensor(self), device)
+  to(convertRawTensor(self), device)
 
 func to*[T](self: Tensor[T], device: Device): Tensor[T] {.inline.} =
-  to(RawTensor(self), device)
+  to(convertRawTensor(self), device)
 
 # dtype
 # -----------------------------------------------------------------------
 func to*[T](self: Tensor[T], dtype: typedesc[SomeTorchType]): Tensor[T] {.inline.} =
   # Use typedesc -> ScalarKind converter
-  to(RawTensor(self), dtype)
+  to(convertRawTensor(self), dtype)
 
 func scalarType*[T](self: Tensor[T]): typedesc[T] {.inline.} =
   T
@@ -161,7 +167,7 @@ func scalarType*[T](self: Tensor[T]): typedesc[T] {.inline.} =
 # DeviceType and ScalarType are auto-convertible to TensorOptions
 
 func init*[T](t: type Tensor[T]): Tensor[T] {.inline.} =
-  init(RawTensor(t))
+  init(convertRawTensor(t))
 
 func from_blob*[T](data: pointer, sizes: openArray[int64], options: TensorOptions|DeviceKind): Tensor[T] {.inline.} =
   let sizes = sizes.asTorchView
@@ -202,13 +208,13 @@ func empty*[T](size: IntArrayRef): Tensor[T] {.inline.} =
   empty(size, T).Tensor[T]
 
 func clone*[T](self: Tensor[T]): Tensor[T] {.inline.} =
-  clone(RawTensor(self)).Tensor[T]
+  clone(convertRawTensor(self)).Tensor[T]
 
 # Random sampling
 # -----------------------------------------------------------------------
 
 func random_mut*[T](self: var Tensor[T], start, stopEx: int64) {.inline.} =
-  random_mut(RawTensor(self), start, stopEx)
+  random_mut(convertRawTensor(self), start, stopEx)
 
 func randint*[T](start, stopEx: int64, args: varargs): Tensor[T] {.inline.} =
   randint(start, stopEx, args).Tensor[T]
@@ -218,10 +224,10 @@ func randint*[T](start, stopEx: int64, size: openArray[int64]): Tensor[T] {.inli
   randint(start, stopEx, size).Tensor[T]
 
 func rand_like*[T](self: Tensor[T], options: TensorOptions|DeviceKind|Device): Tensor[T] {.inline.} =
-  rand_like(RawTensor(self), options).Tensor[T]
+  rand_like(convertRawTensor(self), options).Tensor[T]
 
 func rand_like*[T](self: Tensor[T]): Tensor[T] {.inline.} =
-  rand_like(RawTensor(self), T).Tensor[T]
+  rand_like(convertRawTensor(self), T).Tensor[T]
 
 func rand*[T](size: openArray[int64]): Tensor[T] {.inline.} =
   let size = size.asTorchView()
@@ -233,14 +239,14 @@ import complex
 import cppstl/std_complex
 
 func item*[T](self: Tensor[T]): T =
-  item(RawTensor(self), typedesc[T])
+  item(convertRawTensor(self), typedesc[T])
   ## Extract the scalar from a 0-dimensional tensor
 
 func item*(self: Tensor[Complex32]): Complex32 =
-  item(RawTensor(self), typedesc[Complex32]).toCppComplex().toComplex()
+  item(convertRawTensor(self), typedesc[Complex32]).toCppComplex().toComplex()
 
 func item*(self: Tensor[Complex64]): Complex64 =
-  item(RawTensor(self), typedesc[Complex64]).toCppComplex().toComplex()
+  item(convertRawTensor(self), typedesc[Complex64]).toCppComplex().toComplex()
 
 # Unsure what those corresponds to in Python
 # func `[]`*[T](self: Tensor, index: Scalar): Tensor {.inline.}
@@ -251,7 +257,7 @@ func index*[T](self: Tensor[T], args: varargs): Tensor[T] {.inline.} =
   ## Tensor indexing. It is recommended
   ## to Nimify this in a high-level wrapper.
   ## `tensor.index(indexers)`
-  index(RawTensor(self), args).Tensor[T]
+  index(convertRawTensor(self), args).Tensor[T]
 # We can't use the construct `#.index_put_({@}, #)`
 # so hardcode sizes,
 # 6d seems reasonable, that would be a batch of 3D videos (videoID/batchID, Time, Color Channel, Height, Width, Depth)
@@ -259,15 +265,15 @@ func index*[T](self: Tensor[T], args: varargs): Tensor[T] {.inline.} =
 
 func index_put*[T](self: var Tensor[T], idx: varargs[int|int64], val: T or Tensor[T]) {.inline.} =
   ## Tensor mutation at index. It is recommended
-  index_put(RawTensor(self), idx, val)
+  index_put(convertRawTensor(self), idx, val)
 
 # Fancy Indexing
 # -----------------------------------------------------------------------
 func index_select*[T](self: Tensor[T], axis: int64, indices: Tensor[T]): Tensor[T] {.inline.} =
-  index_select(RawTensor(self), axis, indices).Tensor[T]
+  index_select(convertRawTensor(self), axis, indices).Tensor[T]
 
 func masked_select*[T](self: Tensor[T], mask: Tensor[T]): Tensor[T] {.inline.} =
-  masked_select(RawTensor(self), RawTensor(mask)).Tensor[T]
+  masked_select(convertRawTensor(self), convertRawTensor(mask)).Tensor[T]
 
 # PyTorch exposes in-place `index_fill_` and `masked_fill_`
 # and out-of-place `index_fill` and `masked_fill`
@@ -275,27 +281,27 @@ func masked_select*[T](self: Tensor[T], mask: Tensor[T]): Tensor[T] {.inline.} =
 # we only exposes the in-place version.
 
 func index_fill_mut*[T](self: var Tensor[T], mask: Tensor[T], value: T or Tensor[T]) {.inline.} =
-  index_fill_mut(RawTensor(self), RawTensor(mask), value)
+  index_fill_mut(convertRawTensor(self), convertRawTensor(mask), value)
 
 func masked_fill_mut*[T](self: var Tensor[T], mask: Tensor[T], value: T or Tensor[T]) {.inline.} =
-  masked_fill_mut(RawTensor(self), RawTensor(mask), value)
+  masked_fill_mut(convertRawTensor(self), convertRawTensor(mask), value)
 
 # Shapeshifting
 # -----------------------------------------------------------------------
 
 func reshape*[T](self: Tensor[T], shape: openArray[int64]): Tensor[T] {.inline.} =
   let sizes = sizes.asTorchView()
-  reshape(RawTensor(self), sizes).Tensor[T]
+  reshape(convertRawTensor(self), sizes).Tensor[T]
 
 func view*[T](self: Tensor[T], size: openArray[int64]): Tensor[T] {.inline.} =
   let size = size.asTorchView()
-  reshape(RawTensor(self), size).Tensor[T]
+  reshape(convertRawTensor(self), size).Tensor[T]
 
 # Automatic Differentiation
 # -----------------------------------------------------------------------
 
 func backward*[T](self: var Tensor[T]) {.inline.} =
-  backward(RawTensor(self))
+  backward(convertRawTensor(self))
 
 # Operators
 # -----------------------------------------------------------------------

@@ -36,6 +36,26 @@ template asTorchView*[T](oa: openarray[T]): ArrayRef[T] =
 template asTorchView(meta: Metadata): ArrayRef[int64] =
   ArrayRef[int64].init(meta.data[0].unsafeAddr, meta.len)
 
+# Make interop with ArrayRef easier
+proc `$`*[T](ar: ArrayRef[T]) : string =
+  `$`(ar.asNimView())
+
+func len*[T](ar: ArrayRef[T]): int =
+  ar.size().int
+
+# func `[]`*[T](ar: ArrayRef[T], idx : SomeInteger) : T =
+#   if idx >= 0 and idx < ar.len():
+#     ar.data()[idx]
+
+# func `[]=`*[T](ar: var ArrayRef[T], idx : SomeInteger, val: T) =
+#   ar.data()[idx] = val
+
+iterator item*[T](ar: ArrayRef[T]) : T =
+  var i = 0
+  while i < ar.len():
+    yield ar.data()[i]
+    inc i
+
 # Type map
 # -----------------------------------------------------
 
