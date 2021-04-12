@@ -6,7 +6,7 @@
 # at your option. This file may not be copied, modified, or distributed except according to those terms.
 
 import
-  std/[complex, enumerate, macros],
+  std/[complex, enumerate, macros, strformat],
   # External
   cppstl/std_string,
   # Internal
@@ -38,23 +38,31 @@ template asTorchView(meta: Metadata): ArrayRef[int64] =
 
 # Make interop with ArrayRef easier
 proc `$`*[T](ar: ArrayRef[T]) : string =
+  # Make echo-ing ArrayRef easy
   `$`(ar.asNimView())
 
 func len*[T](ar: ArrayRef[T]): int =
+  # Nim idiomatic proc for seq
   ar.size().int
 
-# func `[]`*[T](ar: ArrayRef[T], idx : SomeInteger) : T =
-#   if idx >= 0 and idx < ar.len():
-#     ar.data()[idx]
-
-# func `[]=`*[T](ar: var ArrayRef[T], idx : SomeInteger, val: T) =
-#   ar.data()[idx] = val
-
-iterator item*[T](ar: ArrayRef[T]) : T =
-  var i = 0
+iterator items*[T](ar: ArrayRef[T]) : T =
+  # Iterate over ArrayRef
+  var i : int = 0
   while i < ar.len():
     yield ar.data()[i]
     inc i
+
+func `[]`*[T](ar: ArrayRef[T], idx: SomeInteger) : T =
+  when compileOption("boundChecks"):
+    if idx < 0 or idx >= ar.len():
+      raise newException(IndexDefect, &"ArrayRef `[]` access out-of-bounds. Index constrained by 0 <= {idx} <= ArrayRef.len() = {ar.len()}.")
+  ar.data()[idx]
+
+func `[]=`*[T](ar: var ArrayRef[T], idx: SomeInteger, val: T) =
+  when compileOption("boundChecks"):
+    if idx < 0 or idx >= ar.len():
+      raise newException(IndexDefect, &"ArrayRef `[]` access out-of-bounds. Index constrained by 0 <= {idx} <= ArrayRef.len() = {ar.len()}.")
+  ar.data()[idx] = val
 
 # Type map
 # -----------------------------------------------------

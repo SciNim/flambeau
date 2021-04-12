@@ -67,7 +67,7 @@ func value*[T](o: Optional[T]): T {.importcpp: "#.value()".}
 type
   C10_Complex*[T: SomeFloat] {.importcpp: "c10::complex".} = object
 
-func initC10_Complex*[T: SomeFloat](re, im: T): C10_Complex[T] {.importcpp: "c10::complex".}
+func initC10_Complex*[T: SomeFloat](re, im: T): C10_Complex[T] {.constructor, importcpp: "c10::complex".}
 func real*[T: SomeFloat](self: C10_Complex[T]): T {.importcpp: "#.real()".}
 func imag*[T: SomeFloat](self: C10_Complex[T]): T {.importcpp: "#.imag()".}
 

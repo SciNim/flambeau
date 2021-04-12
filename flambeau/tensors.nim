@@ -9,9 +9,11 @@ type
   Tensor*[T] {.pure, final.} = object
 
 proc convertRawTensor[T](t: Tensor[T]) : RawTensor =
+  # Is there a better way to do this ?
   result = cast[ptr RawTensor](unsafeAddr(t))[]
 
 proc convertTensor[T](t: RawTensor) : Tensor[T] =
+  # Is there a better way to do this ?
   result = cast[ptr Tensor[T]](unsafeAddr(t))[]
 
 func toTensorView*[T: SomeTorchType](oa: openArray[T]): lent Tensor[T] =
