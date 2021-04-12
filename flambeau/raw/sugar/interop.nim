@@ -19,7 +19,7 @@ import
 #
 # #######################################################################
 
-type Metadata = DynamicStackArray[int64]
+type Metadata* = DynamicStackArray[int64]
 
 # ArrayRefs
 # -----------------------------------------------------
@@ -33,7 +33,7 @@ template asNimView*[T](ar: ArrayRef[T]): openArray[T] =
 template asTorchView*[T](oa: openarray[T]): ArrayRef[T] =
   ArrayRef[T].init(oa[0].unsafeAddr, oa.len)
 
-template asTorchView(meta: Metadata): ArrayRef[int64] =
+template asTorchView*(meta: Metadata): ArrayRef[int64] =
   ArrayRef[int64].init(meta.data[0].unsafeAddr, meta.len)
 
 # Make interop with ArrayRef easier
@@ -67,7 +67,7 @@ func `[]=`*[T](ar: var ArrayRef[T], idx: SomeInteger, val: T) =
 # Type map
 # -----------------------------------------------------
 
-func toScalarKind(T: typedesc[SomeTorchType]): static ScalarKind =
+func toScalarKind*(T: typedesc[SomeTorchType]): static ScalarKind =
   ## Maps a Nim type to Torch scalar kind
   when T is uint8|byte:
     kUint8
@@ -98,7 +98,7 @@ converter convertTypeDef*(T: typedesc[SomeTorchType]) : static ScalarKind =
 # Nim openarrays -> Torch Tensors
 # -----------------------------------------------------
 
-func getShape[T](s: openarray[T], parent_shape = Metadata()): Metadata =
+func getShape*[T](s: openarray[T], parent_shape = Metadata()): Metadata =
   ## Get the shape of nested seqs/arrays
   ## Important ⚠: at each nesting level, only the length
   ##   of the first element is used for the shape.
@@ -199,4 +199,4 @@ func toCppString*(t: RawTensor): CppString =
   """.}
 
 proc `$`*(t: RawTensor): string =
-  "Tensor\n" & $t.toCppString
+  "Tensor\n" & `$`(toCppString(t))

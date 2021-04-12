@@ -28,5 +28,5 @@ export std_cpp
 # Convenience helpers
 # ----------------------------------------------------------------
 
-import ./flambeau/raw/sugar/[interop]
+import ./flambeau/sugar/[interop]
 export interop

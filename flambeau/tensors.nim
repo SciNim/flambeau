@@ -3,44 +3,21 @@ import raw/cpp/[std_cpp]
 import raw/sugar/[interop, indexing]
 import std/[complex, macros]
 
+export SomeTorchType
+
 {.experimental: "views".} # TODO
 
 type
   Tensor*[T] = object
-    raw: RawTensor
+    raw*: RawTensor
 
-proc convertRawTensor[T](t: Tensor[T]) : RawTensor =
-  # Is there a better way to do this ?
+proc convertRawTensor*[T](t: Tensor[T]) : RawTensor =
   t.raw
 
-proc convertTensor[T](t: RawTensor) : Tensor[T] =
-  # Is there a better way to do this ?
-  # This segfault ?
+proc convertTensor*[T](t: RawTensor) : Tensor[T] =
   result.raw = t
-
-func toTensorView*[T: SomeTorchType](oa: openArray[T]): lent Tensor[T] =
-  convertTensor[T](toRawTensorView[T](oa))
-
-func toTensor*[T: SomeTorchType](oa: openArray[T]): Tensor[T] =
-  convertTensor[T](toRawTensor[T](oa))
-
-func toTensor*[T: seq|array](oa: openArray[T]): auto =
-  # Get underlying type
-  type U = getBaseType(T)
-  # Ambiguous because of auto ?
-  let res = toRawTensorFromSeq[T](oa)
-  result = convertTensor[U](res)
-
-macro `[]`*[T](t: Tensor[T], args: varargs[untyped]): untyped =
-  result = quote do:
-    [](`convertRawTensor(t)`, args)
-
-macro `[]=`*[T](t: var Tensor[T], args: varargs[untyped]): untyped =
-  result = quote do:
-    [] = (`convertRawTensor(t)`, args)
-
-proc `$`*[T](t: Tensor[T]): string =
-  result = "Tensor\n" & $(toCppString(convertRawTensor(t)))
+  # result.raw = init(RawTensor)
+  # return Tensor[T](raw: rawtensors.empty(t.sizes(), T.toScalarKind()))
 
 # Strings & Debugging
 # -----------------------------------------------------------------------
@@ -175,44 +152,44 @@ func init*[T](t: type Tensor[T]): Tensor[T] {.inline.} =
 
 func from_blob*[T](data: pointer, sizes: openArray[int64], options: TensorOptions|DeviceKind): Tensor[T] {.inline.} =
   let sizes = sizes.asTorchView
-  from_blob(data, sizes, options).Tensor[T]
+  from_blob(data, sizes, options).convertTensor[T]
 
 func from_blob*[T](data: pointer, sizes: openArray[int64]): Tensor[T] {.inline.} =
   let sizes = sizes.asTorchView
-  from_blob(data, sizes, T).Tensor[T]
+  from_blob(data, sizes, T).convertTensor[T]
 
 func from_blob*[T](data: pointer, sizes: int64, options: TensorOptions|DeviceKind): Tensor[T] {.inline.} =
-  from_blob(data, sizes, options).Tensor[T]
+  from_blob(data, sizes, options).convertTensor[T]
 
 func from_blob*[T](data: pointer, sizes: int64): Tensor[T] {.inline.} =
-  from_blob(data, sizes, T).Tensor[T]
+  from_blob(data, sizes, T).convertTensor[T]
 
 func from_blob*[T](data: pointer, sizes, strides: openArray[int64], options: TensorOptions|DeviceKind): Tensor[T] {.inline.} =
   let
     sizes = sizes.asTorchView
     strides = strides.asTorchView
-  from_blob(data, sizes, strides, options).Tensor[T]
+  from_blob(data, sizes, strides, options).convertTensor[T]
 
 func from_blob*[T](data: pointer, sizes, strides: openArray[int64]): Tensor[T] {.inline.} =
   let
     sizes = sizes.asTorchView
     strides = strides.asTorchView
-  from_blob(data, sizes, strides, T).Tensor[T]
+  from_blob(data, sizes, strides, T).convertTensor[T]
 
 func empty*[T](size: IntArrayRef, options: TensorOptions|DeviceKind): Tensor[T] {.inline.} =
   ## Create an uninitialized tensor of shape `size`
   ## The tensor data must be filled manually
   ##
   ## The output tensor will be row major (C contiguous)
-  let size = size.asTorchView
-  empty(size, options).Tensor[T]
+  # let size = size.asTorchView
+  rawtensors.empty(size, options).convertTensor[T]
 
 func empty*[T](size: IntArrayRef): Tensor[T] {.inline.} =
-  let size = size.asTorchView
-  empty(size, T).Tensor[T]
+  # let size = size.asTorchView
+  rawtensors.empty(size, T).convertTensor[T]
 
 func clone*[T](self: Tensor[T]): Tensor[T] {.inline.} =
-  clone(convertRawTensor(self)).Tensor[T]
+  clone(convertRawTensor(self)).convertTensor[T]
 
 # Random sampling
 # -----------------------------------------------------------------------
@@ -221,21 +198,21 @@ func random_mut*[T](self: var Tensor[T], start, stopEx: int64) {.inline.} =
   random_mut(convertRawTensor(self), start, stopEx)
 
 func randint*[T](start, stopEx: int64, args: varargs): Tensor[T] {.inline.} =
-  randint(start, stopEx, args).Tensor[T]
+  randint(start, stopEx, args).convertTensor[T]
 
 func randint*[T](start, stopEx: int64, size: openArray[int64]): Tensor[T] {.inline.} =
   let size = size.asTorchView()
-  randint(start, stopEx, size).Tensor[T]
+  randint(start, stopEx, size).convertTensor[T]
 
 func rand_like*[T](self: Tensor[T], options: TensorOptions|DeviceKind|Device): Tensor[T] {.inline.} =
-  rand_like(convertRawTensor(self), options).Tensor[T]
+  rand_like(convertRawTensor(self), options).convertTensor[T]
 
 func rand_like*[T](self: Tensor[T]): Tensor[T] {.inline.} =
-  rand_like(convertRawTensor(self), T).Tensor[T]
+  rand_like(convertRawTensor(self), T).convertTensor[T]
 
 func rand*[T](size: openArray[int64]): Tensor[T] {.inline.} =
   let size = size.asTorchView()
-  rand(size).Tensor[T]
+  rand(size).convertTensor[T]
 
 # Indexing
 # -----------------------------------------------------------------------
@@ -261,7 +238,7 @@ func index*[T](self: Tensor[T], args: varargs): Tensor[T] {.inline.} =
   ## Tensor indexing. It is recommended
   ## to Nimify this in a high-level wrapper.
   ## `tensor.index(indexers)`
-  index(convertRawTensor(self), args).Tensor[T]
+  index(convertRawTensor(self), args).convertTensor[T]
 # We can't use the construct `#.index_put_({@}, #)`
 # so hardcode sizes,
 # 6d seems reasonable, that would be a batch of 3D videos (videoID/batchID, Time, Color Channel, Height, Width, Depth)
@@ -274,10 +251,10 @@ func index_put*[T](self: var Tensor[T], idx: varargs[int|int64], val: T or Tenso
 # Fancy Indexing
 # -----------------------------------------------------------------------
 func index_select*[T](self: Tensor[T], axis: int64, indices: Tensor[T]): Tensor[T] {.inline.} =
-  index_select(convertRawTensor(self), axis, indices).Tensor[T]
+  index_select(convertRawTensor(self), axis, indices).convertTensor[T]
 
 func masked_select*[T](self: Tensor[T], mask: Tensor[T]): Tensor[T] {.inline.} =
-  masked_select(convertRawTensor(self), convertRawTensor(mask)).Tensor[T]
+  masked_select(convertRawTensor(self), convertRawTensor(mask)).convertTensor[T]
 
 # PyTorch exposes in-place `index_fill_` and `masked_fill_`
 # and out-of-place `index_fill` and `masked_fill`
@@ -295,11 +272,11 @@ func masked_fill_mut*[T](self: var Tensor[T], mask: Tensor[T], value: T or Tenso
 
 func reshape*[T](self: Tensor[T], shape: openArray[int64]): Tensor[T] {.inline.} =
   let sizes = sizes.asTorchView()
-  reshape(convertRawTensor(self), sizes).Tensor[T]
+  reshape(convertRawTensor(self), sizes).convertTensor[T]
 
 func view*[T](self: Tensor[T], size: openArray[int64]): Tensor[T] {.inline.} =
   let size = size.asTorchView()
-  reshape(convertRawTensor(self), size).Tensor[T]
+  reshape(convertRawTensor(self), size).convertTensor[T]
 
 # Automatic Differentiation
 # -----------------------------------------------------------------------
