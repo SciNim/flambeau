@@ -15,9 +15,8 @@ proc convertRawTensor*[T](t: Tensor[T]) : RawTensor =
   t.raw
 
 proc convertTensor*[T](t: RawTensor) : Tensor[T] =
-  result.raw = t
-  # result.raw = init(RawTensor)
-  # return Tensor[T](raw: rawtensors.empty(t.sizes(), T.toScalarKind()))
+  # result.raw = t
+  return Tensor[T](raw: t)
 
 # Strings & Debugging
 # -----------------------------------------------------------------------

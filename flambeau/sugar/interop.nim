@@ -18,12 +18,6 @@ func toTensorView*[T: SomeTorchType](oa: openArray[T]): lent Tensor[T] =
   ##      - An array or a seq (can be nested)
   ## Result:
   ##      - A view Tensor of the same shape
-  #
-  # return tensors.from_blob[T](
-  #   oa[0].unsafeAddr,
-  #   oa.len.int64,
-  #   T
-  # )
   var res : RawTensor = toRawTensorView[T](oa)
   return convertTensor[T](res)
 
@@ -34,14 +28,6 @@ func toTensor*[T: SomeTorchType](oa: openArray[T]): Tensor[T] =
   ##      - An array or a seq
   ## Result:
   ##      - A view Tensor of the same shape
-  # let shape = getShape(oa)
-  # result = empty[T](shape.asTorchView())
-  #
-  # return from_blob[T](
-  #   oa[0].unsafeAddr,
-  #   oa.len.int64,
-  # ).clone()
-  #
   var res : RawTensor = toRawTensor[T](oa)
   return convertTensor[T](res)
 

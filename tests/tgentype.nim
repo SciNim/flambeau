@@ -1,9 +1,11 @@
 import flambeau
+import flambeau/flambeau_raw
 
 {.experimental: "views".} # TODO
 proc main() =
-  var tt = toTensor([[-2, -6], [-12, -20]])
-  echo tt.sizes()
+  let tmp = [[-2, -6], [-12, -20]]
+  echo tmp
+  let tt = toTensor(tmp)
   echo tt
 
 main()
