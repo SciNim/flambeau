@@ -10,7 +10,7 @@ import
   # External
   cppstl/std_string,
   # Internal
-  ../raw/bindings/[c10, attensors],
+  ../bindings/[c10, rawtensors],
   ../private/dynamic_stack_arrays
 
 # #######################################################################
@@ -27,7 +27,7 @@ type Metadata = DynamicStackArray[int64]
 
 {.experimental:"views".}
 
-template asNimView*[T](ar: ArrayRef[T]): openarray[T] =
+template asNimView*[T](ar: ArrayRef[T]): openArray[T] =
   toOpenArray(ar.data.unsafeAddr, 0, ar.size.int - 1)
 
 template asTorchView*[T](oa: openarray[T]): ArrayRef[T] =
@@ -104,7 +104,7 @@ iterator flatIter*[T](s: openarray[T]): auto {.noSideEffect.}=
     else:
       yield item
 
-func toATTensorView*[T: SomeTorchType](oa: openarray[T]): lent ATTensor =
+func toRawTensorView*[T: SomeTorchType](oa: openarray[T]): lent RawTensor =
   ## Interpret an openarray as a CPU Tensor
   ## Important:
   ##   the buffer is shared.
@@ -121,20 +121,23 @@ func toATTensorView*[T: SomeTorchType](oa: openarray[T]): lent ATTensor =
     toScalarKind(T)
   )
 
-func toATTensor*[T: SomeTorchType](oa: openarray[T]): ATTensor =
+func toRawTensor*[T: SomeTorchType](oa: openarray[T]): RawTensor =
   ## Interpret an openarray as a CPU Tensor
   ##
   ## Input:
   ##      - An array or a seq
   ## Result:
   ##      - A view Tensor of the same shape
+  let shape = getShape(oa)
+  result = empty(shape, T.toScalarKind())
+
   return from_blob(
     oa[0].unsafeAddr,
     oa.len.int64,
     toScalarKind(T)
   ).clone()
 
-func toATTensor*[T: seq|array](oa: openarray[T]): ATTensor =
+func toRawTensorFromSeq*[T: seq|array](oa: openarray[T]): RawTensor =
   ## Interpret an openarray of openarray as a CPU Tensor
   ##
   ## Input:
@@ -153,8 +156,11 @@ func toATTensor*[T: seq|array](oa: openarray[T]): ATTensor =
   for i, val in enumerate(flatIter(oa)):
     data[i] = val
 
+func toRawTensor*[T: seq|array](oa: openarray[T]): RawTensor =
+  toRawTensorFromSeq[T](oa)
+
 # CppString -> Nim string
-func toCppString*(t: ATTensor): CppString =
+func toCppString*(t: RawTensor): CppString =
   ## Tensors don't have a `$` equivilent so we have to put it into
   ## a ostringstream and convert it to a CppString.
   {.emit: """
@@ -163,5 +169,5 @@ func toCppString*(t: ATTensor): CppString =
   result = stream.str();
   """.}
 
-proc `$`*(t: ATTensor): string =
+proc `$`*(t: RawTensor): string =
   "Tensor\n" & $t.toCppString

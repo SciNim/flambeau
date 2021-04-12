@@ -6,8 +6,8 @@
 # at your option. This file may not be copied, modified, or distributed except according to those terms.
 
 import
-  ../helpers/ast_utils,
-  ../raw/bindings/attensors
+  ../../helpers/ast_utils,
+  ../bindings/rawtensors
 
 # #######################################################################
 #
@@ -607,7 +607,7 @@ macro slice_typed_dispatch_mut(t: typed, args: varargs[typed], val: typed): unty
 #
 # #######################################################################
 
-macro `[]`*(t: ATTensor, args: varargs[untyped]): untyped =
+macro `[]`*(t: RawTensor, args: varargs[untyped]): untyped =
   ## Slice a Tensor
   ## Input:
   ##   - a Tensor
@@ -643,7 +643,7 @@ macro `[]`*(t: ATTensor, args: varargs[untyped]): untyped =
   result = quote do:
     slice_typed_dispatch(`t`, `new_args`)
 
-macro `[]=`*(t: var ATTensor, args: varargs[untyped]): untyped =
+macro `[]=`*(t: var RawTensor, args: varargs[untyped]): untyped =
   ## Modifies a tensor inplace at the corresponding location or slice
   ##
   ##

@@ -8,6 +8,9 @@
 # Raw exports
 # ----------------------------------------------------------------
 
+when not defined(cpp):
+  {.error: "Flambeau requires C++ backend required to use Torch".}
+
 import ./flambeau/raw/bindings/rawtensors
   except # TODO, don't export associated proc either
     # ArrayRef,
@@ -16,35 +19,14 @@ import ./flambeau/raw/bindings/rawtensors
 
 export rawtensors # TODO, don't export low-level procs and types like C++ slices.
 
-import ./flambeau/raw/bindings/neural_nets
-  except LinearOptions
-export neural_nets
-
-import ./flambeau/raw/bindings/optimizers
-  except OptimizerOptions
-export optimizers
-
-import ./flambeau/raw/bindings/data_api
-  except
-    TorchDataIterator,
-    DataLoaderBase, DataLoaderOptions
-export data_api
-
-import ./flambeau/raw/bindings/serialize
-export serialize
-
 # C++ Standard Library
 # ----------------------------------------------------------------
 
-import ./flambeau/raw/cpp/[std_cpp, emitters]
-export std_cpp, emitters
+import ./flambeau/raw/cpp/std_cpp
+export std_cpp
 
 # Convenience helpers
 # ----------------------------------------------------------------
 
-import ./flambeau/raw/sugar/[indexing, interop, moduleSugar]
-export indexing, interop, moduleSugar
-
-import ./flambeau/raw/bindings/c10
-export c10
-
+import ./flambeau/raw/sugar/[indexing, interop]
+export indexing, interop
