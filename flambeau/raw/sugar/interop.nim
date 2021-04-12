@@ -149,7 +149,7 @@ func toRawTensorView*[T: SomeTorchType](oa: openarray[T]): lent RawTensor =
     toScalarKind(T)
   )
 
-func toRawTensor*[T: SomeTorchType](oa: openarray[T]): RawTensor =
+func toRawTensorFromScalar*[T: SomeTorchType](oa: openarray[T]): RawTensor =
   ## Interpret an openarray as a CPU Tensor
   ##
   ## Input:
@@ -185,6 +185,9 @@ func toRawTensorFromSeq*[T: seq|array](oa: openarray[T]): RawTensor =
     data[i] = val
 
 # Trick to avoid ambiguous call when using toRawTensor in to toTensor
+func toRawTensor*[T: SomeTorchType](oa: openarray[T]): RawTensor =
+  toRawTensorFromScalar[T](oa)
+
 func toRawTensor*[T: seq|array](oa: openarray[T]): RawTensor =
   toRawTensorFromSeq[T](oa)
 

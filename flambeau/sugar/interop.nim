@@ -28,8 +28,9 @@ func toTensor*[T: SomeTorchType](oa: openArray[T]): Tensor[T] =
   ##      - An array or a seq
   ## Result:
   ##      - A view Tensor of the same shape
-  var res : RawTensor = toRawTensor[T](oa)
-  return convertTensor[T](res)
+  var res : RawTensor = toRawTensorFromScalar[T](oa)
+  result.raw = res
+  # return convertTensor[T](res)
 
 
 func toTensor*[T: seq|array](oa: openArray[T]): auto =
@@ -41,7 +42,8 @@ func toTensor*[T: seq|array](oa: openArray[T]): auto =
   ##      - A view Tensor of the same shape
   type BaseType = getBaseType(T)
   var res : RawTensor = toRawTensorFromSeq(oa)
-  return convertTensor[BaseType](res)
+  result.raw = res
+  # return convertTensor[BaseType](res)
 
 macro `[]`*[T](t: Tensor[T], args: varargs[untyped]): untyped =
   result = quote do:

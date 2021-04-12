@@ -11,12 +11,12 @@ type
   Tensor*[T] = object
     raw*: RawTensor
 
-proc convertRawTensor*[T](t: Tensor[T]) : RawTensor =
+proc convertRawTensor*[T](t: Tensor[T]): RawTensor {.inline.} =
   t.raw
 
-proc convertTensor*[T](t: RawTensor) : Tensor[T] =
-  # result.raw = t
-  return Tensor[T](raw: t)
+proc convertTensor*[T](t: RawTensor): Tensor[T] {.inline.} =
+  result.raw = t
+  # return Tensor[T](raw: t)
 
 # Strings & Debugging
 # -----------------------------------------------------------------------
