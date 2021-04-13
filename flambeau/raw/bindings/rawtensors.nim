@@ -399,8 +399,8 @@ func step*(s: TorchSlice): int64 {.importcpp: "#.step()".}
 
 # Operators
 # -----------------------------------------------------------------------
-func `=`*(self: var RawTensor, other: RawTensor) {.importcpp: "# = #".}
-func assign*(self: var RawTensor, other: RawTensor) {.importcpp: "# = #".}
+# func `=`*(self: var RawTensor, other: RawTensor) {.importcpp: "# = #".}
+# func assign*(self: var RawTensor, other: RawTensor) {.importcpp: "# = #".}
 
 func `not`*(self: RawTensor): RawTensor {.importcpp: "(~#)".}
 func `-`*(self: RawTensor): RawTensor {.importcpp: "(-#)".}

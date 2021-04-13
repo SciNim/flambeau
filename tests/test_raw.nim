@@ -3,23 +3,23 @@ import flambeau/flambeau_raw
 {.experimental: "views".} # TODO
 
 type
-  XX* {.bycopy.}= object
+  TensorAgreggate* {.bycopy.}= object
     raw*: RawTensor
 
-proc `$`*(xx: XX) : string =
-  $(xx.raw)
+proc `$`*(tensorAg: TensorAgreggate) : string =
+  $(tensorAg.raw)
 
 proc main() =
   let a = [[1, 2], [3, 4]].toRawTensor
   block:
     var b = a
-    echo a
-    echo b
     doAssert true
   block:
-    var xx : XX
-    xx.raw = a
-    echo xx
+    var tensorAg : TensorAgreggate
+    # tensorAg.raw = a
+    tensorAg.raw = empty(a.sizes(), int.toScalarKind())
+    let tmp : RawTensor = from_blob(a.data_ptr(int), a.sizes(), int).clone()
+    tensorAg.raw = tmp
     doAssert true
 
 main()
