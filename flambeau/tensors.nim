@@ -8,29 +8,25 @@ export SomeTorchType
 {.experimental: "views".} # TODO
 
 type
-  # TODO fix this
-  Tensor*[T] {.noinit.} = object
+  Tensor*[T] {.requiresinit.} = object
     raw*: RawTensor
 
-proc `=copy`*[T](dest: var Tensor[T], src: Tensor[T]) =
-  dest.raw = src.raw.clone()
+proc initTensor[T](): Tensor[T] {.constructor, noinit.} =
+  {.emit: "/* */".}
 
-proc `=sink`*[T](dest: var Tensor[T], src: Tensor[T]) =
-  `=destroy`(dest)
-  wasMoved(dest)
-  dest.raw = src.raw
+# proc `=copy`*[T](dest: var Tensor[T], src: Tensor[T]) =
+#   dest.raw = src.raw.clone()
+#
+# proc `=sink`*[T](dest: var Tensor[T], src: Tensor[T]) =
+#   `=destroy`(dest)
+#   wasMoved(dest)
+#   dest.raw = src.raw
 
-proc convertRawTensor*[T](t: Tensor[T]): RawTensor =
+proc convertRawTensor*[T](t: Tensor[T]): RawTensor {.noinit.} =
   t.raw
 
-# This is used to move the ``t`` parameter to a Tensor[T]
-proc convertTensor*[T](t: RawTensor): Tensor[T]  =
-  # result.raw = from_blob(t.data_ptr(T), t.sizes(), T)
-  # assign(result.raw, t)
+proc convertTensor*[T](t: RawTensor): Tensor[T] {.noinit.} =
   result.raw = t
-  # result.raw = initRawTensor(t)
-  # Tensor[T](raw: t)
-  # Tensor[T](raw: initRawTensor(t))
 
 # Strings & Debugging
 # -----------------------------------------------------------------------
@@ -129,27 +125,27 @@ func is_quantized*[T](self: Tensor[T]): bool {.inline.} =
 func is_meta*[T](self: Tensor[T]): bool {.inline.} =
   is_meta(convertRawTensor(self))
 
-func cpu*[T](self: Tensor[T]): Tensor[T] {.inline.} =
+func cpu*[T](self: Tensor[T]): Tensor[T] {.inline, noinit.} =
   cpu(convertRawTensor(self))
 
-func cuda*[T](self: Tensor[T]): Tensor[T] {.inline.} =
+func cuda*[T](self: Tensor[T]): Tensor[T] {.inline, noinit.} =
   cuda(convertRawTensor(self))
 
-func hip*[T](self: Tensor[T]): Tensor[T] {.inline.} =
+func hip*[T](self: Tensor[T]): Tensor[T] {.inline, noinit.} =
   hip(convertRawTensor(self))
 
-func vulkan*[T](self: Tensor[T]): Tensor[T] {.inline.} =
+func vulkan*[T](self: Tensor[T]): Tensor[T] {.inline, noinit.} =
   vulkan(convertRawTensor(self))
 
-func to*[T](self: Tensor[T], device: DeviceKind): Tensor[T] {.inline.} =
+func to*[T](self: Tensor[T], device: DeviceKind): Tensor[T] {.inline, noinit.} =
   to(convertRawTensor(self), device)
 
-func to*[T](self: Tensor[T], device: Device): Tensor[T] {.inline.} =
+func to*[T](self: Tensor[T], device: Device): Tensor[T] {.inline, noinit.} =
   to(convertRawTensor(self), device)
 
 # dtype
 # -----------------------------------------------------------------------
-func to*[T](self: Tensor[T], dtype: typedesc[SomeTorchType]): Tensor[T] {.inline.} =
+func to*[T](self: Tensor[T], dtype: typedesc[SomeTorchType]): Tensor[T] {.inline, noinit.} =
   # Use typedesc -> ScalarKind converter
   to(convertRawTensor(self), dtype)
 
@@ -163,33 +159,33 @@ func scalarType*[T](self: Tensor[T]): typedesc[T] {.inline.} =
 func init*[T](t: type Tensor[T]): Tensor[T] {.inline.} =
   init(convertRawTensor(t))
 
-func from_blob*[T](data: pointer, sizes: openArray[int64], options: TensorOptions|DeviceKind): Tensor[T] {.inline.} =
+func from_blob*[T](data: pointer, sizes: openArray[int64], options: TensorOptions|DeviceKind): Tensor[T] {.inline, noinit.} =
   let sizes = sizes.asTorchView
   from_blob(data, sizes, options).convertTensor[T]
 
-func from_blob*[T](data: pointer, sizes: openArray[int64]): Tensor[T] {.inline.} =
+func from_blob*[T](data: pointer, sizes: openArray[int64]): Tensor[T] {.inline, noinit.} =
   let sizes = sizes.asTorchView
   from_blob(data, sizes, T).convertTensor[T]
 
-func from_blob*[T](data: pointer, sizes: int64, options: TensorOptions|DeviceKind): Tensor[T] {.inline.} =
+func from_blob*[T](data: pointer, sizes: int64, options: TensorOptions|DeviceKind): Tensor[T] {.inline, noinit.} =
   from_blob(data, sizes, options).convertTensor[T]
 
-func from_blob*[T](data: pointer, sizes: int64): Tensor[T] {.inline.} =
+func from_blob*[T](data: pointer, sizes: int64): Tensor[T] {.inline, noinit.} =
   from_blob(data, sizes, T).convertTensor[T]
 
-func from_blob*[T](data: pointer, sizes, strides: openArray[int64], options: TensorOptions|DeviceKind): Tensor[T] {.inline.} =
+func from_blob*[T](data: pointer, sizes, strides: openArray[int64], options: TensorOptions|DeviceKind): Tensor[T] {.inline, noinit.} =
   let
     sizes = sizes.asTorchView
     strides = strides.asTorchView
   from_blob(data, sizes, strides, options).convertTensor[T]
 
-func from_blob*[T](data: pointer, sizes, strides: openArray[int64]): Tensor[T] {.inline.} =
+func from_blob*[T](data: pointer, sizes, strides: openArray[int64]): Tensor[T] {.inline, noinit.} =
   let
     sizes = sizes.asTorchView
     strides = strides.asTorchView
   from_blob(data, sizes, strides, T).convertTensor[T]
 
-func empty*[T](size: IntArrayRef, options: TensorOptions|DeviceKind): Tensor[T] {.inline.} =
+func empty*[T](size: IntArrayRef, options: TensorOptions|DeviceKind): Tensor[T] {.inline, noinit.} =
   ## Create an uninitialized tensor of shape `size`
   ## The tensor data must be filled manually
   ##
@@ -197,11 +193,11 @@ func empty*[T](size: IntArrayRef, options: TensorOptions|DeviceKind): Tensor[T] 
   # let size = size.asTorchView
   rawtensors.empty(size, options).convertTensor[T]
 
-func empty*[T](size: IntArrayRef): Tensor[T] {.inline.} =
+func empty*[T](size: IntArrayRef): Tensor[T] {.inline, noinit.} =
   # let size = size.asTorchView
   rawtensors.empty(size, T).convertTensor[T]
 
-func clone*[T](self: Tensor[T]): Tensor[T] {.inline.} =
+func clone*[T](self: Tensor[T]): Tensor[T] {.inline, noinit.} =
   clone(convertRawTensor(self)).convertTensor[T]
 
 # Random sampling
@@ -210,20 +206,20 @@ func clone*[T](self: Tensor[T]): Tensor[T] {.inline.} =
 func random_mut*[T](self: var Tensor[T], start, stopEx: int64) {.inline.} =
   random_mut(convertRawTensor(self), start, stopEx)
 
-func randint*[T](start, stopEx: int64, args: varargs): Tensor[T] {.inline.} =
+func randint*[T](start, stopEx: int64, args: varargs): Tensor[T] {.inline, noinit.} =
   randint(start, stopEx, args).convertTensor[T]
 
-func randint*[T](start, stopEx: int64, size: openArray[int64]): Tensor[T] {.inline.} =
+func randint*[T](start, stopEx: int64, size: openArray[int64]): Tensor[T] {.inline, noinit.} =
   let size = size.asTorchView()
   randint(start, stopEx, size).convertTensor[T]
 
-func rand_like*[T](self: Tensor[T], options: TensorOptions|DeviceKind|Device): Tensor[T] {.inline.} =
+func rand_like*[T](self: Tensor[T], options: TensorOptions|DeviceKind|Device): Tensor[T] {.inline, noinit.} =
   rand_like(convertRawTensor(self), options).convertTensor[T]
 
-func rand_like*[T](self: Tensor[T]): Tensor[T] {.inline.} =
+func rand_like*[T](self: Tensor[T]): Tensor[T] {.inline, noinit.} =
   rand_like(convertRawTensor(self), T).convertTensor[T]
 
-func rand*[T](size: openArray[int64]): Tensor[T] {.inline.} =
+func rand*[T](size: openArray[int64]): Tensor[T] {.inline, noinit.} =
   let size = size.asTorchView()
   rand(size).convertTensor[T]
 
@@ -247,7 +243,7 @@ func item*(self: Tensor[Complex64]): Complex64 =
 # func `[]`*[T](self: Tensor, index: Tensor): Tensor {.inline.}
 # func `[]`*[T](self: Tensor, index: int64): Tensor {.inline.}
 
-func index*[T](self: Tensor[T], args: varargs): Tensor[T] {.inline.} =
+func index*[T](self: Tensor[T], args: varargs): Tensor[T] {.inline, noinit.} =
   ## Tensor indexing. It is recommended
   ## to Nimify this in a high-level wrapper.
   ## `tensor.index(indexers)`
@@ -263,10 +259,10 @@ func index_put*[T](self: var Tensor[T], idx: varargs[int|int64], val: T or Tenso
 
 # Fancy Indexing
 # -----------------------------------------------------------------------
-func index_select*[T](self: Tensor[T], axis: int64, indices: Tensor[T]): Tensor[T] {.inline.} =
+func index_select*[T](self: Tensor[T], axis: int64, indices: Tensor[T]): Tensor[T] {.inline, noinit.} =
   index_select(convertRawTensor(self), axis, indices).convertTensor[T]
 
-func masked_select*[T](self: Tensor[T], mask: Tensor[T]): Tensor[T] {.inline.} =
+func masked_select*[T](self: Tensor[T], mask: Tensor[T]): Tensor[T] {.inline, noinit.} =
   masked_select(convertRawTensor(self), convertRawTensor(mask)).convertTensor[T]
 
 # PyTorch exposes in-place `index_fill_` and `masked_fill_`
@@ -283,11 +279,11 @@ func masked_fill_mut*[T](self: var Tensor[T], mask: Tensor[T], value: T or Tenso
 # Shapeshifting
 # -----------------------------------------------------------------------
 
-func reshape*[T](self: Tensor[T], shape: openArray[int64]): Tensor[T] {.inline.} =
+func reshape*[T](self: Tensor[T], shape: openArray[int64]): Tensor[T] {.inline, noinit.} =
   let sizes = sizes.asTorchView()
   reshape(convertRawTensor(self), sizes).convertTensor[T]
 
-func view*[T](self: Tensor[T], size: openArray[int64]): Tensor[T] {.inline.} =
+func view*[T](self: Tensor[T], size: openArray[int64]): Tensor[T] {.inline, noinit.} =
   let size = size.asTorchView()
   reshape(convertRawTensor(self), size).convertTensor[T]
 

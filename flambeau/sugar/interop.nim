@@ -7,7 +7,7 @@ import ../tensors
 import ../raw/sugar/interop as rawinterop
 export rawinterop
 
-func toTensorView*[T: SomeTorchType](oa: openArray[T]): lent Tensor[T] =
+func toTensorView*[T: SomeTorchType](oa: openArray[T]): lent Tensor[T] {.noinit.}=
   ## Interpret an openarray as a CPU Tensor
   ## Important:
   ##   the buffer is shared.
@@ -22,7 +22,7 @@ func toTensorView*[T: SomeTorchType](oa: openArray[T]): lent Tensor[T] =
   # result.raw = res
   result = convertTensor[T](res)
 
-func toTensor*[T: SomeTorchType](oa: openArray[T]): Tensor[T] =
+func toTensor*[T: SomeTorchType](oa: openArray[T]): Tensor[T] {.noinit.}=
   ## Interpret an openarray as a CPU Tensor
   ##
   ## Input:
@@ -34,7 +34,7 @@ func toTensor*[T: SomeTorchType](oa: openArray[T]): Tensor[T] =
   result = convertTensor[T](res)
 
 
-func toTensor*[T: seq|array](oa: openArray[T]): auto =
+func toTensor*[T: seq|array](oa: openArray[T]): auto {.noinit.}=
   ## Interpret an openarray of openarray as a CPU Tensor
   ##
   ## Input:
