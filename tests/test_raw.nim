@@ -12,9 +12,6 @@ type
   TensorAgreggate*[T] {.requiresinit.} = object
     raw* : RawTensor
 
-proc TensorAgreggate*[T]() : TensorAgreggate =
-  newTensorAggregate[T]()
-
 proc newTensorAggregate[T](): TensorAgreggate[T] {.constructor, noinit.} =
   {.emit: "/* */".}
 
@@ -31,6 +28,10 @@ proc initTensorAggregate*[T](raw: RawTensor) : TensorAgreggate[T] {.noinit.} =
 proc initTensorAggregate*[T](self: var TensorAgreggate[T], raw: RawTensor) =
   assign(self.raw, raw)
 
+proc zeroMem(x: ptr RawTensor) =
+  {.emit: "/* */".}
+
+import strutils
 proc main() =
   let a = [[1, 2], [3, 4]].toRawTensor
   block:
@@ -39,13 +40,22 @@ proc main() =
     doAssert true
   block:
     # "Create tensor"
-    var rawtens : RawTensor #= initRawTensor()
-    `=sink`(rawtens, a)
+    var rawtens : RawTensor = initRawTensor()
+    echo sizeof(rawtens)
+    let memdata = cast[ptr UncheckedArray[uint64]](rawtens.unsafeAddr)
+    var i = 0
+    echo i, "> memdata=", memdata[i].toHex
+    let m = memdata[i]
+    zeroMem(rawtens.unsafeAddr, sizeof(rawtens))
+    echo i, "> memdata=", memdata[i].toHex
+    memdata[i] = m
+      # echo i, "> memdata=", memdata[i].toHex
+    rawtens = a
+    echo "----------------------------"
     echo rawtens
 
+    echo "----------------------------"
     var tensorAg : TensorAgreggate[int] = newTensorAggregate[int](a)
-    echo sizeof(TensorAgreggate)
-    echo sizeof(RawTensor)
     # var tensorAg {.noinit.} : TensorAgreggate[int] #= initTensorAggregate[int](a)
     # initTensorAggregate[int](tensorAg, a)
     # tensorAg.raw = a
