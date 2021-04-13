@@ -8,29 +8,26 @@ export SomeTorchType
 {.experimental: "views".} # TODO
 
 type
-  Tensor*[T] = object
+  # TODO fix this
+  Tensor*[T] {.noinit.} = object
     raw*: RawTensor
+
+proc `=copy`*[T](dest: var Tensor[T], src: Tensor[T]) =
+  dest.raw = src.raw.clone()
+
+proc `=sink`*[T](dest: var Tensor[T], src: Tensor[T]) =
+  `=destroy`(dest)
+  wasMoved(dest)
+  dest.raw = src.raw
 
 proc convertRawTensor*[T](t: Tensor[T]): RawTensor =
   t.raw
 
 # This is used to move the ``t`` parameter to a Tensor[T]
 proc convertTensor*[T](t: RawTensor): Tensor[T]  =
-  # {.emit: """
-  # result.raw = `t`;
-  # """}
-  debugEcho "####################################"
-  debugEcho t
-  # result.raw = rawtensors.empty(t.sizes(), T.toScalarKind())
-  let tmp = from_blob(t.data_ptr(T), t.sizes(), T)
-  debugEcho "####################################"
-  debugEcho tmp
-
-  debugEcho "####################################"
-  result.raw = t
-
+  # result.raw = from_blob(t.data_ptr(T), t.sizes(), T)
   # assign(result.raw, t)
-  # result.raw = t.clone()
+  result.raw = t
   # result.raw = initRawTensor(t)
   # Tensor[T](raw: t)
   # Tensor[T](raw: initRawTensor(t))

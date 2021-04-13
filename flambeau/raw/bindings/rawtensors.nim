@@ -241,6 +241,8 @@ func scalarType*(self: RawTensor): ScalarKind {.importcpp: "#.scalar_type()".}
 # DeviceType and ScalarType are auto-convertible to TensorOptions
 
 func init*(T: type RawTensor): RawTensor {.constructor, importcpp: "torch::Tensor".}
+# Default empty constructor
+func initRawTensor*(): RawTensor {.constructor, importcpp: "torch::Tensor".}
 # Move / Copy constructor ?
 func initRawTensor*(t: RawTensor): RawTensor {.constructor, importcpp: "torch::Tensor(@)".}
 
@@ -399,8 +401,7 @@ func step*(s: TorchSlice): int64 {.importcpp: "#.step()".}
 
 # Operators
 # -----------------------------------------------------------------------
-# func `=`*(self: var RawTensor, other: RawTensor) {.importcpp: "# = #".}
-# func assign*(self: var RawTensor, other: RawTensor) {.importcpp: "# = #".}
+func assign*(self: var RawTensor, other: RawTensor) {.importcpp: "# = #".}
 
 func `not`*(self: RawTensor): RawTensor {.importcpp: "(~#)".}
 func `-`*(self: RawTensor): RawTensor {.importcpp: "(-#)".}
@@ -776,5 +777,8 @@ func ihfft*(self: RawTensor, n: int64, dim: int64 = -1, norm: CppString = defaul
 ## Computes the inverse FFT of a real-valued Fourier domain signal.
 func ihfft*(self: RawTensor): RawTensor {.importcpp: "torch::ihfft(@)".}
 ## Computes the inverse FFT of a real-valued Fourier domain signal.
-{.pop.}
+
 #func convolution*(self: Tensor, weight: Tensor, bias: Tensor, stride, padding, dilation: int64, transposed: bool, outputPadding: int64, groups: int64): Tensor {.importcpp: "torch::convolution(@)".}
+
+{.pop.}
+{.pop.}
