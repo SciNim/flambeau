@@ -241,6 +241,8 @@ func scalarType*(self: RawTensor): ScalarKind {.importcpp: "#.scalar_type()".}
 # DeviceType and ScalarType are auto-convertible to TensorOptions
 
 func init*(T: type RawTensor): RawTensor {.constructor, importcpp: "torch::Tensor".}
+# Move / Copy constructor ?
+func initRawTensor*(t: RawTensor): RawTensor {.constructor, importcpp: "torch::Tensor(@)".}
 
 func from_blob*(data: pointer, sizes: IntArrayRef, options: TensorOptions): RawTensor {.importcpp: "torch::from_blob(@)".}
 func from_blob*(data: pointer, sizes: IntArrayRef, scalarKind: ScalarKind): RawTensor {.importcpp: "torch::from_blob(@)".}
@@ -288,9 +290,9 @@ func rand_like*(self: RawTensor, options: DeviceKind): RawTensor {.importcpp: "t
 func rand_like*(self: RawTensor, options: Device): RawTensor {.importcpp: "torch::rand_like(@)".}
 func rand_like*(self: RawTensor): RawTensor {.importcpp: "torch::rand_like(@)".}
 
-func rand*(size: IntArrayRef, options: TensorOptions): RawTensor {.importcpp: "torch::rand(@)"}
-func rand*(size: IntArrayRef, options: DeviceKind): RawTensor {.importcpp: "torch::rand(@)"}
-func rand*(size: IntArrayRef, options: Device): RawTensor {.importcpp: "torch::rand(@)"}
+func rand*(size: IntArrayRef, options: TensorOptions): RawTensor {.importcpp: "torch::rand(@)".}
+func rand*(size: IntArrayRef, options: DeviceKind): RawTensor {.importcpp: "torch::rand(@)".}
+func rand*(size: IntArrayRef, options: Device): RawTensor {.importcpp: "torch::rand(@)".}
 func rand*(size: IntArrayRef, options: ScalarKind): RawTensor {.importcpp: "torch::rand(@)".}
 func rand*(size: IntArrayRef): RawTensor {.importcpp: "torch::rand(@)".}
 
@@ -397,6 +399,8 @@ func step*(s: TorchSlice): int64 {.importcpp: "#.step()".}
 
 # Operators
 # -----------------------------------------------------------------------
+func `=`*(self: var RawTensor, other: RawTensor) {.importcpp: "# = #".}
+func assign*(self: var RawTensor, other: RawTensor) {.importcpp: "# = #".}
 
 func `not`*(self: RawTensor): RawTensor {.importcpp: "(~#)".}
 func `-`*(self: RawTensor): RawTensor {.importcpp: "(-#)".}

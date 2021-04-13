@@ -19,7 +19,8 @@ func toTensorView*[T: SomeTorchType](oa: openArray[T]): lent Tensor[T] =
   ## Result:
   ##      - A view Tensor of the same shape
   var res : RawTensor = toRawTensorView[T](oa)
-  return convertTensor[T](res)
+  # result.raw = res
+  result = convertTensor[T](res)
 
 func toTensor*[T: SomeTorchType](oa: openArray[T]): Tensor[T] =
   ## Interpret an openarray as a CPU Tensor
@@ -29,8 +30,8 @@ func toTensor*[T: SomeTorchType](oa: openArray[T]): Tensor[T] =
   ## Result:
   ##      - A view Tensor of the same shape
   var res : RawTensor = toRawTensorFromScalar[T](oa)
-  result.raw = res
-  # return convertTensor[T](res)
+  # result.raw = res
+  result = convertTensor[T](res)
 
 
 func toTensor*[T: seq|array](oa: openArray[T]): auto =
@@ -42,8 +43,8 @@ func toTensor*[T: seq|array](oa: openArray[T]): auto =
   ##      - A view Tensor of the same shape
   type BaseType = getBaseType(T)
   var res : RawTensor = toRawTensorFromSeq(oa)
-  result.raw = res
-  # return convertTensor[BaseType](res)
+  # result.raw = res
+  result = convertTensor[BaseType](res)
 
 macro `[]`*[T](t: Tensor[T], args: varargs[untyped]): untyped =
   result = quote do:
@@ -55,4 +56,4 @@ macro `[]=`*[T](t: var Tensor[T], args: varargs[untyped]): untyped =
 
 proc `$`*[T](t: Tensor[T]): string =
   # `$`(convertRawTensor(t))
-  "Tensor\n" & `$`(toCppString(t.raw))
+  "Tensor\n" & $(toCppString(t.raw))

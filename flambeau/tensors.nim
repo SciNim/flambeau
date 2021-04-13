@@ -11,12 +11,29 @@ type
   Tensor*[T] = object
     raw*: RawTensor
 
-proc convertRawTensor*[T](t: Tensor[T]): RawTensor {.inline.} =
+proc convertRawTensor*[T](t: Tensor[T]): RawTensor =
   t.raw
 
-proc convertTensor*[T](t: RawTensor): Tensor[T] {.inline.} =
+# This is used to move the ``t`` parameter to a Tensor[T]
+proc convertTensor*[T](t: RawTensor): Tensor[T]  =
+  # {.emit: """
+  # result.raw = `t`;
+  # """}
+  debugEcho "####################################"
+  debugEcho t
+  # result.raw = rawtensors.empty(t.sizes(), T.toScalarKind())
+  let tmp = from_blob(t.data_ptr(T), t.sizes(), T)
+  debugEcho "####################################"
+  debugEcho tmp
+
+  debugEcho "####################################"
   result.raw = t
-  # return Tensor[T](raw: t)
+
+  # assign(result.raw, t)
+  # result.raw = t.clone()
+  # result.raw = initRawTensor(t)
+  # Tensor[T](raw: t)
+  # Tensor[T](raw: initRawTensor(t))
 
 # Strings & Debugging
 # -----------------------------------------------------------------------
