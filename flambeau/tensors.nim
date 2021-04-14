@@ -272,8 +272,8 @@ import complex
 import cppstl/std_complex
 
 func item*[T](self: Tensor[T]): T =
-  result = item(convertRawTensor(self), T)
   ## Extract the scalar from a 0-dimensional tensor
+  result = item(convertRawTensor(self), T)
 
 func item*(self: Tensor[Complex32]): Complex32 =
   item(convertRawTensor(self), typedesc[Complex32]).toCppComplex().toComplex()
@@ -367,33 +367,34 @@ func `-`*[T](a: Tensor[T], b: Tensor[T]): Tensor[T] =
 func `*`*[T](a: Tensor[T], b: Tensor[T]): Tensor[T] =
   convertTensor[T](convertRawTensor(a) * convertRawTensor(b))
 
-func `*`*[T](a: cfloat or cdouble, b: Tensor[T]): Tensor[T] =
-  convertTensor[T](a * convertRawTensor(b))
+func `*`*[T](a: SomeNumber, b: Tensor[T]): Tensor[T] =
+  convertTensor[T](a.cdouble * convertRawTensor(b))
 
-func `*`*[T](a: Tensor[T], b: cfloat or cdouble): Tensor[T] =
-  convertTensor[T](convertRawTensor(a) * b)
+func `*`*[T](a: Tensor[T], b: SomeNumber): Tensor[T] =
+  convertTensor[T](convertRawTensor(a) * b.cdouble)
 
 {.pop.}
 
 func `+=`*[T](self: var Tensor[T], b: Tensor[T]) =
   convertRawTensor(self) += convertRawTensor(b)
-func `+=`*[T](self: var Tensor[T], s: Scalar) =
+
+func `+=`*[T](self: var Tensor[T], s: T) =
   convertRawTensor(self) += s
 
 func `-=`*[T](self: var Tensor[T], b: Tensor[T]) =
   convertRawTensor(self) -= convertRawTensor(b)
-func `-=`*[T](self: var Tensor[T], s: Scalar) =
+func `-=`*[T](self: var Tensor[T], s: T) =
   convertRawTensor(self) -= s
 
 func `*=`*[T](self: var Tensor[T], b: Tensor[T]) =
   convertRawTensor(self) *= convertRawTensor(b)
 
-func `*=`*[T](self: var Tensor[T], s: Scalar) =
+func `*=`*[T](self: var Tensor[T], s: T) =
   convertRawTensor(self) *= s
 
 func `/=`*[T](self: var Tensor[T], b: Tensor[T]) =
   convertRawTensor(self) /= convertRawTensor(b)
-func `/=`*[T](self: var Tensor[T], s: Scalar) =
+func `/=`*[T](self: var Tensor[T], s: T) =
   convertRawTensor(self) /= s
 
 {.push noinit.}
@@ -479,106 +480,106 @@ func zeros*[T](dims: openArray[int64], options: DeviceKind|TensorOptions): Tenso
     rawtensors.zeros(dims, options)
   )
 
-func linspace*[T](start, stop: Scalar, steps: int64, options: TensorOptions): Tensor[T] =
+func linspace*[T](start, stop: T, steps: int64, options: TensorOptions): Tensor[T] =
   convertTensor[T](
     rawtensors.linspace(start, stop, steps, options)
   )
 
-func linspace*[T](start, stop: Scalar, steps: int64, options: DeviceKind): Tensor[T] =
+func linspace*[T](start, stop: T, steps: int64, options: DeviceKind): Tensor[T] =
   convertTensor[T](
     rawtensors.linspace(start, stop, steps, options)
   )
 
-func linspace*[T](start, stop: Scalar, steps: int64, options: Device): Tensor[T] =
+func linspace*[T](start, stop: T, steps: int64, options: Device): Tensor[T] =
   convertTensor[T](
     rawtensors.linspace(start, stop, steps, options)
   )
 
-func linspace*[T](start, stop: Scalar, steps: int64): Tensor[T] =
+func linspace*[T](start, stop: T, steps: int64): Tensor[T] =
   convertTensor[T](
     rawtensors.linspace(start, stop, steps, T)
   )
 
-func linspace*[T](start, stop: Scalar): Tensor[T] =
+func linspace*[T](start, stop: T): Tensor[T] =
   convertTensor[T](
     rawtensors.linspace(start, stop)
   )
 
-func logspace*[T](start, stop: Scalar, steps: int64, options: TensorOptions): Tensor[T] =
+func logspace*[T](start, stop: T, steps: int64, options: TensorOptions): Tensor[T] =
   convertTensor[T](
     rawtensors.logspace(start, stop, steps, options)
   )
 
-func logspace*[T](start, stop: Scalar, steps: int64, options: DeviceKind): Tensor[T] =
+func logspace*[T](start, stop: T, steps: int64, options: DeviceKind): Tensor[T] =
   convertTensor[T](
     rawtensors.logspace(start, stop, steps, options)
   )
 
-func logspace*[T](start, stop: Scalar, steps: int64, options: Device): Tensor[T] =
+func logspace*[T](start, stop: T, steps: int64, options: Device): Tensor[T] =
   convertTensor[T](
     rawtensors.logspace(start, stop, steps, options)
   )
 
-func logspace*[T](start, stop: Scalar, steps: int64): Tensor[T] =
+func logspace*[T](start, stop: T, steps: int64): Tensor[T] =
   convertTensor[T](
     rawtensors.logspace(start, stop, steps, T)
   )
 
-func logspace*[T](start, stop: Scalar): Tensor[T] =
+func logspace*[T](start, stop: T): Tensor[T] =
   convertTensor[T](
     rawtensors.logspace(start, stop)
   )
 
-func arange*[T](stop: Scalar, options: TensorOptions): Tensor[T] =
+func arange*[T](stop: T, options: TensorOptions): Tensor[T] =
   convertTensor[T](
     rawtensors.arange(stop, options)
   )
 
-func arange*[T](stop: Scalar, options: DeviceKind): Tensor[T] =
+func arange*[T](stop: T, options: DeviceKind): Tensor[T] =
   convertTensor[T](
     rawtensors.arange(stop, options)
   )
 
-func arange*[T](stop: Scalar, options: Device): Tensor[T] =
+func arange*[T](stop: T, options: Device): Tensor[T] =
   convertTensor[T](
     rawtensors.arange(stop, options)
   )
 
-func arange*[T](stop: Scalar): Tensor[T] =
+func arange*[T](stop: T): Tensor[T] =
   convertTensor[T](
     rawtensors.arange(stop, T)
   )
 
-func arange*[T](start, stop: Scalar, options: TensorOptions): Tensor[T] =
+func arange*[T](start, stop: T, options: TensorOptions): Tensor[T] =
   convertTensor[T](
     rawtensors.arange(start, stop, options)
   )
-func arange*[T](start, stop: Scalar, options: DeviceKind): Tensor[T] =
+func arange*[T](start, stop: T, options: DeviceKind): Tensor[T] =
   convertTensor[T](
     rawtensors.arange(start, stop, options)
   )
-func arange*[T](start, stop: Scalar, options: Device): Tensor[T] =
+func arange*[T](start, stop: T, options: Device): Tensor[T] =
   convertTensor[T](
     rawtensors.arange(start, stop, options)
   )
-func arange*[T](start, stop: Scalar): Tensor[T] =
+func arange*[T](start, stop: T): Tensor[T] =
   convertTensor[T](
     rawtensors.arange(start, stop, T)
   )
 
-func arange*[T](start, stop, step: Scalar, options: TensorOptions): Tensor[T] =
+func arange*[T](start, stop, step: T, options: TensorOptions): Tensor[T] =
   convertTensor[T](
     rawtensors.arange(start, stop, step, options)
   )
-func arange*[T](start, stop, step: Scalar, options: DeviceKind): Tensor[T] =
+func arange*[T](start, stop, step: T, options: DeviceKind): Tensor[T] =
   convertTensor[T](
     rawtensors.arange(start, stop, step, options)
   )
-func arange*[T](start, stop, step: Scalar, options: Device): Tensor[T] =
+func arange*[T](start, stop, step: T, options: Device): Tensor[T] =
   convertTensor[T](
     rawtensors.arange(start, stop, step, options)
   )
-func arange*[T](start, stop, step: Scalar): Tensor[T] =
+func arange*[T](start, stop, step: T): Tensor[T] =
   convertTensor[T](
     rawtensors.arange(start, stop, step, T)
   )

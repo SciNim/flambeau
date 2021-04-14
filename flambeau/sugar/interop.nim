@@ -46,12 +46,38 @@ func toTensor*[T: seq|array](oa: openArray[T]): auto {.noinit.}=
   result = convertTensor[V](res)
 
 macro `[]`*[T](t: Tensor[T], args: varargs[untyped]): untyped =
+  # result = nnkStmtList.newTree(
+  #   nnkCall.newTree(
+  #     nnkAccQuoted.newTree(
+  #       newIdentNode("[]")
+  #     ),
+  #     nnkDotExpr.newTree(
+  #       newIdentNode(ident `t`),
+  #       newIdentNode("raw")
+  #     ),
+  #     newIdentNode(ident `args`)
+  #   )
+  # )
   result = quote do:
-    [](`t.raw`, args)
+    `t.raw`[`args`]
+  #  [](`t.raw`, `args`)
 
 macro `[]=`*[T](t: var Tensor[T], args: varargs[untyped]): untyped =
+  # result = nnkStmtList.newTree(
+  #   nnkCall.newTree(
+  #     nnkAccQuoted.newTree(
+  #       newIdentNode("[]")
+  #     ),
+  #     nnkDotExpr.newTree(
+  #       newIdentNode(ident `t`),
+  #       newIdentNode("raw")
+  #     ),
+  #     newIdentNode(ident `args`)
+  #   )
+  # )
   result = quote do:
-    [] = (`t.raw`, args)
+    `t.raw` = [`args`]
+    # []=(`t.raw`, `args`)
 
 proc `$`*[T](t: Tensor[T]): string =
   # `$`(convertRawTensor(t))
