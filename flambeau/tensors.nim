@@ -193,16 +193,16 @@ func from_blob*[T](data: pointer, sizes, strides: openArray[int64]): Tensor[T] {
     strides = strides.asTorchView
   rawtensors.from_blob(data, sizes, strides, T).convertTensor[T]
 
-func empty*[T](size: IntArrayRef, options: TensorOptions|DeviceKind): Tensor[T] {.noinit.} =
+func empty*[T](size: openArray[int64], options: TensorOptions|DeviceKind): Tensor[T] {.noinit.} =
   ## Create an uninitialized tensor of shape `size`
   ## The tensor data must be filled manually
   ##
   ## The output tensor will be row major (C contiguous)
-  # let size = size.asTorchView
+  let size = size.asTorchView()
   rawtensors.empty(size, options).convertTensor[T]
 
-func empty*[T](size: IntArrayRef): Tensor[T] {.noinit.} =
-  # let size = size.asTorchView
+func empty*[T](size: openArray[int64]): Tensor[T] {.noinit.} =
+  let size = size.asTorchView()
   rawtensors.empty(size, T).convertTensor[T]
 
 func clone*[T](self: Tensor[T]): Tensor[T] {.noinit.} =
@@ -403,9 +403,11 @@ func eye*[T](n: int64, options: DeviceKind|TensorOptions): Tensor[T] =
 
 func zeros*[T](dim: int64): Tensor[T] =
   rawtensors.zeros(dim, T).convertTensor[T]
-func zeros*[T](dims: IntArrayRef): Tensor[T] =
+func zeros*[T](dims: openArray[int64]): Tensor[T] =
+  let dims = dims.asTorchView()
   rawtensors.zeros(dims, T).convertTensor[T]
-func zeros*[T](dims: IntArrayRef, options: DeviceKind|TensorOptions): Tensor[T] =
+func zeros*[T](dims: openArray[int64], options: DeviceKind|TensorOptions): Tensor[T] =
+  let dims = dims.asTorchView()
   rawtensors.zeros(dims, options).convertTensor[T]
 
 func linspace*[T](start, stop: Scalar, steps: int64, options: TensorOptions): Tensor[T] =
@@ -523,254 +525,483 @@ func allClose*[T](t, other: Tensor[T], rtol: float64 = 1e-5, abstol: float64 = 1
 # # -----------------------------------------------------------------------
 {.push noinit.}
 # sum needs wrapper procs/templates to allow for using nim arrays and single axis.
-func sum*[T](self: Tensor[T]): Tensor[T]
-func sum*[T](self: Tensor[T], dtype: ScalarKind): Tensor[T]
-func sum*[T](self: Tensor[T], axis: int64, keepdim: bool = false): Tensor[T]
-func sum*[T](self: Tensor[T], axis: int64, keepdim: bool = false, dtype: ScalarKind): Tensor[T]
-func sum*[T](self: Tensor[T], axis: IntArrayRef, keepdim: bool = false): Tensor[T]
-func sum*[T](self: Tensor[T], axis: IntArrayRef, keepdim: bool = false, dtype: ScalarKind): Tensor[T]
+func sum*[T](self: Tensor[T]): Tensor[T] =
+  rawtensors.sum(convertRawTensor(self)).convertTensor[T]
+
+func sum*[T](self: Tensor[T], dtype: ScalarKind): Tensor[T] =
+  rawtensors.sum(convertRawTensor(self), dtype).convertTensor[T]
+
+func sum*[T](self: Tensor[T], axis: int64, keepdim: bool = false): Tensor[T] =
+  rawtensors.sum(convertRawTensor(self), axis, keepdim).convertTensor[T]
+
+func sum*[T](self: Tensor[T], axis: int64, keepdim: bool = false, dtype: ScalarKind): Tensor[T] =
+  rawtensors.sum(convertRawTensor(self), axis, keepdim, dtype).convertTensor[T]
+
+func sum*[T](self: Tensor[T], axis: openArray[int64], keepdim: bool = false): Tensor[T] =
+  let axis = axis.asTorchView()
+  rawtensors.sum(convertRawTensor(self), axis, keepdim).convertTensor[T]
+
+func sum*[T](self: Tensor[T], axis: openArray[int64], keepdim: bool = false, dtype: ScalarKind): Tensor[T] =
+  let axis = axis.asTorchView()
+  rawtensors.sum(convertRawTensor(self), axis, keepdim).convertTensor[T]
 
 # mean as well
-func mean*[T](self: Tensor[T]): Tensor[T]
-func mean*[T](self: Tensor[T], dtype: ScalarKind): Tensor[T]
-func mean*[T](self: Tensor[T], axis: int64, keepdim: bool = false): Tensor[T]
-func mean*[T](self: Tensor[T], axis: int64, keepdim: bool = false, dtype: ScalarKind): Tensor[T]
-func mean*[T](self: Tensor[T], axis: IntArrayRef, keepdim: bool = false): Tensor[T]
-func mean*[T](self: Tensor[T], axis: IntArrayRef, keepdim: bool = false, dtype: ScalarKind): Tensor[T]
+func mean*[T](self: Tensor[T]): Tensor[T] =
+  rawtensors.mean(convertRawTensor(self)).convertTensor[T]
+
+func mean*[T](self: Tensor[T], dtype: ScalarKind): Tensor[T] =
+  rawtensors.mean(convertRawTensor(self), dtype).convertTensor[T]
+
+func mean*[T](self: Tensor[T], axis: int64, keepdim: bool = false): Tensor[T] =
+  rawtensors.mean(convertRawTensor(self), axis, keepdim).convertTensor[T]
+
+func mean*[T](self: Tensor[T], axis: int64, keepdim: bool = false, dtype: ScalarKind): Tensor[T] =
+  rawtensors.mean(convertRawTensor(self), axis, keepdim, dtype).convertTensor[T]
+
+func mean*[T](self: Tensor[T], axis: openArray[int64], keepdim: bool = false): Tensor[T] =
+  let axis = axis.asTorchView()
+  rawtensors.mean(convertRawTensor(self), axis, keepdim).convertTensor[T]
+
+func mean*[T](self: Tensor[T], axis: openArray[int64], keepdim: bool = false, dtype: ScalarKind): Tensor[T] =
+  let axis = axis.asTorchView()
+  rawtensors.mean(convertRawTensor(self), axis, keepdim, dtype).convertTensor[T]
 
 # median requires std::tuple
 
-func prod*[T](self: Tensor[T]): Tensor[T]
-func prod*[T](self: Tensor[T], dtype: ScalarKind): Tensor[T]
-func prod*[T](self: Tensor[T], axis: int64, keepdim: bool = false): Tensor[T]
-func prod*[T](self: Tensor[T], axis: int64, keepdim: bool = false, dtype: ScalarKind): Tensor[T]
+func prod*[T](self: Tensor[T]): Tensor[T] =
+  rawtensors.prod(convertRawTensor(self)).convertTensor[T]
 
-func min*[T](self: Tensor[T]): Tensor[T]
-func min*[T](self: Tensor[T], axis: int64, keepdim: bool = false): CppTuple2[Tensor[T], Tensor[T]]
+func prod*[T](self: Tensor[T], dtype: ScalarKind): Tensor[T] =
+  rawtensors.prod(convertRawTensor(self), dtype).convertTensor[T]
+
+func prod*[T](self: Tensor[T], axis: int64, keepdim: bool = false): Tensor[T] =
+  rawtensors.prod(convertRawTensor(self), axis, keepdim).convertTensor[T]
+
+func prod*[T](self: Tensor[T], axis: int64, keepdim: bool = false, dtype: ScalarKind): Tensor[T] =
+  rawtensors.prod(convertRawTensor(self), axis, keepdim, dtype).convertTensor[T]
+
+func min*[T](self: Tensor[T]): Tensor[T] =
+  rawtensors.min(convertRawTensor(self)).convertTensor[T]
+
+func min*[T](self: Tensor[T], axis: int64, keepdim: bool = false): tuple[values: Tensor[T], indices: Tensor[int64]] =
   ## Returns a tuple (values, indices) of type (TensorT, TensorInt64)
   ## of the minimum values and their index in the specified axis
+  let cppMinTuple = rawtensors.min(convertRawTensor(self), axis, keepdim)
+  result.values = cppMinTuple.get(0).convertTensor[T]
+  result.indices= cppMinTuple.get(0).convertTensor[int64]
 
-func max*[T](self: Tensor[T]): Tensor[T]
-func max*[T](self: Tensor[T], axis: int64, keepdim: bool = false): CppTuple2[Tensor[T], Tensor[T]]
+func max*[T](self: Tensor[T]): Tensor[T] =
+  rawtensors.max(convertRawTensor(self)).convertTensor[T]
+
+func max*[T](self: Tensor[T], axis: int64, keepdim: bool = false): tuple[values: Tensor[T], indicies: Tensor[int64]] =
   ## Returns a tuple (values, indices) of type (TensorT, TensorInt64)
   ## of the maximum values and their index in the specified axis
+  let cppMaxTuple = rawtensors.max(convertRawTensor(self), axis, keepdim)
+  result.values = cppMaxTuple.get(0).convertTensor[T]
+  result.indices= cppMaxTuple.get(0).convertTensor[int64]
 
-func variance*[T](self: Tensor[T], unbiased: bool = true): Tensor[T]
-func variance*[T](self: Tensor[T], axis: int64, unbiased: bool = true, keepdim: bool = false): Tensor[T]
-func variance*[T](self: Tensor[T], axis: IntArrayRef, unbiased: bool = true, keepdim: bool = false): Tensor[T]
 
-func stddev*[T](self: Tensor[T], unbiased: bool = true): Tensor[T]
-func stddev*[T](self: Tensor[T], axis: int64, unbiased: bool = true, keepdim: bool = false): Tensor[T]
-func stddev*[T](self: Tensor[T], axis: IntArrayRef, unbiased: bool = true, keepdim: bool = false): Tensor[T]
-{.pop.}
+func variance*[T](self: Tensor[T], unbiased: bool = true): Tensor[T] =
+  rawtensors.variance(convertRawTensor(self), unbiased).convertTensor[T]
+
+func variance*[T](self: Tensor[T], axis: int64, unbiased: bool = true, keepdim: bool = false): Tensor[T] =
+  rawtensors.variance(convertRawTensor(self), axis, unbiased, keepdim).convertTensor[T]
+
+func variance*[T](self: Tensor[T], axis: openArray[int64], unbiased: bool = true, keepdim: bool = false): Tensor[T] =
+  let axis = axis.asTorchView()
+  rawtensors.variance(convertRawTensor(self), axis, unbiased, keepdim).convertTensor[T]
+
+func stddev*[T](self: Tensor[T], unbiased: bool = true): Tensor[T] =
+  rawtensors.stddev(convertRawTensor(self), unbiased).convertTensor[T]
+
+func stddev*[T](self: Tensor[T], axis: int64, unbiased: bool = true, keepdim: bool = false): Tensor[T] =
+  rawtensors.stddev(convertRawTensor(self), axis, unbiased, keepdim).convertTensor[T]
+
+func stddev*[T](self: Tensor[T], axis: openArray[int64], unbiased: bool = true, keepdim: bool = false): Tensor[T] =
+  let axis = axis.asTorchView()
+  rawtensors.stddev(convertRawTensor(self), axis, unbiased, keepdim).convertTensor[T]
+
 
 # # algorithms:
 # # -----------------------------------------------------------------------
 #
-func sort*[T](self: Tensor[T], axis: int64 = -1, descending: bool = false): CppTuple2[Tensor[T], Tensor[T]]
+func sort*[T](self: Tensor[T], axis: int64 = -1, descending: bool = false): tuple[values: Tensor[T], originalIndices: Tensor[int64]] =
   ## Sorts the elements of the input tensor along a given dimension in ascending order by value.
   ## If dim is not given, the last dimension of the input is chosen (dim=-1).
   ## Returns (values, originalIndices) or type (TensorT, TensorInt64)
   ## where originalIndices is the original index of each values (before sorting)
-func argsort*[T](self: Tensor[T], axis: int64 = -1, descending: bool = false): Tensor[T]
+  let cppSortTuple = rawtensors.sort(convertRawTensor(self), axis, descending)
+  result.values = cppSortTuple.get(0).convertTensor[T]
+  result.originalIndices = cppSortTuple.get(1).convertTensor[int64]
+
+func argsort*[T](self: Tensor[T], axis: int64 = -1, descending: bool = false): Tensor[T] =
+  rawtensors.argsort(convertRawTensor(self), axis, descending).convertTensor[T]
 #
 # # math
 # # -----------------------------------------------------------------------
-func abs*[T](self: Tensor[T]): Tensor[T]
-func absolute*[T](self: Tensor[T]): Tensor[T]
-func angle*[T](self: Tensor[T]): Tensor[T]
-func sgn*[T](self: Tensor[T]): Tensor[T]
-func conj*[T](self: Tensor[T]): Tensor[T]
-func acos*[T](self: Tensor[T]): Tensor[T]
-func arccos*[T](self: Tensor[T]): Tensor[T]
-func acosh*[T](self: Tensor[T]): Tensor[T]
-func arccosh*[T](self: Tensor[T]): Tensor[T]
-func asinh*[T](self: Tensor[T]): Tensor[T]
-func arcsinh*[T](self: Tensor[T]): Tensor[T]
-func atanh*[T](self: Tensor[T]): Tensor[T]
-func arctanh*[T](self: Tensor[T]): Tensor[T]
-func asin*[T](self: Tensor[T]): Tensor[T]
-func arcsin*[T](self: Tensor[T]): Tensor[T]
-func atan*[T](self: Tensor[T]): Tensor[T]
-func arctan*[T](self: Tensor[T]): Tensor[T]
-func cos*[T](self: Tensor[T]): Tensor[T]
-func sin*[T](self: Tensor[T]): Tensor[T]
-func tan*[T](self: Tensor[T]): Tensor[T]
-func exp*[T](self: Tensor[T]): Tensor[T]
-func exp2*[T](self: Tensor[T]): Tensor[T]
-func erf*[T](self: Tensor[T]): Tensor[T]
-func erfc*[T](self: Tensor[T]): Tensor[T]
-func reciprocal*[T](self: Tensor[T]): Tensor[T]
-func neg*[T](self: Tensor[T]): Tensor[T]
-func clamp*[T](self: Tensor[T], min, max: Scalar): Tensor[T]
-func clampMin*[T](self: Tensor[T], min: Scalar): Tensor[T]
-func clampMax*[T](self: Tensor[T], max: Scalar): Tensor[T]
+func abs*[T](self: Tensor[T]): Tensor[T] =
+  rawtensors.abs(convertRawTensor(self)).convertTensor[T]
 
-func dot*[T](self: Tensor[T], other: Tensor[T]): Tensor[T]
+func absolute*[T](self: Tensor[T]): Tensor[T] =
+  rawtensors.absolute(convertRawTensor(self)).convertTensor[T]
 
-func squeeze*[T](self: Tensor[T]): Tensor[T]
-func squeeze*[T](self: Tensor[T], axis: int64): Tensor[T]
-func unsqueeze*[T](self: Tensor[T], axis: int64): Tensor[T]
+func angle*[T](self: Tensor[T]): Tensor[T] =
+  rawtensors.angle(convertRawTensor(self)).convertTensor[T]
 
-# # FFT
-# # -----------------------------------------------------------------------
-# func fftshift*[T](self: Tensor[T]): Tensor[T]
-# func fftshift*[T](self: Tensor[T], dim: IntArrayRef): Tensor[T]
-# func ifftshift*[T](self: Tensor[T]): Tensor[T]
-# func ifftshift*[T](self: Tensor[T], dim: IntArrayRef): Tensor[T]
-#
-# let defaultNorm: CppString = initCppString("backward")
-#
-# func fft*[T](self: Tensor[T], n: int64, dim: int64 = -1, norm: CppString = defaultNorm): Tensor[T]
-# ## Compute the 1-D Fourier transform
-# ## ``n`` represent Signal length. If given, the input will either be zero-padded or trimmed to this length before computing the FFT.
-# ## ``norm`` can be :
-# ##    *[T] "forward" - normalize by 1/n
-# ##    *[T] "backward" - no normalization
-# ##    *[T] "ortho" - normalize by 1/sqrt(n)
-# func fft*[T](self: Tensor[T]): Tensor[T]
-# ## Compute the 1-D Fourier transform
-#
-# func ifft*[T](self: Tensor[T], n: int64, dim: int64 = -1, norm: CppString = defaultNorm): Tensor[T]
-# ## Compute the 1-D Fourier transform
-# ## ``n`` represent Signal length. If given, the input will either be zero-padded or trimmed to this length before computing the FFT.
-# ## ``norm`` can be :
-# ##   *[T] "forward" - no normalization
-# ##   *[T] "backward" - normalization by 1/n
-# ##   *[T] "ortho" - normalization by 1/sqrt(n)
-# func ifft*[T](self: Tensor[T]): Tensor[T]
-# ## Compute the 1-D Fourier transform
-#
-# func fft2*[T](self: Tensor[T], s: IntArrayRef, dim: IntArrayRef, norm: CppString = defaultNorm): Tensor[T]
-# ## Compute the 2-D Fourier transform
-# ## ``s`` represents signal size. If given, each dimension dim[i] will either be zero padded or trimmed to the length s[i] before computing the FFT.
-# ## ``norm`` can be :
-# ##    *[T] "forward" - normalize by 1/n
-# ##    *[T] "backward" - no normalization
-# ##    *[T] "ortho" - normalize by 1/sqrt(n)
-# ## With n the logical FFT size: ``n = prod(s)``.
-# func fft2*[T](self: Tensor[T], s: IntArrayRef): Tensor[T]
-# ## Compute the 2-D Fourier transform
-# ## ``s`` represents signal size. If given, each dimension dim[i] will either be zero padded or trimmed to the length s[i] before computing the FFT.
-# func fft2*[T](self: Tensor[T]): Tensor[T]
-# ## Compute the 2-D Fourier transform
-#
-# func ifft2*[T](self: Tensor[T], s: IntArrayRef, dim: IntArrayRef, norm: CppString = defaultNorm): Tensor[T]
-# ## Compute the 2-D Inverse Fourier transform
-# ## ``s`` represents signal size. If given, each dimension dim[i] will either be zero padded or trimmed to the length s[i] before computing the FFT.
-# ## ``norm`` can be :
-# ##   *[T] "forward" - no normalization
-# ##   *[T] "backward" - normalization by 1/n
-# ##   *[T] "ortho" - normalization by 1/sqrt(n)
-# ## With n the logical FFT size: ``n = prod(s)``.
-# func ifft2*[T](self: Tensor[T], s: IntArrayRef): Tensor[T]
-# ## Compute the 2-D Inverse Fourier transform
-# ## ``s`` represents signal size. If given, each dimension dim[i] will either be zero padded or trimmed to the length s[i] before computing the FFT.
-# func ifft2*[T](self: Tensor[T]): Tensor[T]
-# ## Compute the 2-D Inverse Fourier transform
-#
-# func fftn*[T](self: Tensor[T], s: IntArrayRef, dim: IntArrayRef, norm: CppString = defaultNorm): Tensor[T]
-# ## Compute the N-D Fourier transform
-# ## ``s`` represents signal size. If given, each dimension dim[i] will either be zero padded or trimmed to the length s[i] before computing the FFT.
-# ## ``norm`` can be :
-# ##    *[T] "forward" normalize by 1/n
-# ##    *[T] "backward" - no normalization
-# ##    *[T] "ortho" normalize by 1/sqrt(n)
-# ## With n the logical FFT size: ``n = prod(s)``.
-# func fftn*[T](self: Tensor[T], s: IntArrayRef): Tensor[T]
-# ## Compute the N-D Fourier transform
-# ## ``s`` represents signal size. If given, each dimension dim[i] will either be zero padded or trimmed to the length s[i] before computing the FFT.
-# func fftn*[T](self: Tensor[T]): Tensor[T]
-# ## Compute the N-D Fourier transform
-#
-# func ifftn*[T](self: Tensor[T], s: IntArrayRef, dim: IntArrayRef, norm: CppString = defaultNorm): Tensor[T]
-# ## Compute the N-D Inverse Fourier transform
-# ## ``s`` represents signal size. If given, each dimension dim[i] will either be zero padded or trimmed to the length s[i] before computing the FFT.
-# ## ``norm`` can be :
-# ##   *[T] "forward" - no normalization
-# ##   *[T] "backward" - normalization by 1/n
-# ##   *[T] "ortho" - normalization by 1/sqrt(n)
-# ## With n the logical FFT size: ``n = prod(s)``.
-# func ifftn*[T](self: Tensor[T], s: IntArrayRef): Tensor[T]
-# ## Compute the N-D Inverse Fourier transform
-# ## ``s`` represents signal size. If given, each dimension dim[i] will either be zero padded or trimmed to the length s[i] before computing the FFT.
-# func ifftn*[T](self: Tensor[T]): Tensor[T]
-# ## Compute the N-D Inverse Fourier transform
-#
-# func rfft*[T](self: Tensor[T], n: int64, dim: int64 = -1, norm: CppString = defaultNorm): Tensor[T]
-# ## Computes the one dimensional Fourier transform of real-valued input.
-# func rfft*[T](self: Tensor[T]): Tensor[T]
-# ## Computes the one dimensional Fourier transform of real-valued input.
-#
-# func irfft*[T](self: Tensor[T], n: int64, dim: int64 = -1, norm: CppString = defaultNorm): Tensor[T]
-# ## Computes the one dimensional Fourier transform of real-valued input.
-# func irfft*[T](self: Tensor[T]): Tensor[T]
-# ## Computes the one dimensional Fourier transform of real-valued input.
-#
-# func rfft2*[T](self: Tensor[T], s: IntArrayRef, dim: IntArrayRef, norm: CppString = defaultNorm): Tensor[T]
-# ## Compute the N-D Fourier transform
-# ## ``s`` represents signal size. If given, each dimension dim[i] will either be zero padded or trimmed to the length s[i] before computing the FFT.
-# ## ``norm`` can be :
-# ##    *[T] "forward" - normalize by 1/n
-# ##    *[T] "backward" - no normalization
-# ##    *[T] "ortho" - normalize by 1/sqrt(n)
-# ## With n the logical FFT size: ``n = prod(s)``.
-# func rfft2*[T](self: Tensor[T], s: IntArrayRef): Tensor[T]
-# ## Compute the N-D Fourier transform
-# ## ``s`` represents signal size. If given, each dimension dim[i] will either be zero padded or trimmed to the length s[i] before computing the FFT.
-# func rfft2*[T](self: Tensor[T]): Tensor[T]
-# ## Compute the N-D Fourier transform
-#
-# func irfft2*[T](self: Tensor[T], s: IntArrayRef, dim: IntArrayRef, norm: CppString = defaultNorm): Tensor[T]
-# ## Compute the N-D Inverse Fourier transform
-# ## ``s`` represents signal size. If given, each dimension dim[i] will either be zero padded or trimmed to the length s[i] before computing the FFT.
-# ## ``norm`` can be :
-# ##   *[T] "forward" - no normalization
-# ##   *[T] "backward" - normalization by 1/n
-# ##   *[T] "ortho" - normalization by 1/sqrt(n)
-# ## With n the logical FFT size: ``n = prod(s)``.
-# func irfft2*[T](self: Tensor[T], s: IntArrayRef): Tensor[T]
-# ## Compute the N-D Inverse Fourier transform
-# ## ``s`` represents signal size. If given, each dimension dim[i] will either be zero padded or trimmed to the length s[i] before computing the FFT.
-# func irfft2*[T](self: Tensor[T]): Tensor[T]
-# ## Compute the N-D Inverse Fourier transform
-#
-#
-# func rfftn*[T](self: Tensor[T], s: IntArrayRef, dim: IntArrayRef, norm: CppString = defaultNorm): Tensor[T]
-# ## Compute the N-D Fourier transform
-# ## ``s`` represents signal size. If given, each dimension dim[i] will either be zero padded or trimmed to the length s[i] before computing the FFT.
-# ## ``norm`` can be :
-# ##    *[T] "forward" - normalize by 1/n
-# ##    *[T] "backward" - no normalization
-# ##    *[T] "ortho" - normalize by 1/sqrt(n)
-# ## With n the logical FFT size: ``n = prod(s)``.
-# func rfftn*[T](self: Tensor[T], s: IntArrayRef): Tensor[T]
-# ## Compute the N-D Fourier transform
-# ## ``s`` represents signal size. If given, each dimension dim[i] will either be zero padded or trimmed to the length s[i] before computing the FFT.
-# func rfftn*[T](self: Tensor[T]): Tensor[T]
-# ## Compute the N-D Fourier transform
-#
-# func irfftn*[T](self: Tensor[T], s: IntArrayRef, dim: IntArrayRef, norm: CppString = defaultNorm): Tensor[T]
-# ## Compute the N-D Inverse Fourier transform
-# ## ``s`` represents signal size. If given, each dimension dim[i] will either be zero padded or trimmed to the length s[i] before computing the FFT.
-# ## ``norm`` can be :
-# ##   *[T] "forward" - no normalization
-# ##   *[T] "backward" - normalization by 1/n
-# ##   *[T] "ortho" - normalization by 1/sqrt(n)
-# ## With n the logical FFT size: ``n = prod(s)``.
-# func irfftn*[T](self: Tensor[T], s: IntArrayRef): Tensor[T]
-# ## Compute the N-D Inverse Fourier transform
-# ## ``s`` represents signal size. If given, each dimension dim[i] will either be zero padded or trimmed to the length s[i] before computing the FFT.
-# func irfftn*[T](self: Tensor[T]): Tensor[T]
-# ## Compute the N-D Inverse Fourier transform
-#
-# func hfft*[T](self: Tensor[T], n: int64, dim: int64 = -1, norm: CppString = defaultNorm): Tensor[T]
-# ## Computes the 1 dimensional FFT of a onesided Hermitian signal.
-# func hfft*[T](self: Tensor[T]): Tensor[T]
-# ## Computes the 1 dimensional FFT of a onesided Hermitian signal.
-# func ihfft*[T](self: Tensor[T], n: int64, dim: int64 = -1, norm: CppString = defaultNorm): Tensor[T]
-# ## Computes the inverse FFT of a real-valued Fourier domain signal.
-# func ihfft*[T](self: Tensor[T]): Tensor[T]
-# ## Computes the inverse FFT of a real-valued Fourier domain signal.
+func sgn*[T](self: Tensor[T]): Tensor[T] =
+  rawtensors.sgn(convertRawTensor(self)).convertTensor[T]
+
+func conj*[T](self: Tensor[T]): Tensor[T] =
+  rawtensors.conj(convertRawTensor(self)).convertTensor[T]
+
+func acos*[T](self: Tensor[T]): Tensor[T] =
+  rawtensors.acos(convertRawTensor(self)).convertTensor[T]
+
+func arccos*[T](self: Tensor[T]): Tensor[T] =
+  rawtensors.arccos(convertRawTensor(self)).convertTensor[T]
+
+func acosh*[T](self: Tensor[T]): Tensor[T] =
+  rawtensors.acosh(convertRawTensor(self)).convertTensor[T]
+
+func arccosh*[T](self: Tensor[T]): Tensor[T] =
+  rawtensors.arccosh(convertRawTensor(self)).convertTensor[T]
+
+func asinh*[T](self: Tensor[T]): Tensor[T] =
+  rawtensors.asinh(convertRawTensor(self)).convertTensor[T]
+
+func arcsinh*[T](self: Tensor[T]): Tensor[T] =
+  rawtensors.arcsinh(convertRawTensor(self)).convertTensor[T]
+
+func atanh*[T](self: Tensor[T]): Tensor[T] =
+  rawtensors.atanh(convertRawTensor(self)).convertTensor[T]
+
+func arctanh*[T](self: Tensor[T]): Tensor[T] =
+  rawtensors.arctanh(convertRawTensor(self)).convertTensor[T]
+
+func asin*[T](self: Tensor[T]): Tensor[T] =
+  rawtensors.asin(convertRawTensor(self)).convertTensor[T]
+
+func arcsin*[T](self: Tensor[T]): Tensor[T] =
+  rawtensors.arcsin(convertRawTensor(self)).convertTensor[T]
+
+func atan*[T](self: Tensor[T]): Tensor[T] =
+  rawtensors.atan(convertRawTensor(self)).convertTensor[T]
+
+func arctan*[T](self: Tensor[T]): Tensor[T] =
+  rawtensors.arctan(convertRawTensor(self)).convertTensor[T]
+
+func cos*[T](self: Tensor[T]): Tensor[T] =
+  rawtensors.cos(convertRawTensor(self)).convertTensor[T]
+
+func sin*[T](self: Tensor[T]): Tensor[T] =
+  rawtensors.sin(convertRawTensor(self)).convertTensor[T]
+
+func tan*[T](self: Tensor[T]): Tensor[T] =
+  rawtensors.tan(convertRawTensor(self)).convertTensor[T]
+
+func exp*[T](self: Tensor[T]): Tensor[T] =
+  rawtensors.exp(convertRawTensor(self)).convertTensor[T]
+
+func exp2*[T](self: Tensor[T]): Tensor[T] =
+  rawtensors.exp2(convertRawTensor(self)).convertTensor[T]
+
+func erf*[T](self: Tensor[T]): Tensor[T] =
+  rawtensors.erf(convertRawTensor(self)).convertTensor[T]
+
+func erfc*[T](self: Tensor[T]): Tensor[T] =
+  rawtensors.erfc(convertRawTensor(self)).convertTensor[T]
+
+func reciprocal*[T](self: Tensor[T]): Tensor[T] =
+  rawtensors.reciprocal(convertRawTensor(self)).convertTensor[T]
+
+func neg*[T](self: Tensor[T]): Tensor[T] =
+  rawtensors.neg(convertRawTensor(self)).convertTensor[T]
+
+func clamp*[T](self: Tensor[T], min, max: Scalar): Tensor[T] =
+  rawtensors.clamp(convertRawTensor(self), min, max).convertTensor[T]
+
+func clampMin*[T](self: Tensor[T], min: Scalar): Tensor[T] =
+  rawtensors.clampMin(convertRawTensor(self), min).convertTensor[T]
+
+func clampMax*[T](self: Tensor[T], max: Scalar): Tensor[T] =
+  rawtensors.clampMax(convertRawTensor(self), max).convertTensor[T]
+
+func dot*[T](self: Tensor[T], other: Tensor[T]): Tensor[T] =
+  rawtensors.dot(convertRawTensor(self), convertRawTensor(other)).convertTensor[T]
+
+func squeeze*[T](self: Tensor[T]): Tensor[T] =
+  rawtensors.squeeze(convertRawTensor(self)).convertTensor[T]
+
+func squeeze*[T](self: Tensor[T], axis: int64): Tensor[T] =
+  rawtensors.squeeze(convertRawTensor(self), axis).convertTensor[T]
+
+func unsqueeze*[T](self: Tensor[T], axis: int64): Tensor[T] =
+  rawtensors.unsqueeze(convertRawTensor(self), axis).convertTensor[T]
+
+# FFT
+# -----------------------------------------------------------------------
+func fftshift*[T](self: Tensor[T]): Tensor[T] =
+  rawtensors.fftshift(convertRawTensor(self)).convertTensor[T]
+
+func fftshift*[T](self: Tensor[T], dims: openArray[int64]): Tensor[T] =
+  let dims = dims.asTorchView()
+  rawtensors.ifftshift(convertRawTensor(self), dims).convertTensor[T]
+
+func ifftshift*[T](self: Tensor[T]): Tensor[T] =
+  rawtensors.ifftshift(convertRawTensor(self)).convertTensor[T]
+
+func ifftshift*[T](self: Tensor[T], dims: openArray[int64]): Tensor[T] =
+  let dims = dims.asTorchView()
+  rawtensors.ifftshift(convertRawTensor(self), dims).convertTensor[T]
+
+let defaultNorm: CppString = initCppString("backward")
+
+func fft*[T](self: Tensor[T], n: int64, dim: int64 = -1, norm: CppString = defaultNorm): Tensor[T] =
+  ## Compute the 1-D Fourier transform
+  ## ``n`` represent Signal length. If given, the input will either be zero-padded or trimmed to this length before computing the FFT.
+  ## ``norm`` can be :
+  ##    *[T] "forward" - normalize by 1/n
+  ##    *[T] "backward" - no normalization
+  ##    *[T] "ortho" - normalize by 1/sqrt(n)
+  rawtensors.fft(convertRawTensor(self), n, dim, norm).convertTensor[T]
+
+func fft*[T](self: Tensor[T]): Tensor[T] =
+  ## Compute the 1-D Fourier transform
+  rawtensors.fft(convertRawTensor(self)).convertTensor[T]
+
+func ifft*[T](self: Tensor[T], n: int64, dim: int64 = -1, norm: CppString = defaultNorm): Tensor[T] =
+  ## Compute the 1-D Fourier transform
+  ## ``n`` represent Signal length. If given, the input will either be zero-padded or trimmed to this length before computing the FFT.
+  ## ``norm`` can be :
+  ##   *[T] "forward" - no normalization
+  ##   *[T] "backward" - normalization by 1/n
+  ##   *[T] "ortho" - normalization by 1/sqrt(n)
+  rawtensors.ifft(convertRawTensor(self), n, dim, norm).convertTensor[T]
+
+func ifft*[T](self: Tensor[T]): Tensor[T] =
+  ## Compute the 1-D Fourier transform
+  rawtensors.ifft(convertRawTensor(self)).convertTensor[T]
+
+func fft2*[T](self: Tensor[T], s: openArray[int64], dims: openArray[int64], norm: CppString = defaultNorm): Tensor[T] =
+  ## Compute the 2-D Fourier transform
+  ## ``s`` represents signal size. If given, each dimension dim[i] will either be zero padded or trimmed to the length s[i] before computing the FFT.
+  ## ``norm`` can be :
+  ##    *[T] "forward" - normalize by 1/n
+  ##    *[T] "backward" - no normalization
+  ##    *[T] "ortho" - normalize by 1/sqrt(n)
+  ## With n the logical FFT size: ``n = prod(s)``.
+  let s = s.asTorchView()
+  let dims = dims.asTorchView()
+  rawtensors.fft2(convertRawTensor(self), s, dims, norm).convertTensor[T]
+
+func fft2*[T](self: Tensor[T], s: openArray[int64]): Tensor[T] =
+  ## Compute the 2-D Fourier transform
+  ## ``s`` represents signal size. If given, each dimension dim[i] will either be zero padded or trimmed to the length s[i] before computing the FFT.
+  let s = s.asTorchView()
+  rawtensors.fft2(convertRawTensor(self), s).convertTensor[T]
+
+func fft2*[T](self: Tensor[T]): Tensor[T] =
+  ## Compute the 2-D Fourier transform
+  rawtensors.fft2(convertRawTensor(self)).convertTensor[T]
+
+func ifft2*[T](self: Tensor[T], s: openArray[int64], dims: openArray[int64], norm: CppString = defaultNorm): Tensor[T] =
+  ## Compute the 2-D Inverse Fourier transform
+  ## ``s`` represents signal size. If given, each dimension dim[i] will either be zero padded or trimmed to the length s[i] before computing the FFT.
+  ## ``norm`` can be :
+  ##   *[T] "forward" - no normalization
+  ##   *[T] "backward" - normalization by 1/n
+  ##   *[T] "ortho" - normalization by 1/sqrt(n)
+  ## With n the logical FFT size: ``n = prod(s)``.
+  let s = s.asTorchView()
+  let dims = dims.asTorchView()
+  rawtensors.ifft2(convertRawTensor(self), s, dims, norm).convertTensor[T]
+
+func ifft2*[T](self: Tensor[T], s: openArray[int64]): Tensor[T] =
+  ## Compute the 2-D Inverse Fourier transform
+  ## ``s`` represents signal size. If given, each dimension dim[i] will either be zero padded or trimmed to the length s[i] before computing the FFT.
+  let s = s.asTorchView()
+  rawtensors.ifft2(convertRawTensor(self), s).convertTensor[T]
+
+func ifft2*[T](self: Tensor[T]): Tensor[T] =
+  ## Compute the 2-D Inverse Fourier transform
+  rawtensors.ifft2(convertRawTensor(self)).convertTensor[T]
+
+func fftn*[T](self: Tensor[T], s: openArray[int64], dims: openArray[int64], norm: CppString = defaultNorm): Tensor[T] =
+  ## Compute the N-D Fourier transform
+  ## ``s`` represents signal size. If given, each dimension dim[i] will either be zero padded or trimmed to the length s[i] before computing the FFT.
+  ## ``norm`` can be :
+  ##    *[T] "forward" normalize by 1/n
+  ##    *[T] "backward" - no normalization
+  ##    *[T] "ortho" normalize by 1/sqrt(n)
+  ## With n the logical FFT size: ``n = prod(s)``.
+  let s = s.asTorchView()
+  let dims = dims.asTorchView()
+  rawtensors.fftn(convertRawTensor(self), s, dims).convertTensor[T]
+
+func fftn*[T](self: Tensor[T], s: openArray[int64]): Tensor[T] =
+  ## Compute the N-D Fourier transform
+  ## ``s`` represents signal size. If given, each dimension dim[i] will either be zero padded or trimmed to the length s[i] before computing the FFT.
+  let s = s.asTorchView()
+  rawtensors.fftn(convertRawTensor(self), s).convertTensor[T]
+
+func fftn*[T](self: Tensor[T]): Tensor[T] =
+  ## Compute the N-D Fourier transform
+  rawtensors.fftn(convertRawTensor(self)).convertTensor[T]
+
+func ifftn*[T](self: Tensor[T], s: openArray[int64], dims: openArray[int64], norm: CppString = defaultNorm): Tensor[T] =
+  ## Compute the N-D Inverse Fourier transform
+  ## ``s`` represents signal size. If given, each dimension dim[i] will either be zero padded or trimmed to the length s[i] before computing the FFT.
+  ## ``norm`` can be :
+  ##   *[T] "forward" - no normalization
+  ##   *[T] "backward" - normalization by 1/n
+  ##   *[T] "ortho" - normalization by 1/sqrt(n)
+  ## With n the logical FFT size: ``n = prod(s)``.
+  let s = s.asTorchView()
+  let dims = dims.asTorchView()
+  rawtensors.fftn(convertRawTensor(self), s, dims).convertTensor[T]
+
+func ifftn*[T](self: Tensor[T], s: openArray[int64]): Tensor[T] =
+  ## Compute the N-D Inverse Fourier transform
+  ## ``s`` represents signal size. If given, each dimension dim[i] will either be zero padded or trimmed to the length s[i] before computing the FFT.
+  let s = s.asTorchView()
+  rawtensors.fftn(convertRawTensor(self), s).convertTensor[T]
+
+func ifftn*[T](self: Tensor[T]): Tensor[T] =
+  ## Compute the N-D Inverse Fourier transform
+  rawtensors.ifftn(convertRawTensor(self)).convertTensor[T]
+
+# RFFT
+# -----------------------------------------------------------------------
+
+func rfft*[T](self: Tensor[T], n: int64, dim: int64 = -1, norm: CppString = defaultNorm): Tensor[T] =
+  ## Compute the 1-D Fourier transform of real-valued input
+  ## ``n`` represent Signal length. If given, the input will either be zero-padded or trimmed to this length before computing the rfft.
+  ## ``norm`` can be :
+  ##    *[T] "forward" - normalize by 1/n
+  ##    *[T] "backward" - no normalization
+  ##    *[T] "ortho" - normalize by 1/sqrt(n)
+  rawtensors.rfft(convertRawTensor(self), n, dim, norm).convertTensor[T]
+
+func rfft*[T](self: Tensor[T]): Tensor[T] =
+  ## Compute the 1-D Fourier transform of real-valued input
+  rawtensors.rfft(convertRawTensor(self)).convertTensor[T]
+
+func irfft*[T](self: Tensor[T], n: int64, dim: int64 = -1, norm: CppString = defaultNorm): Tensor[T] =
+  ## Compute the 1-D Fourier transform of real-valued input
+  ## ``n`` represent Signal length. If given, the input will either be zero-padded or trimmed to this length before computing the rfft.
+  ## ``norm`` can be :
+  ##   *[T] "forward" - no normalization
+  ##   *[T] "backward" - normalization by 1/n
+  ##   *[T] "ortho" - normalization by 1/sqrt(n)
+  rawtensors.irfft(convertRawTensor(self), n, dim, norm).convertTensor[T]
+
+func irfft*[T](self: Tensor[T]): Tensor[T] =
+  ## Compute the 1-D Fourier transform of real-valued input
+  rawtensors.irfft(convertRawTensor(self)).convertTensor[T]
+
+func rfft2*[T](self: Tensor[T], s: openArray[int64], dims: openArray[int64], norm: CppString = defaultNorm): Tensor[T] =
+  ## Compute the 2-D Fourier transform of real-valued input
+  ## ``s`` represents signal size. If given, each dimension dim[i] will either be zero padded or trimmed to the length s[i] before computing the rfft.
+  ## ``norm`` can be :
+  ##    *[T] "forward" - normalize by 1/n
+  ##    *[T] "backward" - no normalization
+  ##    *[T] "ortho" - normalize by 1/sqrt(n)
+  ## With n the logical rfft size: ``n = prod(s)``.
+  let s = s.asTorchView()
+  let dims = dims.asTorchView()
+  rawtensors.rfft2(convertRawTensor(self), s, dims, norm).convertTensor[T]
+
+func rfft2*[T](self: Tensor[T], s: openArray[int64]): Tensor[T] =
+  ## Compute the 2-D Fourier transform of real-valued input
+  ## ``s`` represents signal size. If given, each dimension dim[i] will either be zero padded or trimmed to the length s[i] before computing the rfft.
+  let s = s.asTorchView()
+  rawtensors.rfft2(convertRawTensor(self), s).convertTensor[T]
+
+func rfft2*[T](self: Tensor[T]): Tensor[T] =
+  ## Compute the 2-D Fourier transform of real-valued input
+  rawtensors.rfft2(convertRawTensor(self)).convertTensor[T]
+
+func irfft2*[T](self: Tensor[T], s: openArray[int64], dims: openArray[int64], norm: CppString = defaultNorm): Tensor[T] =
+  ## Compute the 2-D Inverse Fourier transform of real-valued input
+  ## ``s`` represents signal size. If given, each dimension dim[i] will either be zero padded or trimmed to the length s[i] before computing the rfft.
+  ## ``norm`` can be :
+  ##   *[T] "forward" - no normalization
+  ##   *[T] "backward" - normalization by 1/n
+  ##   *[T] "ortho" - normalization by 1/sqrt(n)
+  ## With n the logical rfft size: ``n = prod(s)``.
+  let s = s.asTorchView()
+  let dims = dims.asTorchView()
+  rawtensors.irfft2(convertRawTensor(self), s, dims, norm).convertTensor[T]
+
+func irfft2*[T](self: Tensor[T], s: openArray[int64]): Tensor[T] =
+  ## Compute the 2-D Inverse Fourier transform of real-valued input
+  ## ``s`` represents signal size. If given, each dimension dim[i] will either be zero padded or trimmed to the length s[i] before computing the rfft.
+  let s = s.asTorchView()
+  rawtensors.irfft2(convertRawTensor(self), s).convertTensor[T]
+
+func irfft2*[T](self: Tensor[T]): Tensor[T] =
+  ## Compute the 2-D Inverse Fourier transform of real-valued input
+  rawtensors.irfft2(convertRawTensor(self)).convertTensor[T]
+
+func rfftn*[T](self: Tensor[T], s: openArray[int64], dims: openArray[int64], norm: CppString = defaultNorm): Tensor[T] =
+  ## Compute the N-D Fourier transform of real-valued input
+  ## ``s`` represents signal size. If given, each dimension dim[i] will either be zero padded or trimmed to the length s[i] before computing the rfft.
+  ## ``norm`` can be :
+  ##    *[T] "forward" normalize by 1/n
+  ##    *[T] "backward" - no normalization
+  ##    *[T] "ortho" normalize by 1/sqrt(n)
+  ## With n the logical rfft size: ``n = prod(s)``.
+  let s = s.asTorchView()
+  let dims = dims.asTorchView()
+  rawtensors.rfftn(convertRawTensor(self), s, dims).convertTensor[T]
+
+func rfftn*[T](self: Tensor[T], s: openArray[int64]): Tensor[T] =
+  ## Compute the N-D Fourier transform of real-valued input
+  ## ``s`` represents signal size. If given, each dimension dim[i] will either be zero padded or trimmed to the length s[i] before computing the rfft.
+  let s = s.asTorchView()
+  rawtensors.rfftn(convertRawTensor(self), s).convertTensor[T]
+
+func rfftn*[T](self: Tensor[T]): Tensor[T] =
+  ## Compute the N-D Fourier transform of real-valued input
+  rawtensors.rfftn(convertRawTensor(self)).convertTensor[T]
+
+func irfftn*[T](self: Tensor[T], s: openArray[int64], dims: openArray[int64], norm: CppString = defaultNorm): Tensor[T] =
+  ## Compute the N-D Inverse Fourier transform of real-valued input
+  ## ``s`` represents signal size. If given, each dimension dim[i] will either be zero padded or trimmed to the length s[i] before computing the rfft.
+  ## ``norm`` can be :
+  ##   *[T] "forward" - no normalization
+  ##   *[T] "backward" - normalization by 1/n
+  ##   *[T] "ortho" - normalization by 1/sqrt(n)
+  ## With n the logical rfft size: ``n = prod(s)``.
+  let s = s.asTorchView()
+  let dims = dims.asTorchView()
+  rawtensors.rfftn(convertRawTensor(self), s, dims).convertTensor[T]
+
+func irfftn*[T](self: Tensor[T], s: openArray[int64]): Tensor[T] =
+  ## Compute the N-D Inverse Fourier transform of real-valued input
+  ## ``s`` represents signal size. If given, each dimension dim[i] will either be zero padded or trimmed to the length s[i] before computing the rfft.
+  let s = s.asTorchView()
+  rawtensors.rfftn(convertRawTensor(self), s).convertTensor[T]
+
+func irfftn*[T](self: Tensor[T]): Tensor[T] =
+  ## Compute the N-D Inverse Fourier transform
+  rawtensors.irfftn(convertRawTensor(self)).convertTensor[T]
+
+func hfft*[T](self: Tensor[T], n: int64, dim: int64 = -1, norm: CppString = defaultNorm): Tensor[T] =
+  ## Computes the 1 dimensional FFT of a onesided Hermitian signal.
+  rawtensors.hfft(convertRawTensor(self), n, dim, norm).convertTensor[T]
+
+func hfft*[T](self: Tensor[T]): Tensor[T] =
+  ## Computes the 1 dimensional FFT of a onesided Hermitian signal.
+  rawtensors.hfft(convertRawTensor(self)).convertTensor[T]
+
+func ihfft*[T](self: Tensor[T], n: int64, dim: int64 = -1, norm: CppString = defaultNorm): Tensor[T] =
+  ## Computes the inverse FFT of a real-valued Fourier domain signal.
+  rawtensors.ihfft(convertRawTensor(self), n, dim, norm).convertTensor[T]
+
+func ihfft*[T](self: Tensor[T]): Tensor[T] =
+  ## Computes the inverse FFT of a real-valued Fourier domain signal.
+  rawtensors.ihfft(convertRawTensor(self)).convertTensor[T]
+{.pop.}
 
 # #func convolution*[T](self: Tensor, weight: Tensor, bias: Tensor, stride, padding, dilation: int64, transposed: bool, outputPadding: int64, groups: int64): Tensor
