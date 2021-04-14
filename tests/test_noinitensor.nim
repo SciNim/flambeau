@@ -25,44 +25,34 @@ proc `$`*[T](tensorAg: TensorAgreggate[T]) : string =
 proc initTensorAggregate*[T](raw: RawTensor) : TensorAgreggate[T] {.noinit.} =
   assign(result.raw, raw)
 
-proc initTensorAggregate*[T](self: var TensorAgreggate[T], raw: RawTensor) =
-  assign(self.raw, raw)
-
-proc zeroMem(x: ptr RawTensor) =
-  {.emit: "/* */".}
-
-import strutils
 proc main() =
-  let a = [[1, 2], [3, 4]].toRawTensor
+  let a = [[1, 2], [3, 4]].toRawTensor()
   block:
     var b = a
-    echo b
-    doAssert true
+    doAssert b == a
+    doAssert $(b) == $(a)
+
   block:
     # "Create tensor"
     var rawtens : RawTensor = initRawTensor()
-    echo sizeof(rawtens)
     let memdata = cast[ptr UncheckedArray[uint64]](rawtens.unsafeAddr)
-    var i = 0
-    echo i, "> memdata=", memdata[i].toHex
-    let m = memdata[i]
+    # Show casing that modifying the memdata[0] triggers the refcount
+    let m = memdata[0]
     zeroMem(rawtens.unsafeAddr, sizeof(rawtens))
-    echo i, "> memdata=", memdata[i].toHex
-    memdata[i] = m
-      # echo i, "> memdata=", memdata[i].toHex
+    memdata[0] = m
     rawtens = a
-    echo "----------------------------"
-    echo rawtens
+    doAssert rawtens == a
+    doAssert $(rawtens) == $(a)
 
-    echo "----------------------------"
+  block:
     var tensorAg : TensorAgreggate[int] = newTensorAggregate[int](a)
-    # var tensorAg {.noinit.} : TensorAgreggate[int] #= initTensorAggregate[int](a)
-    # initTensorAggregate[int](tensorAg, a)
-    # tensorAg.raw = a
-    echo tensorAg.raw
-    # tensorAg.raw = empty(a.sizes(), int.toScalarKind())
-    # let tmp : RawTensor = from_blob(a.data_ptr(int), a.sizes(), int).clone()
-    # tensorAg.raw = tmp
-    doAssert true
+    doAssert tensorAg.raw == a
+    doAssert $(tensorAg) == $(a)
+
+  block:
+    var tensorAg {.noinit.}: TensorAgreggate[int]
+    tensorAg.raw = a
+    doAssert tensorAg.raw == a
+    doAssert $(tensorAg) == $(a)
 
 main()

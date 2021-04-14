@@ -364,7 +364,7 @@ func view*(self: RawTensor, size: IntArrayRef): RawTensor {.importcpp: "#.reshap
 # Automatic Differentiation
 # -----------------------------------------------------------------------
 
-func backward*(self: var RawTensor){.importcpp: "#.backward()".}
+func backward*(self: var RawTensor) {.importcpp: "#.backward()".}
 
 # Low-level slicing API
 # -----------------------------------------------------------------------
