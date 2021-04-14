@@ -19,7 +19,6 @@ func toTensorView*[T: SomeTorchType](oa: openArray[T]): lent Tensor[T] {.noinit.
   ## Result:
   ##      - A view Tensor of the same shape
   var res : RawTensor = toRawTensorView[T](oa)
-  # result.raw = res
   result = convertTensor[T](res)
 
 func toTensor*[T: SomeTorchType](oa: openArray[T]): Tensor[T] {.noinit.}=
@@ -30,10 +29,10 @@ func toTensor*[T: SomeTorchType](oa: openArray[T]): Tensor[T] {.noinit.}=
   ## Result:
   ##      - A view Tensor of the same shape
   var res : RawTensor = toRawTensorFromScalar[T](oa)
-  # result.raw = res
   result = convertTensor[T](res)
 
-
+# TODO : Rewrite this as Macro to get rid of the ``U: typedesc``
+# func toTensor*[T: seq|array](oa: openArray[T], U: typedesc): Tensor[U] {.noinit.}=
 func toTensor*[T: seq|array](oa: openArray[T]): auto {.noinit.}=
   ## Interpret an openarray of openarray as a CPU Tensor
   ##
@@ -41,10 +40,10 @@ func toTensor*[T: seq|array](oa: openArray[T]): auto {.noinit.}=
   ##      - A nested array or a seq
   ## Result:
   ##      - A view Tensor of the same shape
-  type BaseType = getBaseType(T)
+  type V = getBaseType(T)
+  # assert(typedesc[BaseType] == U)
   var res : RawTensor = toRawTensorFromSeq(oa)
-  # result.raw = res
-  result = convertTensor[BaseType](res)
+  result = convertTensor[V](res)
 
 macro `[]`*[T](t: Tensor[T], args: varargs[untyped]): untyped =
   result = quote do:

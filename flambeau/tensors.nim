@@ -24,18 +24,11 @@ proc initTensor[T](): Tensor[T] {.constructor, noinit.} =
 #   `=destroy`(dest)
 #   wasMoved(dest)
 #   dest.raw = src.raw
-
-proc convertRawTensor*[T](t: Tensor[T]): RawTensor {.noinit, inline.} =
+{.push inline.}
+proc convertRawTensor*[T](t: Tensor[T]): RawTensor {.noinit.} =
   t.raw
 
-proc convertRawTensor*[T](t: var Tensor[T]): var RawTensor {.noinit, inline.} =
-  t.raw
-
-proc convertTensor*[T](t: RawTensor): Tensor[T] {.noinit, inline.} =
-  # assign(result.raw, t)
-  result.raw = t
-
-proc convertTensor*[T](t: var RawTensor): var Tensor[T] {.noinit, inline.} =
+proc convertTensor*[T](t: RawTensor): Tensor[T] {.noinit.} =
   # assign(result.raw, t)
   result.raw = t
 
@@ -137,28 +130,42 @@ func is_meta*[T](self: Tensor[T]): bool =
   is_meta(convertRawTensor(self))
 
 func cpu*[T](self: Tensor[T]): Tensor[T] {.noinit.} =
-  cpu(convertRawTensor(self))
+  convertTensor[T](
+    cpu(convertRawTensor(self))
+  )
 
 func cuda*[T](self: Tensor[T]): Tensor[T] {.noinit.} =
-  cuda(convertRawTensor(self))
+  convertTensor[T](
+    cuda(convertRawTensor(self))
+  )
 
 func hip*[T](self: Tensor[T]): Tensor[T] {.noinit.} =
-  hip(convertRawTensor(self))
+  convertTensor[T](
+    hip(convertRawTensor(self))
+  )
 
 func vulkan*[T](self: Tensor[T]): Tensor[T] {.noinit.} =
+  convertTensor[T](
   vulkan(convertRawTensor(self))
+  )
 
 func to*[T](self: Tensor[T], device: DeviceKind): Tensor[T] {.noinit.} =
-  to(convertRawTensor(self), device)
+  convertTensor[T](
+    to(convertRawTensor(self), device)
+  )
 
 func to*[T](self: Tensor[T], device: Device): Tensor[T] {.noinit.} =
-  to(convertRawTensor(self), device)
+  convertTensor[T](
+    to(convertRawTensor(self), device)
+  )
 
 # dtype
 # -----------------------------------------------------------------------
-func to*[T](self: Tensor[T], dtype: typedesc[SomeTorchType]): Tensor[T] {.noinit.} =
+func to*[T](self: Tensor[T], dtype: typedesc[SomeTorchType]): Tensor[dtype] {.noinit.} =
   # Use typedesc -> ScalarKind converter
-  to(convertRawTensor(self), dtype)
+  convertTensor[dtype](
+    rawtensors.to(convertRawTensor(self), dtype)
+  )
 
 func scalarType*[T](self: Tensor[T]): typedesc[T] =
   rawtensors.scalarType(convertRawTensor(self))
@@ -169,29 +176,41 @@ func scalarType*[T](self: Tensor[T]): typedesc[T] =
 
 func from_blob*[T](data: pointer, sizes: openArray[int64], options: TensorOptions|DeviceKind): Tensor[T] {.noinit.} =
   let sizes = sizes.asTorchView
-  rawtensors.from_blob(data, sizes, options).convertTensor[T]
+  convertTensor[T](
+    rawtensors.from_blob(data, sizes, options)
+  )
 
 func from_blob*[T](data: pointer, sizes: openArray[int64]): Tensor[T] {.noinit.} =
   let sizes = sizes.asTorchView
-  rawtensors.from_blob(data, sizes, T).convertTensor[T]
+  convertTensor[T](
+    rawtensors.from_blob(data, sizes, T)
+  )
 
 func from_blob*[T](data: pointer, sizes: int64, options: TensorOptions|DeviceKind): Tensor[T] {.noinit.} =
-  rawtensors.from_blob(data, sizes, options).convertTensor[T]
+  convertTensor[T](
+    rawtensors.from_blob(data, sizes, options)
+  )
 
 func from_blob*[T](data: pointer, sizes: int64): Tensor[T] {.noinit.} =
-  rawtensors.from_blob(data, sizes, T).convertTensor[T]
+  convertTensor[T](
+    rawtensors.from_blob(data, sizes, T)
+  )
 
 func from_blob*[T](data: pointer, sizes, strides: openArray[int64], options: TensorOptions|DeviceKind): Tensor[T] {.noinit.} =
   let
     sizes = sizes.asTorchView
     strides = strides.asTorchView
-  rawtensors.from_blob(data, sizes, strides, options).convertTensor[T]
+  convertTensor[T](
+    rawtensors.from_blob(data, sizes, strides, options)
+  )
 
 func from_blob*[T](data: pointer, sizes, strides: openArray[int64]): Tensor[T] {.noinit.} =
   let
     sizes = sizes.asTorchView
     strides = strides.asTorchView
-  rawtensors.from_blob(data, sizes, strides, T).convertTensor[T]
+  convertTensor[T](
+    rawtensors.from_blob(data, sizes, strides, T)
+  )
 
 func empty*[T](size: openArray[int64], options: TensorOptions|DeviceKind): Tensor[T] {.noinit.} =
   ## Create an uninitialized tensor of shape `size`
@@ -199,14 +218,20 @@ func empty*[T](size: openArray[int64], options: TensorOptions|DeviceKind): Tenso
   ##
   ## The output tensor will be row major (C contiguous)
   let size = size.asTorchView()
-  rawtensors.empty(size, options).convertTensor[T]
+  convertTensor[T](
+    rawtensors.empty(size, options)
+  )
 
 func empty*[T](size: openArray[int64]): Tensor[T] {.noinit.} =
   let size = size.asTorchView()
-  rawtensors.empty(size, T).convertTensor[T]
+  convertTensor[T](
+    rawtensors.empty(size, T)
+  )
 
 func clone*[T](self: Tensor[T]): Tensor[T] {.noinit.} =
-  rawtensors.clone(convertRawTensor(self)).convertTensor[T]
+  convertTensor[T](
+    rawtensors.clone(convertRawTensor(self))
+  )
 
 # Random sampling
 # -----------------------------------------------------------------------
@@ -215,21 +240,31 @@ func random_mut*[T](self: var Tensor[T], start, stopEx: int64) =
   random_mut(convertRawTensor(self), start, stopEx)
 
 func randint*[T](start, stopEx: int64, args: varargs): Tensor[T] {.noinit.} =
-  rawtensors.randint(start, stopEx, args).convertTensor[T]
+  convertTensor[T](
+    rawtensors.randint(start, stopEx, args)
+  )
 
 func randint*[T](start, stopEx: int64, size: openArray[int64]): Tensor[T] {.noinit.} =
   let size = size.asTorchView()
-  rawtensors.randint(start, stopEx, size).convertTensor[T]
+  convertTensor[T](
+    rawtensors.randint(start, stopEx, size)
+  )
 
 func rand_like*[T](self: Tensor[T], options: TensorOptions|DeviceKind|Device): Tensor[T] {.noinit.} =
-  rawtensors.rand_like(convertRawTensor(self), options).convertTensor[T]
+  convertTensor[T](
+    rawtensors.rand_like(convertRawTensor(self), options)
+  )
 
 func rand_like*[T](self: Tensor[T]): Tensor[T] {.noinit.} =
-  rawtensors.rand_like(convertRawTensor(self), T).convertTensor[T]
+  convertTensor[T](
+    rawtensors.rand_like(convertRawTensor(self), T)
+  )
 
 func rand*[T](size: openArray[int64]): Tensor[T] {.noinit.} =
   let size = size.asTorchView()
-  rawtensors.rand(size).convertTensor[T]
+  convertTensor[T](
+    rawtensors.rand(size)
+  )
 
 # Indexing
 # -----------------------------------------------------------------------
@@ -237,7 +272,7 @@ import complex
 import cppstl/std_complex
 
 func item*[T](self: Tensor[T]): T =
-  item(convertRawTensor(self), typedesc[T])
+  result = item(convertRawTensor(self), T)
   ## Extract the scalar from a 0-dimensional tensor
 
 func item*(self: Tensor[Complex32]): Complex32 =
@@ -255,7 +290,9 @@ func index*[T](self: Tensor[T], args: varargs): Tensor[T] {.noinit.} =
   ## Tensor indexing. It is recommended
   ## to Nimify this in a high-level wrapper.
   ## `tensor.index(indexers)`
-  index(convertRawTensor(self), args).convertTensor[T]
+  convertTensor[T](
+    index(convertRawTensor(self), args)
+  )
 # We can't use the construct `#.index_put_({@}, #)`
 # so hardcode sizes,
 # 6d seems reasonable, that would be a batch of 3D videos (videoID/batchID, Time, Color Channel, Height, Width, Depth)
@@ -263,15 +300,21 @@ func index*[T](self: Tensor[T], args: varargs): Tensor[T] {.noinit.} =
 
 func index_put*[T](self: var Tensor[T], idx: varargs[int|int64], val: T or Tensor[T]) =
   ## Tensor mutation at index. It is recommended
-  index_put(convertRawTensor(self), idx, val)
+  convertTensor[T](
+    index_put(convertRawTensor(self), idx, val)
+  )
 
 # Fancy Indexing
 # -----------------------------------------------------------------------
 func index_select*[T](self: Tensor[T], axis: int64, indices: Tensor[T]): Tensor[T] {.noinit.} =
-  index_select(convertRawTensor(self), axis, indices).convertTensor[T]
+  convertTensor[T](
+    index_select(convertRawTensor(self), axis, indices)
+  )
 
 func masked_select*[T](self: Tensor[T], mask: Tensor[T]): Tensor[T] {.noinit.} =
-  masked_select(convertRawTensor(self), convertRawTensor(mask)).convertTensor[T]
+  convertTensor[T](
+    masked_select(convertRawTensor(self), convertRawTensor(mask))
+  )
 
 # PyTorch exposes in-place `index_fill_` and `masked_fill_`
 # and out-of-place `index_fill` and `masked_fill`
@@ -289,11 +332,15 @@ func masked_fill_mut*[T](self: var Tensor[T], mask: Tensor[T], value: T or Tenso
 
 func reshape*[T](self: Tensor[T], shape: openArray[int64]): Tensor[T] {.noinit.} =
   let sizes = sizes.asTorchView()
-  reshape(convertRawTensor(self), sizes).convertTensor[T]
+  convertTensor[T](
+    reshape(convertRawTensor(self), sizes)
+  )
 
 func view*[T](self: Tensor[T], size: openArray[int64]): Tensor[T] {.noinit.} =
   let size = size.asTorchView()
-  reshape(convertRawTensor(self), size).convertTensor[T]
+  convertTensor[T](
+    reshape(convertRawTensor(self), size)
+  )
 
 # Automatic Differentiation
 # -----------------------------------------------------------------------
@@ -376,11 +423,13 @@ func bitxor_mut*[T](self: var Tensor[T], s: Tensor[T]) =
 
 func eq*[T](a, b: Tensor[T]): Tensor[T] =
   ## Equality of each tensor values
-  rawtensors.eq(convertRawTensor(a), convertRawTensor(b)).convertTensor[T]
+  convertTensor[T](
+    rawtensors.eq(convertRawTensor(a), convertRawTensor(b))
+  )
 {.pop.}
 
 func equal*[T](a, b: Tensor[T]): bool =
-  convertRawTensor(a) == convertRawTensor(b)
+  equal(convertRawTensor(a), convertRawTensor(b))
 
 template `==`*[T](a, b: Tensor[T]): bool =
   a.equal(b)
@@ -389,100 +438,191 @@ template `==`*[T](a, b: Tensor[T]): bool =
 # # -----------------------------------------------------------------------
 {.push noinit.}
 func toType*[T](self: Tensor[T], dtype: ScalarKind): Tensor[T] =
-  rawtensors.toType(convertRawTensor(self), dtype)
+  convertTensor[T](
+    rawtensors.toType(convertRawTensor(self), dtype)
+  )
 
 func toSparse*[T](self: Tensor[T]): Tensor[T] =
-  rawtensors.toSparse(convertRawTensor(self)).convertTensor[T]
+  convertTensor[T](
+    rawtensors.toSparse(convertRawTensor(self))
+  )
+
 func toSparse*[T](self: Tensor[T], sparseDim: int64): Tensor[T] =
-  rawtensors.toSparse(convertRawTensor(self), sparseDim).convertTensor[T]
+  convertTensor[T](
+    rawtensors.toSparse(convertRawTensor(self), sparseDim)
+  )
 
 func eye*[T](n: int64): Tensor[T] =
-  rawtensors.eye(n, T).convertTensor[T]
+  convertTensor[T](
+    rawtensors.eye(n, T)
+  )
+
 func eye*[T](n: int64, options: DeviceKind|TensorOptions): Tensor[T] =
-  rawtensors.eye(n, options).convertTensor[T]
+  convertTensor[T](
+    rawtensors.eye(n, options)
+  )
 
 func zeros*[T](dim: int64): Tensor[T] =
-  rawtensors.zeros(dim, T).convertTensor[T]
+  convertTensor[T](
+    rawtensors.zeros(dim)
+  )
+
 func zeros*[T](dims: openArray[int64]): Tensor[T] =
   let dims = dims.asTorchView()
-  rawtensors.zeros(dims, T).convertTensor[T]
+  convertTensor[T](
+    rawtensors.zeros(dims, T)
+  )
+
 func zeros*[T](dims: openArray[int64], options: DeviceKind|TensorOptions): Tensor[T] =
   let dims = dims.asTorchView()
-  rawtensors.zeros(dims, options).convertTensor[T]
+  convertTensor[T](
+    rawtensors.zeros(dims, options)
+  )
 
 func linspace*[T](start, stop: Scalar, steps: int64, options: TensorOptions): Tensor[T] =
-  rawtensors.linspace(start, stop, steps, options).convertTensor[T]
+  convertTensor[T](
+    rawtensors.linspace(start, stop, steps, options)
+  )
+
 func linspace*[T](start, stop: Scalar, steps: int64, options: DeviceKind): Tensor[T] =
-  rawtensors.linspace(start, stop, steps, options).convertTensor[T]
+  convertTensor[T](
+    rawtensors.linspace(start, stop, steps, options)
+  )
+
 func linspace*[T](start, stop: Scalar, steps: int64, options: Device): Tensor[T] =
-  rawtensors.linspace(start, stop, steps, options).convertTensor[T]
+  convertTensor[T](
+    rawtensors.linspace(start, stop, steps, options)
+  )
+
 func linspace*[T](start, stop: Scalar, steps: int64): Tensor[T] =
-  rawtensors.linspace(start, stop, steps, T).convertTensor[T]
+  convertTensor[T](
+    rawtensors.linspace(start, stop, steps, T)
+  )
+
 func linspace*[T](start, stop: Scalar): Tensor[T] =
-  rawtensors.linspace(start, stop).convertTensor[T]
+  convertTensor[T](
+    rawtensors.linspace(start, stop)
+  )
 
 func logspace*[T](start, stop: Scalar, steps: int64, options: TensorOptions): Tensor[T] =
-  rawtensors.logspace(start, stop, steps, options).convertTensor[T]
+  convertTensor[T](
+    rawtensors.logspace(start, stop, steps, options)
+  )
+
 func logspace*[T](start, stop: Scalar, steps: int64, options: DeviceKind): Tensor[T] =
-  rawtensors.logspace(start, stop, steps, options).convertTensor[T]
+  convertTensor[T](
+    rawtensors.logspace(start, stop, steps, options)
+  )
+
 func logspace*[T](start, stop: Scalar, steps: int64, options: Device): Tensor[T] =
-  rawtensors.logspace(start, stop, steps, options).convertTensor[T]
+  convertTensor[T](
+    rawtensors.logspace(start, stop, steps, options)
+  )
+
 func logspace*[T](start, stop: Scalar, steps: int64): Tensor[T] =
-  rawtensors.logspace(start, stop, steps, T).convertTensor[T]
+  convertTensor[T](
+    rawtensors.logspace(start, stop, steps, T)
+  )
+
 func logspace*[T](start, stop: Scalar): Tensor[T] =
-  rawtensors.logspace(start, stop).convertTensor[T]
+  convertTensor[T](
+    rawtensors.logspace(start, stop)
+  )
 
 func arange*[T](stop: Scalar, options: TensorOptions): Tensor[T] =
-  rawtensors.arange(stop, options).convertTensor[T]
+  convertTensor[T](
+    rawtensors.arange(stop, options)
+  )
+
 func arange*[T](stop: Scalar, options: DeviceKind): Tensor[T] =
-  rawtensors.arange(stop, options).convertTensor[T]
+  convertTensor[T](
+    rawtensors.arange(stop, options)
+  )
+
 func arange*[T](stop: Scalar, options: Device): Tensor[T] =
-  rawtensors.arange(stop, options).convertTensor[T]
+  convertTensor[T](
+    rawtensors.arange(stop, options)
+  )
+
 func arange*[T](stop: Scalar): Tensor[T] =
-  rawtensors.arange(stop, T).convertTensor[T]
+  convertTensor[T](
+    rawtensors.arange(stop, T)
+  )
 
 func arange*[T](start, stop: Scalar, options: TensorOptions): Tensor[T] =
-  rawtensors.arange(start, stop, options).convertTensor[T]
+  convertTensor[T](
+    rawtensors.arange(start, stop, options)
+  )
 func arange*[T](start, stop: Scalar, options: DeviceKind): Tensor[T] =
-  rawtensors.arange(start, stop, options).convertTensor[T]
+  convertTensor[T](
+    rawtensors.arange(start, stop, options)
+  )
 func arange*[T](start, stop: Scalar, options: Device): Tensor[T] =
-  rawtensors.arange(start, stop, options).convertTensor[T]
+  convertTensor[T](
+    rawtensors.arange(start, stop, options)
+  )
 func arange*[T](start, stop: Scalar): Tensor[T] =
-  rawtensors.arange(start, stop, T).convertTensor[T]
+  convertTensor[T](
+    rawtensors.arange(start, stop, T)
+  )
 
 func arange*[T](start, stop, step: Scalar, options: TensorOptions): Tensor[T] =
-  rawtensors.arange(start, stop, step, options).convertTensor[T]
+  convertTensor[T](
+    rawtensors.arange(start, stop, step, options)
+  )
 func arange*[T](start, stop, step: Scalar, options: DeviceKind): Tensor[T] =
-  rawtensors.arange(start, stop, step, options).convertTensor[T]
+  convertTensor[T](
+    rawtensors.arange(start, stop, step, options)
+  )
 func arange*[T](start, stop, step: Scalar, options: Device): Tensor[T] =
-  rawtensors.arange(start, stop, step, options).convertTensor[T]
+  convertTensor[T](
+    rawtensors.arange(start, stop, step, options)
+  )
 func arange*[T](start, stop, step: Scalar): Tensor[T] =
-  rawtensors.arange(start, stop, step, T).convertTensor[T]
+  convertTensor[T](
+    rawtensors.arange(start, stop, step, T)
+  )
 
 # Operations
 # -----------------------------------------------------------------------
 func add*[T](self: Tensor[T], other: Tensor[T], alpha: Scalar = 1): Tensor[T] =
-  rawtensors.add(self, other, alpha).convertTensor[T]
+  convertTensor[T](
+    rawtensors.add(self, other, alpha)
+  )
 func add*[T](self: Tensor[T], other: Scalar, alpha: Scalar = 1): Tensor[T] =
-  rawtensors.add(self, other, alpha).convertTensor[T]
+  convertTensor[T](
+    rawtensors.add(self, other, alpha)
+  )
 
 func addmv*[T](self: Tensor[T], mat: Tensor[T], vec: Tensor[T], beta: Scalar = 1, alpha: Scalar = 1): Tensor[T] =
-  rawtensors.addmv(self, mat, vec, beta, alpha).convertTensor[T]
+  convertTensor[T](
+    rawtensors.addmv(self, mat, vec, beta, alpha)
+  )
 
 func addmm*[T](t, mat1, mat2: Tensor[T], beta: Scalar = 1, alpha: Scalar = 1): Tensor[T] =
-  rawtensors.addmm(t, mat1, mat2, beta, alpha).convertTensor[T]
+  convertTensor[T](
+    rawtensors.addmm(t, mat1, mat2, beta, alpha)
+  )
 
 func mm*[T](t, other: Tensor[T]): Tensor[T] =
-  rawtensors.mm(t, other).convertTensor[T]
+  convertTensor[T](
+    rawtensors.mm(t, other)
+  )
 
 func matmul*[T](t, other: Tensor[T]): Tensor[T] =
-  rawtensors.matmul(t, other).convertTensor[T]
+  convertTensor[T](
+    rawtensors.matmul(t, other)
+  )
 
 func bmm*[T](t, other: Tensor[T]): Tensor[T] =
-  rawtensors.bmm(t, other).convertTensor[T]
+  convertTensor[T](
+    rawtensors.bmm(t, other)
+  )
 
 func luSolve*[T](t, data, pivots: Tensor[T]): Tensor[T] =
-  rawtensors.luSolve(t, data, pivots).convertTensor[T]
+  convertTensor[T](
+    rawtensors.luSolve(t, data, pivots)
+  )
 
 func qr*[T](self: Tensor[T], some: bool = true): tuple[q: Tensor[T], r: Tensor[T]] =
   ## Returns a tuple:
@@ -493,29 +633,45 @@ func qr*[T](self: Tensor[T], some: bool = true): tuple[q: Tensor[T], r: Tensor[T
   ## The QR decomposition is batched over dimension(s) *[T]
   ## t = QR
   let cppTupRes = rawtensors.qr(self, some)
-  result.q = cppTupRes.get(0).convertTensor[T]
-  result.r = cppTupRes.get(1).convertTensor[T]
+  result.q = convertTensor[T](cppTupRes.get(0))
+  result.r = convertTensor[T](cppTupRes.get(1))
 
 # addr?
 func all*[T](self: Tensor[T], axis: int64): Tensor[T] =
-  rawtensors.all(convertRawTensor(self), axis).convertTensor[T]
+  convertTensor[T](
+    rawtensors.all(convertRawTensor(self), axis)
+  )
 func all*[T](self: Tensor[T], axis: int64, keepdim: bool): Tensor[T] =
-  rawtensors.all(convertRawTensor(self), axis, keepdim).convertTensor[T]
+  convertTensor[T](
+  rawtensors.all(convertRawTensor(self), axis, keepdim)
+  )
 
 func any*[T](self: Tensor[T], axis: int64): Tensor[T] =
-  rawtensors.any(convertRawTensor(self), axis).convertTensor[T]
+  convertTensor[T](
+    rawtensors.any(convertRawTensor(self), axis)
+  )
 func any*[T](self: Tensor[T], axis: int64, keepdim: bool): Tensor[T] =
-  rawtensors.any(convertRawTensor(self), axis, keepdim).convertTensor[T]
+  convertTensor[T](
+    rawtensors.any(convertRawTensor(self), axis, keepdim)
+  )
 
 func argmax*[T](self: Tensor[T]): Tensor[T] =
-  rawtensors.argmax(convertRawTensor(self)).convertTensor[T]
+  convertTensor[T](
+    rawtensors.argmax(convertRawTensor(self))
+  )
 func argmax*[T](self: Tensor[T], axis: int64, keepdim: bool = false): Tensor[T] =
-  rawtensors.argmax(convertRawTensor(self), axis, keepdim).convertTensor[T]
+  convertTensor[T](
+    rawtensors.argmax(convertRawTensor(self), axis, keepdim)
+  )
 
 func argmin*[T](self: Tensor[T]): Tensor[T] =
-  rawtensors.argmin(convertRawTensor(self)).convertTensor[T]
+  convertTensor[T](
+    rawtensors.argmin(convertRawTensor(self))
+  )
 func argmin*[T](self: Tensor[T], axis: int64, keepdim: bool = false): Tensor[T] =
-  rawtensors.argmin(convertRawTensor(self), axis, keepdim).convertTensor[T]
+  convertTensor[T](
+    rawtensors.argmin(convertRawTensor(self), axis, keepdim)
+  )
 {.pop.}
 
 func allClose*[T](t, other: Tensor[T], rtol: float64 = 1e-5, abstol: float64 = 1e-8, equalNan: bool = false): bool =
@@ -526,100 +682,150 @@ func allClose*[T](t, other: Tensor[T], rtol: float64 = 1e-5, abstol: float64 = 1
 {.push noinit.}
 # sum needs wrapper procs/templates to allow for using nim arrays and single axis.
 func sum*[T](self: Tensor[T]): Tensor[T] =
-  rawtensors.sum(convertRawTensor(self)).convertTensor[T]
+  convertTensor[T](
+    rawtensors.sum(convertRawTensor(self))
+  )
 
 func sum*[T](self: Tensor[T], dtype: ScalarKind): Tensor[T] =
-  rawtensors.sum(convertRawTensor(self), dtype).convertTensor[T]
+  convertTensor[T](
+    rawtensors.sum(convertRawTensor(self), dtype)
+  )
 
 func sum*[T](self: Tensor[T], axis: int64, keepdim: bool = false): Tensor[T] =
-  rawtensors.sum(convertRawTensor(self), axis, keepdim).convertTensor[T]
+  convertTensor[T](
+    rawtensors.sum(convertRawTensor(self), axis, keepdim)
+  )
 
 func sum*[T](self: Tensor[T], axis: int64, keepdim: bool = false, dtype: ScalarKind): Tensor[T] =
-  rawtensors.sum(convertRawTensor(self), axis, keepdim, dtype).convertTensor[T]
+  convertTensor[T](
+    rawtensors.sum(convertRawTensor(self), axis, keepdim, dtype)
+  )
 
 func sum*[T](self: Tensor[T], axis: openArray[int64], keepdim: bool = false): Tensor[T] =
   let axis = axis.asTorchView()
-  rawtensors.sum(convertRawTensor(self), axis, keepdim).convertTensor[T]
+  convertTensor[T](
+    rawtensors.sum(convertRawTensor(self), axis, keepdim)
+  )
 
 func sum*[T](self: Tensor[T], axis: openArray[int64], keepdim: bool = false, dtype: ScalarKind): Tensor[T] =
   let axis = axis.asTorchView()
-  rawtensors.sum(convertRawTensor(self), axis, keepdim).convertTensor[T]
+  convertTensor[T](
+    rawtensors.sum(convertRawTensor(self), axis, keepdim)
+  )
+
 
 # mean as well
 func mean*[T](self: Tensor[T]): Tensor[T] =
-  rawtensors.mean(convertRawTensor(self)).convertTensor[T]
+  convertTensor[T](
+    rawtensors.mean(convertRawTensor(self))
+  )
 
 func mean*[T](self: Tensor[T], dtype: ScalarKind): Tensor[T] =
-  rawtensors.mean(convertRawTensor(self), dtype).convertTensor[T]
+  convertTensor[T](
+    rawtensors.mean(convertRawTensor(self), dtype)
+  )
 
 func mean*[T](self: Tensor[T], axis: int64, keepdim: bool = false): Tensor[T] =
-  rawtensors.mean(convertRawTensor(self), axis, keepdim).convertTensor[T]
+  convertTensor[T](
+    rawtensors.mean(convertRawTensor(self), axis, keepdim)
+  )
 
 func mean*[T](self: Tensor[T], axis: int64, keepdim: bool = false, dtype: ScalarKind): Tensor[T] =
-  rawtensors.mean(convertRawTensor(self), axis, keepdim, dtype).convertTensor[T]
+  convertTensor[T](
+    rawtensors.mean(convertRawTensor(self), axis, keepdim, dtype)
+  )
 
 func mean*[T](self: Tensor[T], axis: openArray[int64], keepdim: bool = false): Tensor[T] =
   let axis = axis.asTorchView()
-  rawtensors.mean(convertRawTensor(self), axis, keepdim).convertTensor[T]
+  convertTensor[T](
+    rawtensors.mean(convertRawTensor(self), axis, keepdim)
+  )
 
 func mean*[T](self: Tensor[T], axis: openArray[int64], keepdim: bool = false, dtype: ScalarKind): Tensor[T] =
   let axis = axis.asTorchView()
-  rawtensors.mean(convertRawTensor(self), axis, keepdim, dtype).convertTensor[T]
+  convertTensor[T](
+    rawtensors.mean(convertRawTensor(self), axis, keepdim, dtype)
+  )
 
 # median requires std::tuple
 
 func prod*[T](self: Tensor[T]): Tensor[T] =
-  rawtensors.prod(convertRawTensor(self)).convertTensor[T]
+  convertTensor[T](
+    rawtensors.prod(convertRawTensor(self))
+  )
 
 func prod*[T](self: Tensor[T], dtype: ScalarKind): Tensor[T] =
-  rawtensors.prod(convertRawTensor(self), dtype).convertTensor[T]
+  convertTensor[T](
+    rawtensors.prod(convertRawTensor(self), dtype)
+  )
 
 func prod*[T](self: Tensor[T], axis: int64, keepdim: bool = false): Tensor[T] =
-  rawtensors.prod(convertRawTensor(self), axis, keepdim).convertTensor[T]
+  convertTensor[T](
+    rawtensors.prod(convertRawTensor(self), axis, keepdim)
+  )
 
 func prod*[T](self: Tensor[T], axis: int64, keepdim: bool = false, dtype: ScalarKind): Tensor[T] =
-  rawtensors.prod(convertRawTensor(self), axis, keepdim, dtype).convertTensor[T]
+  convertTensor[T](
+    rawtensors.prod(convertRawTensor(self), axis, keepdim, dtype)
+  )
 
 func min*[T](self: Tensor[T]): Tensor[T] =
-  rawtensors.min(convertRawTensor(self)).convertTensor[T]
+  convertTensor[T](
+    rawtensors.min(convertRawTensor(self))
+  )
 
 func min*[T](self: Tensor[T], axis: int64, keepdim: bool = false): tuple[values: Tensor[T], indices: Tensor[int64]] =
   ## Returns a tuple (values, indices) of type (TensorT, TensorInt64)
   ## of the minimum values and their index in the specified axis
   let cppMinTuple = rawtensors.min(convertRawTensor(self), axis, keepdim)
-  result.values = cppMinTuple.get(0).convertTensor[T]
-  result.indices= cppMinTuple.get(0).convertTensor[int64]
+  result.values = convertTensor[T](cppMinTuple.get(0))
+  result.indices = convertTensor[int64](cppMinTuple.get(1))
 
 func max*[T](self: Tensor[T]): Tensor[T] =
-  rawtensors.max(convertRawTensor(self)).convertTensor[T]
+  convertTensor[T](
+    rawtensors.max(convertRawTensor(self))
+  )
 
-func max*[T](self: Tensor[T], axis: int64, keepdim: bool = false): tuple[values: Tensor[T], indicies: Tensor[int64]] =
+
+func max*[T](self: Tensor[T], axis: int64, keepdim: bool = false): tuple[values: Tensor[T], indices: Tensor[int64]] =
   ## Returns a tuple (values, indices) of type (TensorT, TensorInt64)
   ## of the maximum values and their index in the specified axis
   let cppMaxTuple = rawtensors.max(convertRawTensor(self), axis, keepdim)
-  result.values = cppMaxTuple.get(0).convertTensor[T]
-  result.indices= cppMaxTuple.get(0).convertTensor[int64]
+  result.values = convertTensor[T](cppMaxTuple.get(0))
+  result.indices = convertTensor[int64](cppMaxTuple.get(1))
 
 
 func variance*[T](self: Tensor[T], unbiased: bool = true): Tensor[T] =
-  rawtensors.variance(convertRawTensor(self), unbiased).convertTensor[T]
+  convertTensor[T](
+    rawtensors.variance(convertRawTensor(self), unbiased)
+  )
 
 func variance*[T](self: Tensor[T], axis: int64, unbiased: bool = true, keepdim: bool = false): Tensor[T] =
-  rawtensors.variance(convertRawTensor(self), axis, unbiased, keepdim).convertTensor[T]
+  convertTensor[T](
+    rawtensors.variance(convertRawTensor(self), axis, unbiased, keepdim)
+  )
 
 func variance*[T](self: Tensor[T], axis: openArray[int64], unbiased: bool = true, keepdim: bool = false): Tensor[T] =
   let axis = axis.asTorchView()
-  rawtensors.variance(convertRawTensor(self), axis, unbiased, keepdim).convertTensor[T]
+  convertTensor[T](
+    rawtensors.variance(convertRawTensor(self), axis, unbiased, keepdim)
+  )
 
 func stddev*[T](self: Tensor[T], unbiased: bool = true): Tensor[T] =
-  rawtensors.stddev(convertRawTensor(self), unbiased).convertTensor[T]
+  convertTensor[T](
+    rawtensors.stddev(convertRawTensor(self), unbiased)
+  )
 
 func stddev*[T](self: Tensor[T], axis: int64, unbiased: bool = true, keepdim: bool = false): Tensor[T] =
-  rawtensors.stddev(convertRawTensor(self), axis, unbiased, keepdim).convertTensor[T]
+  convertTensor[T](
+    rawtensors.stddev(convertRawTensor(self), axis, unbiased, keepdim)
+  )
 
 func stddev*[T](self: Tensor[T], axis: openArray[int64], unbiased: bool = true, keepdim: bool = false): Tensor[T] =
   let axis = axis.asTorchView()
-  rawtensors.stddev(convertRawTensor(self), axis, unbiased, keepdim).convertTensor[T]
+  convertTensor[T](
+    rawtensors.stddev(convertRawTensor(self), axis, unbiased, keepdim)
+  )
 
 
 # # algorithms:
@@ -631,128 +837,204 @@ func sort*[T](self: Tensor[T], axis: int64 = -1, descending: bool = false): tupl
   ## Returns (values, originalIndices) or type (TensorT, TensorInt64)
   ## where originalIndices is the original index of each values (before sorting)
   let cppSortTuple = rawtensors.sort(convertRawTensor(self), axis, descending)
-  result.values = cppSortTuple.get(0).convertTensor[T]
-  result.originalIndices = cppSortTuple.get(1).convertTensor[int64]
+  result.values = convertTensor[T](cppSortTuple.get(0))
+  result.originalIndices = convertTensor[int64](cppSortTuple.get(1))
 
 func argsort*[T](self: Tensor[T], axis: int64 = -1, descending: bool = false): Tensor[T] =
-  rawtensors.argsort(convertRawTensor(self), axis, descending).convertTensor[T]
+  convertTensor[T](
+    rawtensors.argsort(convertRawTensor(self), axis, descending)
+  )
 #
 # # math
 # # -----------------------------------------------------------------------
 func abs*[T](self: Tensor[T]): Tensor[T] =
-  rawtensors.abs(convertRawTensor(self)).convertTensor[T]
+  convertTensor[T](
+    rawtensors.abs(convertRawTensor(self))
+  )
 
 func absolute*[T](self: Tensor[T]): Tensor[T] =
-  rawtensors.absolute(convertRawTensor(self)).convertTensor[T]
+  convertTensor[T](
+    rawtensors.absolute(convertRawTensor(self))
+  )
 
 func angle*[T](self: Tensor[T]): Tensor[T] =
-  rawtensors.angle(convertRawTensor(self)).convertTensor[T]
+  convertTensor[T](
+    rawtensors.angle(convertRawTensor(self))
+  )
 
 func sgn*[T](self: Tensor[T]): Tensor[T] =
-  rawtensors.sgn(convertRawTensor(self)).convertTensor[T]
+  convertTensor[T](
+    rawtensors.sgn(convertRawTensor(self))
+  )
 
 func conj*[T](self: Tensor[T]): Tensor[T] =
-  rawtensors.conj(convertRawTensor(self)).convertTensor[T]
+  convertTensor[T](
+    rawtensors.conj(convertRawTensor(self))
+  )
 
 func acos*[T](self: Tensor[T]): Tensor[T] =
-  rawtensors.acos(convertRawTensor(self)).convertTensor[T]
+  convertTensor[T](
+    rawtensors.acos(convertRawTensor(self))
+  )
 
 func arccos*[T](self: Tensor[T]): Tensor[T] =
-  rawtensors.arccos(convertRawTensor(self)).convertTensor[T]
+  convertTensor[T](
+    rawtensors.arccos(convertRawTensor(self))
+  )
 
 func acosh*[T](self: Tensor[T]): Tensor[T] =
-  rawtensors.acosh(convertRawTensor(self)).convertTensor[T]
+  convertTensor[T](
+    rawtensors.acosh(convertRawTensor(self))
+  )
 
 func arccosh*[T](self: Tensor[T]): Tensor[T] =
-  rawtensors.arccosh(convertRawTensor(self)).convertTensor[T]
+  convertTensor[T](
+    rawtensors.arccosh(convertRawTensor(self))
+  )
 
 func asinh*[T](self: Tensor[T]): Tensor[T] =
-  rawtensors.asinh(convertRawTensor(self)).convertTensor[T]
+  convertTensor[T](
+    rawtensors.asinh(convertRawTensor(self))
+  )
 
 func arcsinh*[T](self: Tensor[T]): Tensor[T] =
-  rawtensors.arcsinh(convertRawTensor(self)).convertTensor[T]
+  convertTensor[T](
+    rawtensors.arcsinh(convertRawTensor(self))
+  )
 
 func atanh*[T](self: Tensor[T]): Tensor[T] =
-  rawtensors.atanh(convertRawTensor(self)).convertTensor[T]
+  convertTensor[T](
+    rawtensors.atanh(convertRawTensor(self))
+  )
 
 func arctanh*[T](self: Tensor[T]): Tensor[T] =
-  rawtensors.arctanh(convertRawTensor(self)).convertTensor[T]
+  convertTensor[T](
+    rawtensors.arctanh(convertRawTensor(self))
+  )
 
 func asin*[T](self: Tensor[T]): Tensor[T] =
-  rawtensors.asin(convertRawTensor(self)).convertTensor[T]
+  convertTensor[T](
+    rawtensors.asin(convertRawTensor(self))
+  )
 
 func arcsin*[T](self: Tensor[T]): Tensor[T] =
-  rawtensors.arcsin(convertRawTensor(self)).convertTensor[T]
+  convertTensor[T](
+    rawtensors.arcsin(convertRawTensor(self))
+  )
 
 func atan*[T](self: Tensor[T]): Tensor[T] =
-  rawtensors.atan(convertRawTensor(self)).convertTensor[T]
+  convertTensor[T](
+    rawtensors.atan(convertRawTensor(self))
+  )
 
 func arctan*[T](self: Tensor[T]): Tensor[T] =
-  rawtensors.arctan(convertRawTensor(self)).convertTensor[T]
+  convertTensor[T](
+    rawtensors.arctan(convertRawTensor(self))
+  )
 
 func cos*[T](self: Tensor[T]): Tensor[T] =
-  rawtensors.cos(convertRawTensor(self)).convertTensor[T]
+  convertTensor[T](
+    rawtensors.cos(convertRawTensor(self))
+  )
 
 func sin*[T](self: Tensor[T]): Tensor[T] =
-  rawtensors.sin(convertRawTensor(self)).convertTensor[T]
+  convertTensor[T](
+    rawtensors.sin(convertRawTensor(self))
+  )
 
 func tan*[T](self: Tensor[T]): Tensor[T] =
-  rawtensors.tan(convertRawTensor(self)).convertTensor[T]
+  convertTensor[T](
+    rawtensors.tan(convertRawTensor(self))
+  )
 
 func exp*[T](self: Tensor[T]): Tensor[T] =
-  rawtensors.exp(convertRawTensor(self)).convertTensor[T]
+  convertTensor[T](
+    rawtensors.exp(convertRawTensor(self))
+  )
 
 func exp2*[T](self: Tensor[T]): Tensor[T] =
-  rawtensors.exp2(convertRawTensor(self)).convertTensor[T]
+  convertTensor[T](
+    rawtensors.exp2(convertRawTensor(self))
+  )
 
 func erf*[T](self: Tensor[T]): Tensor[T] =
-  rawtensors.erf(convertRawTensor(self)).convertTensor[T]
+  convertTensor[T](
+    rawtensors.erf(convertRawTensor(self))
+  )
 
 func erfc*[T](self: Tensor[T]): Tensor[T] =
-  rawtensors.erfc(convertRawTensor(self)).convertTensor[T]
+  convertTensor[T](
+    rawtensors.erfc(convertRawTensor(self))
+  )
 
 func reciprocal*[T](self: Tensor[T]): Tensor[T] =
-  rawtensors.reciprocal(convertRawTensor(self)).convertTensor[T]
+  convertTensor[T](
+    rawtensors.reciprocal(convertRawTensor(self))
+  )
 
 func neg*[T](self: Tensor[T]): Tensor[T] =
-  rawtensors.neg(convertRawTensor(self)).convertTensor[T]
+  convertTensor[T](
+    rawtensors.neg(convertRawTensor(self))
+  )
 
 func clamp*[T](self: Tensor[T], min, max: Scalar): Tensor[T] =
-  rawtensors.clamp(convertRawTensor(self), min, max).convertTensor[T]
+  convertTensor[T](
+    rawtensors.clamp(convertRawTensor(self), min, max)
+  )
 
 func clampMin*[T](self: Tensor[T], min: Scalar): Tensor[T] =
-  rawtensors.clampMin(convertRawTensor(self), min).convertTensor[T]
+  convertTensor[T](
+    rawtensors.clampMin(convertRawTensor(self), min)
+  )
 
 func clampMax*[T](self: Tensor[T], max: Scalar): Tensor[T] =
-  rawtensors.clampMax(convertRawTensor(self), max).convertTensor[T]
+  convertTensor[T](
+    rawtensors.clampMax(convertRawTensor(self), max)
+  )
 
 func dot*[T](self: Tensor[T], other: Tensor[T]): Tensor[T] =
-  rawtensors.dot(convertRawTensor(self), convertRawTensor(other)).convertTensor[T]
+  convertTensor[T](
+    rawtensors.dot(convertRawTensor(self), convertRawTensor(other))
+  )
 
 func squeeze*[T](self: Tensor[T]): Tensor[T] =
-  rawtensors.squeeze(convertRawTensor(self)).convertTensor[T]
+  convertTensor[T](
+    rawtensors.squeeze(convertRawTensor(self))
+  )
 
 func squeeze*[T](self: Tensor[T], axis: int64): Tensor[T] =
-  rawtensors.squeeze(convertRawTensor(self), axis).convertTensor[T]
+  convertTensor[T](
+    rawtensors.squeeze(convertRawTensor(self), axis)
+  )
 
 func unsqueeze*[T](self: Tensor[T], axis: int64): Tensor[T] =
-  rawtensors.unsqueeze(convertRawTensor(self), axis).convertTensor[T]
+  convertTensor[T](
+    rawtensors.unsqueeze(convertRawTensor(self), axis)
+  )
 
 # FFT
 # -----------------------------------------------------------------------
 func fftshift*[T](self: Tensor[T]): Tensor[T] =
-  rawtensors.fftshift(convertRawTensor(self)).convertTensor[T]
+  convertTensor[T](
+    rawtensors.fftshift(convertRawTensor(self))
+  )
 
 func fftshift*[T](self: Tensor[T], dims: openArray[int64]): Tensor[T] =
   let dims = dims.asTorchView()
-  rawtensors.ifftshift(convertRawTensor(self), dims).convertTensor[T]
+  convertTensor[T](
+    rawtensors.ifftshift(convertRawTensor(self), dims)
+  )
 
 func ifftshift*[T](self: Tensor[T]): Tensor[T] =
-  rawtensors.ifftshift(convertRawTensor(self)).convertTensor[T]
+  convertTensor[T](
+    rawtensors.ifftshift(convertRawTensor(self))
+  )
 
 func ifftshift*[T](self: Tensor[T], dims: openArray[int64]): Tensor[T] =
   let dims = dims.asTorchView()
-  rawtensors.ifftshift(convertRawTensor(self), dims).convertTensor[T]
+  convertTensor[T](
+    rawtensors.ifftshift(convertRawTensor(self), dims)
+  )
 
 let defaultNorm: CppString = initCppString("backward")
 
@@ -763,11 +1045,15 @@ func fft*[T](self: Tensor[T], n: int64, dim: int64 = -1, norm: CppString = defau
   ##    *[T] "forward" - normalize by 1/n
   ##    *[T] "backward" - no normalization
   ##    *[T] "ortho" - normalize by 1/sqrt(n)
-  rawtensors.fft(convertRawTensor(self), n, dim, norm).convertTensor[T]
+  convertTensor[T](
+    rawtensors.fft(convertRawTensor(self), n, dim, norm)
+  )
 
 func fft*[T](self: Tensor[T]): Tensor[T] =
   ## Compute the 1-D Fourier transform
-  rawtensors.fft(convertRawTensor(self)).convertTensor[T]
+  convertTensor[T](
+    rawtensors.fft(convertRawTensor(self))
+  )
 
 func ifft*[T](self: Tensor[T], n: int64, dim: int64 = -1, norm: CppString = defaultNorm): Tensor[T] =
   ## Compute the 1-D Fourier transform
@@ -776,11 +1062,15 @@ func ifft*[T](self: Tensor[T], n: int64, dim: int64 = -1, norm: CppString = defa
   ##   *[T] "forward" - no normalization
   ##   *[T] "backward" - normalization by 1/n
   ##   *[T] "ortho" - normalization by 1/sqrt(n)
-  rawtensors.ifft(convertRawTensor(self), n, dim, norm).convertTensor[T]
+  convertTensor[T](
+    rawtensors.ifft(convertRawTensor(self), n, dim, norm)
+  )
 
 func ifft*[T](self: Tensor[T]): Tensor[T] =
   ## Compute the 1-D Fourier transform
-  rawtensors.ifft(convertRawTensor(self)).convertTensor[T]
+  convertTensor[T](
+    rawtensors.ifft(convertRawTensor(self))
+  )
 
 func fft2*[T](self: Tensor[T], s: openArray[int64], dims: openArray[int64], norm: CppString = defaultNorm): Tensor[T] =
   ## Compute the 2-D Fourier transform
@@ -792,17 +1082,23 @@ func fft2*[T](self: Tensor[T], s: openArray[int64], dims: openArray[int64], norm
   ## With n the logical FFT size: ``n = prod(s)``.
   let s = s.asTorchView()
   let dims = dims.asTorchView()
-  rawtensors.fft2(convertRawTensor(self), s, dims, norm).convertTensor[T]
+  convertTensor[T](
+    rawtensors.fft2(convertRawTensor(self), s, dims, norm)
+  )
 
 func fft2*[T](self: Tensor[T], s: openArray[int64]): Tensor[T] =
   ## Compute the 2-D Fourier transform
   ## ``s`` represents signal size. If given, each dimension dim[i] will either be zero padded or trimmed to the length s[i] before computing the FFT.
   let s = s.asTorchView()
-  rawtensors.fft2(convertRawTensor(self), s).convertTensor[T]
+  convertTensor[T](
+    rawtensors.fft2(convertRawTensor(self), s)
+  )
 
 func fft2*[T](self: Tensor[T]): Tensor[T] =
   ## Compute the 2-D Fourier transform
-  rawtensors.fft2(convertRawTensor(self)).convertTensor[T]
+  convertTensor[T](
+    rawtensors.fft2(convertRawTensor(self))
+  )
 
 func ifft2*[T](self: Tensor[T], s: openArray[int64], dims: openArray[int64], norm: CppString = defaultNorm): Tensor[T] =
   ## Compute the 2-D Inverse Fourier transform
@@ -814,17 +1110,23 @@ func ifft2*[T](self: Tensor[T], s: openArray[int64], dims: openArray[int64], nor
   ## With n the logical FFT size: ``n = prod(s)``.
   let s = s.asTorchView()
   let dims = dims.asTorchView()
-  rawtensors.ifft2(convertRawTensor(self), s, dims, norm).convertTensor[T]
+  convertTensor[T](
+    rawtensors.ifft2(convertRawTensor(self), s, dims, norm)
+  )
 
 func ifft2*[T](self: Tensor[T], s: openArray[int64]): Tensor[T] =
   ## Compute the 2-D Inverse Fourier transform
   ## ``s`` represents signal size. If given, each dimension dim[i] will either be zero padded or trimmed to the length s[i] before computing the FFT.
   let s = s.asTorchView()
-  rawtensors.ifft2(convertRawTensor(self), s).convertTensor[T]
+  convertTensor[T](
+    rawtensors.ifft2(convertRawTensor(self), s)
+  )
 
 func ifft2*[T](self: Tensor[T]): Tensor[T] =
   ## Compute the 2-D Inverse Fourier transform
-  rawtensors.ifft2(convertRawTensor(self)).convertTensor[T]
+  convertTensor[T](
+    rawtensors.ifft2(convertRawTensor(self))
+  )
 
 func fftn*[T](self: Tensor[T], s: openArray[int64], dims: openArray[int64], norm: CppString = defaultNorm): Tensor[T] =
   ## Compute the N-D Fourier transform
@@ -836,17 +1138,23 @@ func fftn*[T](self: Tensor[T], s: openArray[int64], dims: openArray[int64], norm
   ## With n the logical FFT size: ``n = prod(s)``.
   let s = s.asTorchView()
   let dims = dims.asTorchView()
-  rawtensors.fftn(convertRawTensor(self), s, dims).convertTensor[T]
+  convertTensor[T](
+    rawtensors.fftn(convertRawTensor(self), s, dims)
+  )
 
 func fftn*[T](self: Tensor[T], s: openArray[int64]): Tensor[T] =
   ## Compute the N-D Fourier transform
   ## ``s`` represents signal size. If given, each dimension dim[i] will either be zero padded or trimmed to the length s[i] before computing the FFT.
   let s = s.asTorchView()
-  rawtensors.fftn(convertRawTensor(self), s).convertTensor[T]
+  convertTensor[T](
+    rawtensors.fftn(convertRawTensor(self), s)
+  )
 
 func fftn*[T](self: Tensor[T]): Tensor[T] =
   ## Compute the N-D Fourier transform
-  rawtensors.fftn(convertRawTensor(self)).convertTensor[T]
+  convertTensor[T](
+    rawtensors.fftn(convertRawTensor(self))
+  )
 
 func ifftn*[T](self: Tensor[T], s: openArray[int64], dims: openArray[int64], norm: CppString = defaultNorm): Tensor[T] =
   ## Compute the N-D Inverse Fourier transform
@@ -858,17 +1166,23 @@ func ifftn*[T](self: Tensor[T], s: openArray[int64], dims: openArray[int64], nor
   ## With n the logical FFT size: ``n = prod(s)``.
   let s = s.asTorchView()
   let dims = dims.asTorchView()
-  rawtensors.fftn(convertRawTensor(self), s, dims).convertTensor[T]
+  convertTensor[T](
+    rawtensors.fftn(convertRawTensor(self), s, dims)
+  )
 
 func ifftn*[T](self: Tensor[T], s: openArray[int64]): Tensor[T] =
   ## Compute the N-D Inverse Fourier transform
   ## ``s`` represents signal size. If given, each dimension dim[i] will either be zero padded or trimmed to the length s[i] before computing the FFT.
   let s = s.asTorchView()
-  rawtensors.fftn(convertRawTensor(self), s).convertTensor[T]
+  convertTensor[T](
+    rawtensors.fftn(convertRawTensor(self), s)
+  )
 
 func ifftn*[T](self: Tensor[T]): Tensor[T] =
   ## Compute the N-D Inverse Fourier transform
-  rawtensors.ifftn(convertRawTensor(self)).convertTensor[T]
+  convertTensor[T](
+    rawtensors.ifftn(convertRawTensor(self))
+  )
 
 # RFFT
 # -----------------------------------------------------------------------
@@ -880,11 +1194,15 @@ func rfft*[T](self: Tensor[T], n: int64, dim: int64 = -1, norm: CppString = defa
   ##    *[T] "forward" - normalize by 1/n
   ##    *[T] "backward" - no normalization
   ##    *[T] "ortho" - normalize by 1/sqrt(n)
-  rawtensors.rfft(convertRawTensor(self), n, dim, norm).convertTensor[T]
+  convertTensor[T](
+    rawtensors.rfft(convertRawTensor(self), n, dim, norm)
+  )
 
 func rfft*[T](self: Tensor[T]): Tensor[T] =
   ## Compute the 1-D Fourier transform of real-valued input
-  rawtensors.rfft(convertRawTensor(self)).convertTensor[T]
+  convertTensor[T](
+    rawtensors.rfft(convertRawTensor(self))
+  )
 
 func irfft*[T](self: Tensor[T], n: int64, dim: int64 = -1, norm: CppString = defaultNorm): Tensor[T] =
   ## Compute the 1-D Fourier transform of real-valued input
@@ -893,11 +1211,15 @@ func irfft*[T](self: Tensor[T], n: int64, dim: int64 = -1, norm: CppString = def
   ##   *[T] "forward" - no normalization
   ##   *[T] "backward" - normalization by 1/n
   ##   *[T] "ortho" - normalization by 1/sqrt(n)
-  rawtensors.irfft(convertRawTensor(self), n, dim, norm).convertTensor[T]
+  convertTensor[T](
+    rawtensors.irfft(convertRawTensor(self), n, dim, norm)
+  )
 
 func irfft*[T](self: Tensor[T]): Tensor[T] =
   ## Compute the 1-D Fourier transform of real-valued input
-  rawtensors.irfft(convertRawTensor(self)).convertTensor[T]
+  convertTensor[T](
+    rawtensors.irfft(convertRawTensor(self))
+  )
 
 func rfft2*[T](self: Tensor[T], s: openArray[int64], dims: openArray[int64], norm: CppString = defaultNorm): Tensor[T] =
   ## Compute the 2-D Fourier transform of real-valued input
@@ -909,17 +1231,23 @@ func rfft2*[T](self: Tensor[T], s: openArray[int64], dims: openArray[int64], nor
   ## With n the logical rfft size: ``n = prod(s)``.
   let s = s.asTorchView()
   let dims = dims.asTorchView()
-  rawtensors.rfft2(convertRawTensor(self), s, dims, norm).convertTensor[T]
+  convertTensor[T](
+    rawtensors.rfft2(convertRawTensor(self), s, dims, norm)
+  )
 
 func rfft2*[T](self: Tensor[T], s: openArray[int64]): Tensor[T] =
   ## Compute the 2-D Fourier transform of real-valued input
   ## ``s`` represents signal size. If given, each dimension dim[i] will either be zero padded or trimmed to the length s[i] before computing the rfft.
   let s = s.asTorchView()
-  rawtensors.rfft2(convertRawTensor(self), s).convertTensor[T]
+  convertTensor[T](
+    rawtensors.rfft2(convertRawTensor(self), s)
+  )
 
 func rfft2*[T](self: Tensor[T]): Tensor[T] =
   ## Compute the 2-D Fourier transform of real-valued input
-  rawtensors.rfft2(convertRawTensor(self)).convertTensor[T]
+  convertTensor[T](
+    rawtensors.rfft2(convertRawTensor(self))
+  )
 
 func irfft2*[T](self: Tensor[T], s: openArray[int64], dims: openArray[int64], norm: CppString = defaultNorm): Tensor[T] =
   ## Compute the 2-D Inverse Fourier transform of real-valued input
@@ -931,17 +1259,23 @@ func irfft2*[T](self: Tensor[T], s: openArray[int64], dims: openArray[int64], no
   ## With n the logical rfft size: ``n = prod(s)``.
   let s = s.asTorchView()
   let dims = dims.asTorchView()
-  rawtensors.irfft2(convertRawTensor(self), s, dims, norm).convertTensor[T]
+  convertTensor[T](
+    rawtensors.irfft2(convertRawTensor(self), s, dims, norm)
+  )
 
 func irfft2*[T](self: Tensor[T], s: openArray[int64]): Tensor[T] =
   ## Compute the 2-D Inverse Fourier transform of real-valued input
   ## ``s`` represents signal size. If given, each dimension dim[i] will either be zero padded or trimmed to the length s[i] before computing the rfft.
   let s = s.asTorchView()
-  rawtensors.irfft2(convertRawTensor(self), s).convertTensor[T]
+  convertTensor[T](
+    rawtensors.irfft2(convertRawTensor(self), s)
+  )
 
 func irfft2*[T](self: Tensor[T]): Tensor[T] =
   ## Compute the 2-D Inverse Fourier transform of real-valued input
-  rawtensors.irfft2(convertRawTensor(self)).convertTensor[T]
+  convertTensor[T](
+    rawtensors.irfft2(convertRawTensor(self))
+  )
 
 func rfftn*[T](self: Tensor[T], s: openArray[int64], dims: openArray[int64], norm: CppString = defaultNorm): Tensor[T] =
   ## Compute the N-D Fourier transform of real-valued input
@@ -953,17 +1287,23 @@ func rfftn*[T](self: Tensor[T], s: openArray[int64], dims: openArray[int64], nor
   ## With n the logical rfft size: ``n = prod(s)``.
   let s = s.asTorchView()
   let dims = dims.asTorchView()
-  rawtensors.rfftn(convertRawTensor(self), s, dims).convertTensor[T]
+  convertTensor[T](
+    rawtensors.rfftn(convertRawTensor(self), s, dims)
+  )
 
 func rfftn*[T](self: Tensor[T], s: openArray[int64]): Tensor[T] =
   ## Compute the N-D Fourier transform of real-valued input
   ## ``s`` represents signal size. If given, each dimension dim[i] will either be zero padded or trimmed to the length s[i] before computing the rfft.
   let s = s.asTorchView()
-  rawtensors.rfftn(convertRawTensor(self), s).convertTensor[T]
+  convertTensor[T](
+    rawtensors.rfftn(convertRawTensor(self), s)
+  )
 
 func rfftn*[T](self: Tensor[T]): Tensor[T] =
   ## Compute the N-D Fourier transform of real-valued input
-  rawtensors.rfftn(convertRawTensor(self)).convertTensor[T]
+  convertTensor[T](
+    rawtensors.rfftn(convertRawTensor(self))
+  )
 
 func irfftn*[T](self: Tensor[T], s: openArray[int64], dims: openArray[int64], norm: CppString = defaultNorm): Tensor[T] =
   ## Compute the N-D Inverse Fourier transform of real-valued input
@@ -975,33 +1315,47 @@ func irfftn*[T](self: Tensor[T], s: openArray[int64], dims: openArray[int64], no
   ## With n the logical rfft size: ``n = prod(s)``.
   let s = s.asTorchView()
   let dims = dims.asTorchView()
-  rawtensors.rfftn(convertRawTensor(self), s, dims).convertTensor[T]
+  convertTensor[T](
+    rawtensors.rfftn(convertRawTensor(self), s, dims)
+  )
 
 func irfftn*[T](self: Tensor[T], s: openArray[int64]): Tensor[T] =
   ## Compute the N-D Inverse Fourier transform of real-valued input
   ## ``s`` represents signal size. If given, each dimension dim[i] will either be zero padded or trimmed to the length s[i] before computing the rfft.
   let s = s.asTorchView()
-  rawtensors.rfftn(convertRawTensor(self), s).convertTensor[T]
+  convertTensor[T](
+    rawtensors.rfftn(convertRawTensor(self), s)
+  )
 
 func irfftn*[T](self: Tensor[T]): Tensor[T] =
   ## Compute the N-D Inverse Fourier transform
-  rawtensors.irfftn(convertRawTensor(self)).convertTensor[T]
+  convertTensor[T](
+    rawtensors.irfftn(convertRawTensor(self))
+  )
 
 func hfft*[T](self: Tensor[T], n: int64, dim: int64 = -1, norm: CppString = defaultNorm): Tensor[T] =
   ## Computes the 1 dimensional FFT of a onesided Hermitian signal.
-  rawtensors.hfft(convertRawTensor(self), n, dim, norm).convertTensor[T]
+  convertTensor[T](
+    rawtensors.hfft(convertRawTensor(self), n, dim, norm)
+  )
 
 func hfft*[T](self: Tensor[T]): Tensor[T] =
   ## Computes the 1 dimensional FFT of a onesided Hermitian signal.
-  rawtensors.hfft(convertRawTensor(self)).convertTensor[T]
+  convertTensor[T](
+    rawtensors.hfft(convertRawTensor(self))
+  )
 
 func ihfft*[T](self: Tensor[T], n: int64, dim: int64 = -1, norm: CppString = defaultNorm): Tensor[T] =
   ## Computes the inverse FFT of a real-valued Fourier domain signal.
-  rawtensors.ihfft(convertRawTensor(self), n, dim, norm).convertTensor[T]
+  convertTensor[T](
+    rawtensors.ihfft(convertRawTensor(self), n, dim, norm)
+  )
 
 func ihfft*[T](self: Tensor[T]): Tensor[T] =
   ## Computes the inverse FFT of a real-valued Fourier domain signal.
-  rawtensors.ihfft(convertRawTensor(self)).convertTensor[T]
+  convertTensor[T](
+    rawtensors.ihfft(convertRawTensor(self))
+  )
 {.pop.}
 
 # #func convolution*[T](self: Tensor, weight: Tensor, bias: Tensor, stride, padding, dilation: int64, transposed: bool, outputPadding: int64, groups: int64): Tensor
