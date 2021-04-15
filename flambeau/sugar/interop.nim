@@ -31,8 +31,6 @@ func toTensor*[T: SomeTorchType](oa: openArray[T]): Tensor[T] {.noinit.}=
   var res : RawTensor = toRawTensorFromScalar[T](oa)
   result = convertTensor[T](res)
 
-# TODO : Rewrite this as Macro to get rid of the ``U: typedesc``
-# func toTensor*[T: seq|array](oa: openArray[T], U: typedesc): Tensor[U] {.noinit.}=
 func toTensor*[T: seq|array](oa: openArray[T]): auto {.noinit.}=
   ## Interpret an openarray of openarray as a CPU Tensor
   ##
@@ -45,7 +43,7 @@ func toTensor*[T: seq|array](oa: openArray[T]): auto {.noinit.}=
   var res : RawTensor = toRawTensorFromSeq(oa)
   result = convertTensor[V](res)
 
-macro `[]`*[T](t: Tensor[T], args: varargs[untyped]): untyped =
+template `[]`*[T](t: Tensor[T], args: varargs[untyped]): untyped =
   # result = nnkStmtList.newTree(
   #   nnkCall.newTree(
   #     nnkAccQuoted.newTree(
@@ -58,11 +56,12 @@ macro `[]`*[T](t: Tensor[T], args: varargs[untyped]): untyped =
   #     newIdentNode(ident `args`)
   #   )
   # )
-  result = quote do:
-    `t.raw`[`args`]
+  convertTensor[T](t.raw[args])
+  # result = quote do:
+  #   `t.raw`[`args`]
   #  [](`t.raw`, `args`)
 
-macro `[]=`*[T](t: var Tensor[T], args: varargs[untyped]): untyped =
+template `[]=`*[T](t: var Tensor[T], args: varargs[untyped]): untyped =
   # result = nnkStmtList.newTree(
   #   nnkCall.newTree(
   #     nnkAccQuoted.newTree(
@@ -75,8 +74,9 @@ macro `[]=`*[T](t: var Tensor[T], args: varargs[untyped]): untyped =
   #     newIdentNode(ident `args`)
   #   )
   # )
-  result = quote do:
-    `t.raw` = [`args`]
+  t.raw = [args]
+  # result = quote do:
+  #   `t.raw` = [`args`]
     # []=(`t.raw`, `args`)
 
 proc `$`*[T](t: Tensor[T]): string =

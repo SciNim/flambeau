@@ -143,7 +143,7 @@ func init*(T: type TensorOptions): TensorOptions {.constructor, importcpp: "torc
 #
 # Hence in Nim we don't need to care about Scalar or defined converters
 # (except maybe for complex)
-type Scalar* = SomeNumber or bool
+type Scalar* = SomeNumber or bool or Complex
 
 # TensorAccessors
 # -----------------------------------------------------------------------

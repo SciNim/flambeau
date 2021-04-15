@@ -62,9 +62,9 @@ proc main() =
       let
         s = t.sort()
         args = t.argsort()
-      check s.get(0) == [1, 2, 3, 4, 5, 6].toTensor()
-      check s.get(1) == args
-      check args == [3, 0, 1, 2, 4, 5].toTensor()
+      check s.values == [1, 2, 3, 4, 5, 6].toTensor()
+      check s.originalIndices == args
+      check args == [3, 0, 1, 2, 4, 5].toTensor().to(int64)
 
     test "all, any":
       discard
@@ -87,34 +87,41 @@ proc main() =
     test "item()":
       # Check item for complex
       let m = c64input[0].item()
-      check m.real is float64
-      check m.imag is float64
+      check m.re is float64
+      check m.im is float64
 
     test "fft, ifft":
+      # echo c64input
       let fftout = fft(c64input)
       # echo fftout
       let ifftout = ifft(fftout)
       # echo ifftout
       let max_input = max(abs(ifftout)).item()
+      # echo max_input
       # Compare abs of Complex values
-      var rel_diff = abs(ifftout - c64input)
+      var rel_diff = abs(ifftout - c64input) #.to(float64)
+      # echo rel_diff
       rel_diff /= max_input
       # This isn't a perfect way of checking if Complex number are close enough
       # But it'll do for this simple case
-      check mean(rel_diff).item() < 1e-12
+      check mean(rel_diff).item() < 1e-7
 
     test "rfft, irfft":
+      # echo f64input
       let fftout = rfft(f64input)
       # echo fftout
       let ifftout = irfft(fftout)
       # echo ifftout
       let max_input = max(abs(ifftout)).item()
+      # echo max_input
       # Compare abs of Complex values
       var rel_diff = abs(ifftout - f64input)
       rel_diff /= max_input
+      # echo rel_diff
       # This isn't a perfect way of checking if Complex number are close enough
       # But it'll do for this simple case
-      check mean(rel_diff).item() < 1e-12
+      check mean(rel_diff).item() < 1e-7
+      # echo mean(rel_diff).item()
 
   suite "FFT2D":
     setup:
@@ -133,7 +140,7 @@ proc main() =
       rel_diff /= max_input
       # This isn't a perfect way of checking if Complex number are close enough
       # But it'll do for this simple case
-      check mean(rel_diff).item() < 1e-12
+      check mean(rel_diff).item() < 1e-7
 
   suite "FFTND":
     setup:
@@ -152,6 +159,6 @@ proc main() =
       rel_diff /= max_input
       # This isn't a perfect way of checking if Complex number are close enough
       # But it'll do for this simple case
-      check mean(rel_diff).item() < 1e-12
+      check mean(rel_diff).item() < 1e-7
 
 main()

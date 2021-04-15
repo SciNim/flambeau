@@ -66,6 +66,31 @@ func `[]=`*[T](ar: var ArrayRef[T], idx: SomeInteger, val: T) =
 
 # Type map
 # -----------------------------------------------------
+func toTypedesc*(scalarKind: ScalarKind): typedesc =
+  ## Maps a Torch ScalarKind to Nim type
+  case scalarKind
+  of kUint8:
+    typedesc(uint8)
+  of kInt8:
+    typedesc(int8)
+  of kInt16:
+    typedesc(int16)
+  of kInt32:
+    typedesc(int32)
+  of kInt64 :
+    typedesc(int64)
+  of kFloat32:
+    typedesc(float32)
+  of kFloat64:
+    typedesc(float64)
+  of kComplexF32:
+    typedesc(Complex32)
+  of kComplexF64:
+    typedesc(Complex64)
+  of kBool:
+    typedesc(bool)
+  else:
+    raise newException(ValueError, "Unsupported libtorch type in Nim: " & $scalarKind)
 
 func toScalarKind*(T: typedesc[SomeTorchType]): static ScalarKind =
   ## Maps a Nim type to Torch scalar kind
