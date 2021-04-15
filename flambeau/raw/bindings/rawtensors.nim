@@ -297,7 +297,7 @@ func rand*(size: IntArrayRef): RawTensor {.importcpp: "torch::rand(@)".}
 
 # Indexing
 # -----------------------------------------------------------------------
-# TODO throw IndexDefect when bounds checking is active
+# TODO -> separate the FFI from the Nim Raw API to add IndexDefect when compileOptions("boundsCheck")
 # libtorch/include/ATen/TensorIndexing.h
 # and https://pytorch.org/cppdocs/notes/tensor_indexing.html
 
@@ -305,7 +305,6 @@ func item*(self: RawTensor, T: typedesc): T {.importcpp: "#.item<'0>()".}
   ## Extract the scalar from a 0-dimensional tensor
 func item*(self: RawTensor, T: typedesc[Complex32]): C10_Complex[float32] {.importcpp: "#.item<c10::complex<float>>()".}
 func item*(self: RawTensor, T: typedesc[Complex64]): C10_Complex[float64] {.importcpp: "#.item<c10::complex<double>>()".}
-
 
 # Unsure what those corresponds to in Python
 # func `[]`*(self: Tensor, index: Scalar): Tensor {.importcpp: "#[#]".}
@@ -343,7 +342,7 @@ func index_put*(self: var RawTensor, i0, i1, i2, i3, i4, i5: auto, val: Scalar o
 
 # Fancy Indexing
 # -----------------------------------------------------------------------
-
+# TODO -> separate the FFI from the Nim Raw API to add IndexDefect when compileOptions("boundsCheck")
 func index_select*(self: RawTensor, axis: int64, indices: RawTensor): RawTensor {.importcpp: "#.index_select(@)".}
 func masked_select*(self: RawTensor, mask: RawTensor): RawTensor {.importcpp: "#.masked_select(@)".}
 
