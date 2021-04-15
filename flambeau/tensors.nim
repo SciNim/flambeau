@@ -13,7 +13,7 @@ type
     ## calling zeroMem on Tensor - which is called as default initialization - will set the refcount to 0 of the internal intrusive_ptr<TensorImpl> and destroy the RawTensor causin a segùentation fault
     ## It is imperative to either declare tensor object a ``noinit``, initialize specifically Tensor using ``initTensor``.
     ## In addition, all proc that return a Tensor object used as constructor must be declared as ``noinit``.
-    raw*: RawTensor
+    raw: RawTensor
 
 proc initTensor*[T](): Tensor[T] {.constructor, noinit.} =
   {.emit: "/* */".}
