@@ -7,7 +7,7 @@ import ../tensors
 import ../raw/sugar/interop as rawinterop
 export rawinterop
 
-func toTensorView*[T: SomeTorchType](oa: openArray[T]): lent Tensor[T] {.noinit.}=
+func toTensorView*[T: SomeTorchType](oa: openArray[T]): lent Tensor[T] {.noinit.} =
   ## Interpret an openarray as a CPU Tensor
   ## Important:
   ##   the buffer is shared.
@@ -18,20 +18,20 @@ func toTensorView*[T: SomeTorchType](oa: openArray[T]): lent Tensor[T] {.noinit.
   ##      - An array or a seq (can be nested)
   ## Result:
   ##      - A view Tensor of the same shape
-  var res : RawTensor = toRawTensorView[T](oa)
+  var res: RawTensor = toRawTensorView[T](oa)
   result = convertTensor[T](res)
 
-func toTensor*[T: SomeTorchType](oa: openArray[T]): Tensor[T] {.noinit.}=
+func toTensor*[T: SomeTorchType](oa: openArray[T]): Tensor[T] {.noinit.} =
   ## Interpret an openarray as a CPU Tensor
   ##
   ## Input:
   ##      - An array or a seq
   ## Result:
   ##      - A view Tensor of the same shape
-  var res : RawTensor = toRawTensorFromScalar[T](oa)
+  var res: RawTensor = toRawTensorFromScalar[T](oa)
   result = convertTensor[T](res)
 
-func toTensor*[T: seq|array](oa: openArray[T]): auto {.noinit.}=
+func toTensor*[T: seq|array](oa: openArray[T]): auto {.noinit.} =
   ## Interpret an openarray of openarray as a CPU Tensor
   ##
   ## Input:
@@ -39,7 +39,7 @@ func toTensor*[T: seq|array](oa: openArray[T]): auto {.noinit.}=
   ## Result:
   ##      - A view Tensor of the same shape
   type V = getBaseType(T)
-  var res : RawTensor = toRawTensorFromSeq(oa)
+  var res: RawTensor = toRawTensorFromSeq(oa)
   result = convertTensor[V](res)
 
 template `[]`*[T](t: Tensor[T], args: varargs[untyped]): untyped =

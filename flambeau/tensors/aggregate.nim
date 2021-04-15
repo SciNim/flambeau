@@ -40,7 +40,6 @@ func sum*[T](self: Tensor[T], axis: openArray[int64], keepdim: bool = false, dty
     rawtensors.sum(convertRawTensor(self), axis, keepdim)
   )
 
-
 # mean as well
 func mean*[T](self: Tensor[T]): Tensor[T] =
   convertTensor[T](
@@ -75,7 +74,6 @@ func mean*[T](self: Tensor[T], axis: openArray[int64], keepdim: bool = false, dt
   )
 
 # median requires std::tuple
-
 func prod*[T](self: Tensor[T]): Tensor[T] =
   convertTensor[T](
     rawtensors.prod(convertRawTensor(self))
@@ -113,14 +111,12 @@ func max*[T](self: Tensor[T]): Tensor[T] =
     rawtensors.max(convertRawTensor(self))
   )
 
-
 func max*[T](self: Tensor[T], axis: int64, keepdim: bool = false): tuple[values: Tensor[T], indices: Tensor[int]] =
   ## Returns a tuple (values, indices) of type (TensorT, TensorInt64)
   ## of the maximum values and their index in the specified axis
   let cppMaxTuple = rawtensors.max(convertRawTensor(self), axis, keepdim)
   result.values = convertTensor[T](cppMaxTuple.get(0))
   result.indices = convertTensor[int](cppMaxTuple.get(1))
-
 
 func variance*[T](self: Tensor[T], unbiased: bool = true): Tensor[T] =
   convertTensor[T](
@@ -153,4 +149,3 @@ func stddev*[T](self: Tensor[T], axis: openArray[int64], unbiased: bool = true, 
   convertTensor[T](
     rawtensors.stddev(convertRawTensor(self), axis, unbiased, keepdim)
   )
-

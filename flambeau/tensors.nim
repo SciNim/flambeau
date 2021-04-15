@@ -15,12 +15,11 @@ type
     ## In addition, all proc that return a Tensor object used as constructor must be declared as ``noinit``.
     raw*: RawTensor
 
-proc initTensor[T](): Tensor[T] {.constructor, noinit.} =
+proc initTensor*[T](): Tensor[T] {.constructor, noinit.} =
   {.emit: "/* */".}
 
 # proc `=copy`*[T](dest: var Tensor[T], src: Tensor[T]) =
 #   dest.raw = src.raw.clone()
-#
 # proc `=sink`*[T](dest: var Tensor[T], src: Tensor[T]) =
 #   `=destroy`(dest)
 #   wasMoved(dest)

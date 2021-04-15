@@ -29,32 +29,6 @@ func `*`*[T](a: SomeNumber, b: Tensor[T]): Tensor[T] =
 func `*`*[T](a: Tensor[T], b: SomeNumber): Tensor[T] =
   convertTensor[T](convertRawTensor(a) * b.cdouble)
 
-{.pop.}
-
-func `+=`*[T](self: var Tensor[T], b: Tensor[T]) =
-  convertRawTensor(self) += convertRawTensor(b)
-
-func `+=`*[T](self: var Tensor[T], s: T) =
-  convertRawTensor(self) += s
-
-func `-=`*[T](self: var Tensor[T], b: Tensor[T]) =
-  convertRawTensor(self) -= convertRawTensor(b)
-func `-=`*[T](self: var Tensor[T], s: T) =
-  convertRawTensor(self) -= s
-
-func `*=`*[T](self: var Tensor[T], b: Tensor[T]) =
-  convertRawTensor(self) *= convertRawTensor(b)
-
-func `*=`*[T](self: var Tensor[T], s: T) =
-  convertRawTensor(self) *= s
-
-func `/=`*[T](self: var Tensor[T], b: Tensor[T]) =
-  convertRawTensor(self) /= convertRawTensor(b)
-
-func `/=`*[T](self: var Tensor[T], s: T) =
-  convertRawTensor(self) /= s
-
-{.push noinit.}
 func `and`*[T](a: Tensor[T], b: Tensor[T]): Tensor[T] =
   ## bitwise `and`.
   convertTensor[T](convertRawTensor(a) and convertRawTensor(b))
@@ -86,9 +60,31 @@ func eq*[T](a, b: Tensor[T]): Tensor[T] =
   )
 {.pop.}
 
+func `+=`*[T](self: var Tensor[T], b: Tensor[T]) =
+  convertRawTensor(self) += convertRawTensor(b)
+
+func `+=`*[T](self: var Tensor[T], s: T) =
+  convertRawTensor(self) += s
+
+func `-=`*[T](self: var Tensor[T], b: Tensor[T]) =
+  convertRawTensor(self) -= convertRawTensor(b)
+func `-=`*[T](self: var Tensor[T], s: T) =
+  convertRawTensor(self) -= s
+
+func `*=`*[T](self: var Tensor[T], b: Tensor[T]) =
+  convertRawTensor(self) *= convertRawTensor(b)
+
+func `*=`*[T](self: var Tensor[T], s: T) =
+  convertRawTensor(self) *= s
+
+func `/=`*[T](self: var Tensor[T], b: Tensor[T]) =
+  convertRawTensor(self) /= convertRawTensor(b)
+
+func `/=`*[T](self: var Tensor[T], s: T) =
+  convertRawTensor(self) /= s
+
 func equal*[T](a, b: Tensor[T]): bool =
   equal(convertRawTensor(a), convertRawTensor(b))
 
 template `==`*[T](a, b: Tensor[T]): bool =
   a.equal(b)
-
