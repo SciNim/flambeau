@@ -104,7 +104,7 @@ proc main() =
       rel_diff /= max_input
       # This isn't a perfect way of checking if Complex number are close enough
       # But it'll do for this simple case
-      check mean(rel_diff).item() < 1e-7
+      check mean(rel_diff).item() < 1e-12
 
     test "rfft, irfft":
       # echo f64input
@@ -120,7 +120,7 @@ proc main() =
       # echo rel_diff
       # This isn't a perfect way of checking if Complex number are close enough
       # But it'll do for this simple case
-      check mean(rel_diff).item() < 1e-7
+      check mean(rel_diff).item() < 1e-12
       # echo mean(rel_diff).item()
 
   suite "FFT2D":
@@ -140,7 +140,7 @@ proc main() =
       rel_diff /= max_input
       # This isn't a perfect way of checking if Complex number are close enough
       # But it'll do for this simple case
-      check mean(rel_diff).item() < 1e-7
+      check mean(rel_diff).item() < 1e-12
 
   suite "FFTND":
     setup:
@@ -159,6 +159,6 @@ proc main() =
       rel_diff /= max_input
       # This isn't a perfect way of checking if Complex number are close enough
       # But it'll do for this simple case
-      check mean(rel_diff).item() < 1e-7
+      check mean(rel_diff).item() < 1e-12
 
 main()
