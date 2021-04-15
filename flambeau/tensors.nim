@@ -657,21 +657,21 @@ func any*[T](self: Tensor[T], axis: int64, keepdim: bool): Tensor[T] =
     rawtensors.any(convertRawTensor(self), axis, keepdim)
   )
 
-func argmax*[T](self: Tensor[T]): Tensor[int64] =
-  convertTensor[int64](
+func argmax*[T](self: Tensor[T]): Tensor[int] =
+  convertTensor[int](
     rawtensors.argmax(convertRawTensor(self))
   )
-func argmax*[T](self: Tensor[T], axis: int64, keepdim: bool = false): Tensor[int64] =
-  convertTensor[int64](
+func argmax*[T](self: Tensor[T], axis: int64, keepdim: bool = false): Tensor[int] =
+  convertTensor[int](
     rawtensors.argmax(convertRawTensor(self), axis, keepdim)
   )
 
-func argmin*[T](self: Tensor[T]): Tensor[int64] =
-  convertTensor[int64](
+func argmin*[T](self: Tensor[T]): Tensor[int] =
+  convertTensor[int](
     rawtensors.argmin(convertRawTensor(self))
   )
-func argmin*[T](self: Tensor[T], axis: int64, keepdim: bool = false): Tensor[int64] =
-  convertTensor[int64](
+func argmin*[T](self: Tensor[T], axis: int64, keepdim: bool = false): Tensor[int] =
+  convertTensor[int](
     rawtensors.argmin(convertRawTensor(self), axis, keepdim)
   )
 {.pop.}
@@ -776,12 +776,12 @@ func min*[T](self: Tensor[T]): Tensor[T] =
     rawtensors.min(convertRawTensor(self))
   )
 
-func min*[T](self: Tensor[T], axis: int64, keepdim: bool = false): tuple[values: Tensor[T], indices: Tensor[int64]] =
+func min*[T](self: Tensor[T], axis: int64, keepdim: bool = false): tuple[values: Tensor[T], indices: Tensor[int]] =
   ## Returns a tuple (values, indices) of type (TensorT, TensorInt64)
   ## of the minimum values and their index in the specified axis
   let cppMinTuple = rawtensors.min(convertRawTensor(self), axis, keepdim)
   result.values = convertTensor[T](cppMinTuple.get(0))
-  result.indices = convertTensor[int64](cppMinTuple.get(1))
+  result.indices = convertTensor[int](cppMinTuple.get(1))
 
 func max*[T](self: Tensor[T]): Tensor[T] =
   convertTensor[T](
@@ -789,12 +789,12 @@ func max*[T](self: Tensor[T]): Tensor[T] =
   )
 
 
-func max*[T](self: Tensor[T], axis: int64, keepdim: bool = false): tuple[values: Tensor[T], indices: Tensor[int64]] =
+func max*[T](self: Tensor[T], axis: int64, keepdim: bool = false): tuple[values: Tensor[T], indices: Tensor[int]] =
   ## Returns a tuple (values, indices) of type (TensorT, TensorInt64)
   ## of the maximum values and their index in the specified axis
   let cppMaxTuple = rawtensors.max(convertRawTensor(self), axis, keepdim)
   result.values = convertTensor[T](cppMaxTuple.get(0))
-  result.indices = convertTensor[int64](cppMaxTuple.get(1))
+  result.indices = convertTensor[int](cppMaxTuple.get(1))
 
 
 func variance*[T](self: Tensor[T], unbiased: bool = true): Tensor[T] =
