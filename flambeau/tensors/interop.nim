@@ -43,11 +43,11 @@ func toTensor*[T: seq|array](oa: openArray[T]): auto {.noinit.} =
   result = convertTensor[V](res)
 
 template `[]`*[T](t: Tensor[T], args: varargs[untyped]): untyped =
-  convertTensor[T](t.raw[args])
+  convertTensor[T](convertRawTensor(t)[args])
 
 template `[]=`*[T](t: var Tensor[T], args: varargs[untyped]): untyped =
-  t.raw = [args]
+  convertRawTensor(t) = [args]
 
 proc `$`*[T](t: Tensor[T]): string =
   # `$`(convertRawTensor(t))
-  "Tensor\n" & $(toCppString(t.raw))
+  "Tensor\n" & $(toCppString(convertRawTensor(t)))
