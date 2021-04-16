@@ -39,7 +39,9 @@ proc main() =
     # Show casing that modifying the memdata[0] triggers the refcount
     let m = memdata[0]
     zeroMem(rawtens.unsafeAddr, sizeof(rawtens))
-    memdata[0] = m
+    # If this line is commentend, the line rawtens = a will detect a reference counting equal to zero and destroy the pointers before the assignment operator (causing a segfault)
+    # This behaviour of zero-ing memory causing a ref. count is the reason why the {.noinit.} is needed on proc that return a Tensor
+    memdata[0] = m # Comment to create a segfault
     rawtens = a
     doAssert rawtens == a
     doAssert $(rawtens) == $(a)
