@@ -3,7 +3,7 @@ import sequtils
 import complex
 import sugar
 
-import flambeau
+import ../../flambeau
 
 {.experimental: "views".} # TODO
 

@@ -1,4 +1,4 @@
-import flambeau
+import ../../flambeau
 
 {.experimental: "views".} # TODO
 

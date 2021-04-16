@@ -1,4 +1,4 @@
-# Copyright 2017 the Arraymancer contributors
+# Copyright 2021 the Flambeau contributors
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -12,10 +12,9 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-import flambeau
+import ../../flambeau
 import unittest
 import std/complex
-import std/math
 
 {.experimental: "views".} # TODO
 
