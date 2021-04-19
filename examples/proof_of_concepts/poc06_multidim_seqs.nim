@@ -1,4 +1,5 @@
-import flambeau, std/math
+import flambeau/flambeau_raw
+import std/math
 
 {.experimental: "views".} # TODO this is ignored
 
@@ -18,7 +19,7 @@ for i, xx in x:
     for j, yy in y:
         vandermonde[i].add(xx^yy)
 
-let foo = vandermonde.toTensor()
+let foo = vandermonde.toRawTensor()
 
 foo.print()
 echo "\n---------------"
@@ -42,6 +43,6 @@ let nest3 = @[
         ]
       ]
 
-let t3 = nest3.toTensor()
+let t3 = nest3.toRawTensor()
 t3.print()
 echo "\n---------------"
