@@ -8,7 +8,7 @@
 # Raw exports
 # ----------------------------------------------------------------
 
-import ./flambeau/raw/bindings/rawtensors
+import ./raw/bindings/rawtensors
   except # TODO, don't export associated proc either
     # ArrayRef,
     TensorOptions,
@@ -16,35 +16,35 @@ import ./flambeau/raw/bindings/rawtensors
 
 export rawtensors # TODO, don't export low-level procs and types like C++ slices.
 
-import ./flambeau/raw/bindings/neural_nets
+import ./raw/bindings/neural_nets
   except LinearOptions
 export neural_nets
 
-import ./flambeau/raw/bindings/optimizers
+import ./raw/bindings/optimizers
   except OptimizerOptions
 export optimizers
 
-import ./flambeau/raw/bindings/data_api
+import ./raw/bindings/data_api
   except
     TorchDataIterator,
     DataLoaderBase, DataLoaderOptions
 export data_api
 
-import ./flambeau/raw/bindings/serialize
+import ./raw/bindings/serialize
 export serialize
 
 # C++ Standard Library
 # ----------------------------------------------------------------
 
-import ./flambeau/raw/cpp/[std_cpp, emitters]
+import ./raw/cpp/[std_cpp, emitters]
 export std_cpp, emitters
 
 # Convenience helpers
 # ----------------------------------------------------------------
 
-import ./flambeau/raw/sugar/[indexing, interop, moduleSugar]
+import ./raw/sugar/[indexing, interop, moduleSugar]
 export indexing, interop, moduleSugar
 
-import ./flambeau/raw/bindings/c10
+import ./raw/bindings/c10
 export c10
 
