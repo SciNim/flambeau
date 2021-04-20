@@ -31,7 +31,7 @@ proc init(net: var Net) =
   net.fc2 = net.register_module("fc2", Linear.init(64, 32))
   net.fc3 = net.register_module("fc3", Linear.init(32, 10))
 
-func forward*(net: Net, x: Tensor): Tensor =
+func forward*(net: Net, x: RawTensor): RawTensor =
   var x = x
   x = net.fc1.forward(x.reshape(x.size(0), 784)).relu()
   x = x.dropout(0.5, training = net.is_training())
@@ -44,7 +44,7 @@ proc main() =
   net.init()
 
   let data_loader = make_data_loader(
-    mnist("build/mnist").map(Stack[Example[Tensor, Tensor]].init()),
+    mnist("build/mnist").map(Stack[Example[RawTensor, RawTensor]].init()),
     batch_size = 64
   )
 

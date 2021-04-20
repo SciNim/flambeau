@@ -11,22 +11,12 @@
 when not defined(cpp):
   {.error: "Flambeau requires C++ backend required to use Torch".}
 
-import ./flambeau/raw_bindings/tensors
-  except # TODO, don't export associated proc either
-    # ArrayRef,
-    TensorOptions,
-    TorchSlice, IndexNone, IndexEllipsis, SomeSlicer, torchSlice
-
+import ./flambeau/tensors
 export tensors # TODO, don't export low-level procs and types like C++ slices.
 
 # C++ Standard Library
 # ----------------------------------------------------------------
 
-import ./flambeau/cpp/std_cpp
+import ./flambeau/raw/cpp/std_cpp
 export std_cpp
 
-# Convenience helpers
-# ----------------------------------------------------------------
-
-import ./flambeau/high_level/[indexing, interop]
-export indexing, interop

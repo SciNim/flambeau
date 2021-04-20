@@ -116,6 +116,7 @@ macro defModule*(s: untyped): untyped =
             elif f[2].matches(Command[Ident(strVal: "param"), @a] | Call[Ident(strVal: "param"), @a]): # param randn(10, 10) or param(randn(10, 10))
               #a.assertMatch(Call[Ident(strVal: @procName), all @params])
               paramsList.add fieldName
+              # TODO Remove Obi Wan Kenobi ?
               initParams.add (fieldName, "Hello there! - Obi Wan Kenobi", @[a], netParam)
               newFields.add nnkIdentDefs.newTree(fieldNameSection, ident"Tensor", newEmptyNode())
             else: # not custom net

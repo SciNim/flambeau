@@ -3,37 +3,36 @@ import sequtils
 import complex
 import sugar
 
-import flambeau
+import ../../flambeau/flambeau_raw
 
 {.experimental: "views".} # TODO
-
 
 proc main() =
   suite "Operator precedence":
     test "+ and *":
-      let a = [[1, 2], [3, 4]].toTensor
+      let a = [[1, 2], [3, 4]].toRawTensor
       let b = -a
-      check b * a + b == [[-2, -6], [-12, -20]].toTensor
-      check b * (a + b) == [[0, 0], [0, 0]].toTensor
+      check b * a + b == [[-2, -6], [-12, -20]].toRawTensor
+      check b * (a + b) == [[0, 0], [0, 0]].toRawTensor
     test "+ and .abs":
-      let a = [[1, 2], [3, 4]].toTensor
+      let a = [[1, 2], [3, 4]].toRawTensor
       let b = -a
-      check a + b.abs == [[2, 4], [6, 8]].toTensor
-      check (a + b).abs == [[0, 0], [0, 0]].toTensor
+      check a + b.abs == [[2, 4], [6, 8]].toRawTensor
+      check (a + b).abs == [[0, 0], [0, 0]].toRawTensor
 
   suite "Tensor creation":
     test "eye":
       let t = eye(2, kInt64)
-      check t == [[1, 0], [0, 1]].toTensor
+      check t == [[1, 0], [0, 1]].toRawTensor
 
     test "zeros":
       let shape = [2'i64, 3]
       let t = zeros(shape.asTorchView(), kFloat32)
-      check t == [[0.0'f32, 0.0, 0.0], [0.0'f32, 0.0, 0.0]].toTensor
+      check t == [[0.0'f32, 0.0, 0.0], [0.0'f32, 0.0, 0.0]].toRawTensor
 
     test "linspace":
       let steps = 120'i64
-      let reft = toSeq(0..<120).map(x => float64(x)/float64(steps-1)).toTensor()
+      let reft = toSeq(0..<120).map(x => float64(x)/float64(steps-1)).toRawTensor()
       let t = linspace(0.0, 1.0, steps, kFloat64)
       # Max value is 1.0 no need to divide
       let rel_error = mean(t - reft)
@@ -49,7 +48,7 @@ proc main() =
         check (val - refval) < 1e-12
 
     # test "inv":
-    #   let t = [[1, 2], [3, 4]].toTensor
+    #   let t = [[1, 2], [3, 4]].toRawTensor
     #   echo t.inv()
 
   suite "Tensor utils":
@@ -59,13 +58,13 @@ proc main() =
       echo t
 
     test "sort, argsort":
-      let t = [2, 3, 4, 1, 5, 6].toTensor
+      let t = [2, 3, 4, 1, 5, 6].toRawTensor
       let
         s = t.sort()
         args = t.argsort()
-      check s.get(0) == [1, 2, 3, 4, 5, 6].toTensor()
+      check s.get(0) == [1, 2, 3, 4, 5, 6].toRawTensor()
       check s.get(1) == args
-      check args == [3, 0, 1, 2, 4, 5].toTensor()
+      check args == [3, 0, 1, 2, 4, 5].toRawTensor()
 
     test "all, any":
       discard

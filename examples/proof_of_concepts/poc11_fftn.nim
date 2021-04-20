@@ -1,4 +1,4 @@
-import flambeau
+import flambeau/flambeau_raw
 
 {.experimental: "views".}
 proc flambeau_fft*(shape: openArray[int64]) =

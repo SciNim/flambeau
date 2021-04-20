@@ -5,7 +5,7 @@ import flambeau/flambeau_nn
 {.experimental: "views".} # TODO this is ignored
 
 proc main() =
-  let a = [[12.0, -51, 4], [6.0, 167, -68], [-4.0, 24, -41]].toTensor()
+  let a = [[12.0, -51, 4], [6.0, 167, -68], [-4.0, 24, -41]].toRawTensor()
 
   let qr = qr(a)
 

@@ -7,8 +7,8 @@
 
 import
   ../cpp/std_cpp,
-  ../libtorch,
-  ./tensors,
+  ../../libtorch,
+  ./rawtensors,
   ./neural_nets
 
 # (Almost) raw bindings to PyTorch serialization

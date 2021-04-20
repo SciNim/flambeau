@@ -5,7 +5,7 @@ proc main() =
 
   let loader = make_data_loader(
     mnist.map(
-      Stack[Example[Tensor, Tensor]].init()
+      Stack[Example[RawTensor, RawTensor]].init()
     ),
     64
   )

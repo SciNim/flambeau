@@ -7,8 +7,8 @@
 
 import
   ../cpp/std_cpp,
-  ../libtorch,
-  ./tensors
+  ../../libtorch,
+  ./rawtensors
 
 # (Almost) raw bindings to PyTorch optimizers
 # -----------------------------------------------------------------------
@@ -52,7 +52,7 @@ func zero_grad*(optim: var Optimizer){.importcpp: "#.zero_grad()".}
 
 func init*(
        Optim: type SGD,
-       params: CppVector[Tensor],
+       params: CppVector[RawTensor],
        learning_rate: float64
      ): Optim
      {.constructor, noInit, importcpp:"torch::optim::SGD(@)".}
@@ -72,7 +72,7 @@ func nesterov*(opt: SGDOptions, useNesterov: bool): SGDOptions {.importcpp: "#.n
 
 func init*(
        T: type SGD,
-       params: CppVector[Tensor],
+       params: CppVector[RawTensor],
        options: SGDOptions
      ): T
      {.constructor, noInit, importcpp:"torch::optim::SGD(@)".}

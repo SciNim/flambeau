@@ -6,20 +6,20 @@
 # at your option. This file may not be copied, modified, or distributed except according to those terms.
 
 import
-  std/[complex, enumerate, macros],
+  std/[complex, enumerate, macros, strformat],
   # External
   cppstl/std_string,
   # Internal
-  ../raw_bindings/[c10, tensors],
-  ./internal/dynamic_stack_arrays
+  ../bindings/[c10, rawtensors],
+  ../private/dynamic_stack_arrays
 
 # #######################################################################
-#
+
 #               Interop between Torch and Nim
 #
 # #######################################################################
 
-type Metadata = DynamicStackArray[int64]
+type Metadata* = DynamicStackArray[int64]
 
 # ArrayRefs
 # -----------------------------------------------------
@@ -27,19 +27,72 @@ type Metadata = DynamicStackArray[int64]
 
 {.experimental:"views".}
 
-template asNimView*[T](ar: ArrayRef[T]): openarray[T] =
+template asNimView*[T](ar: ArrayRef[T]): openArray[T] =
   toOpenArray(ar.data.unsafeAddr, 0, ar.size.int - 1)
 
 template asTorchView*[T](oa: openarray[T]): ArrayRef[T] =
   ArrayRef[T].init(oa[0].unsafeAddr, oa.len)
 
-template asTorchView(meta: Metadata): ArrayRef[int64] =
+template asTorchView*(meta: Metadata): ArrayRef[int64] =
   ArrayRef[int64].init(meta.data[0].unsafeAddr, meta.len)
+
+# Make interop with ArrayRef easier
+proc `$`*[T](ar: ArrayRef[T]) : string =
+  # Make echo-ing ArrayRef easy
+  `$`(ar.asNimView())
+
+func len*[T](ar: ArrayRef[T]): int =
+  # Nim idiomatic proc for seq
+  ar.size().int
+
+iterator items*[T](ar: ArrayRef[T]) : T =
+  # Iterate over ArrayRef
+  var i : int = 0
+  while i < ar.len():
+    yield ar.data()[i]
+    inc i
+
+func `[]`*[T](ar: ArrayRef[T], idx: SomeInteger) : T =
+  when compileOption("boundChecks"):
+    if idx < 0 or idx >= ar.len():
+      raise newException(IndexDefect, &"ArrayRef `[]` access out-of-bounds. Index constrained by 0 <= {idx} <= ArrayRef.len() = {ar.len()}.")
+  ar.data()[idx]
+
+func `[]=`*[T](ar: var ArrayRef[T], idx: SomeInteger, val: T) =
+  when compileOption("boundChecks"):
+    if idx < 0 or idx >= ar.len():
+      raise newException(IndexDefect, &"ArrayRef `[]` access out-of-bounds. Index constrained by 0 <= {idx} <= ArrayRef.len() = {ar.len()}.")
+  ar.data()[idx] = val
 
 # Type map
 # -----------------------------------------------------
+func toTypedesc*(scalarKind: ScalarKind): typedesc =
+  ## Maps a Torch ScalarKind to Nim type
+  case scalarKind
+  of kUint8:
+    typedesc(uint8)
+  of kInt8:
+    typedesc(int8)
+  of kInt16:
+    typedesc(int16)
+  of kInt32:
+    typedesc(int32)
+  of kInt64 :
+    typedesc(int64)
+  of kFloat32:
+    typedesc(float32)
+  of kFloat64:
+    typedesc(float64)
+  of kComplexF32:
+    typedesc(Complex32)
+  of kComplexF64:
+    typedesc(Complex64)
+  of kBool:
+    typedesc(bool)
+  else:
+    raise newException(ValueError, "Unsupported libtorch type in Nim: " & $scalarKind)
 
-func toScalarKind(T: typedesc[SomeTorchType]): static ScalarKind =
+func toScalarKind*(T: typedesc[SomeTorchType]): static ScalarKind =
   ## Maps a Nim type to Torch scalar kind
   when T is uint8|byte:
     kUint8
@@ -70,7 +123,7 @@ converter convertTypeDef*(T: typedesc[SomeTorchType]) : static ScalarKind =
 # Nim openarrays -> Torch Tensors
 # -----------------------------------------------------
 
-func getShape[T](s: openarray[T], parent_shape = Metadata()): Metadata =
+func getShape*[T](s: openarray[T], parent_shape = Metadata()): Metadata =
   ## Get the shape of nested seqs/arrays
   ## Important ⚠: at each nesting level, only the length
   ##   of the first element is used for the shape.
@@ -83,7 +136,7 @@ func getShape[T](s: openarray[T], parent_shape = Metadata()): Metadata =
   when (T is seq|array):
     result = getShape(s[0], result)
 
-macro getBaseType(T: typedesc): untyped =
+macro getBaseType*(T: typedesc): untyped =
   # Get the base T of a seq[T] input
   result = T.getTypeInst()[1]
   while result.kind == nnkBracketExpr and (
@@ -104,7 +157,7 @@ iterator flatIter*[T](s: openarray[T]): auto {.noSideEffect.}=
     else:
       yield item
 
-func toTensorView*[T: SomeTorchType](oa: openarray[T]): lent Tensor =
+func toRawTensorView*[T: SomeTorchType](oa: openarray[T]): lent RawTensor =
   ## Interpret an openarray as a CPU Tensor
   ## Important:
   ##   the buffer is shared.
@@ -121,20 +174,23 @@ func toTensorView*[T: SomeTorchType](oa: openarray[T]): lent Tensor =
     toScalarKind(T)
   )
 
-func toTensor*[T: SomeTorchType](oa: openarray[T]): Tensor =
+func toRawTensorFromScalar*[T: SomeTorchType](oa: openarray[T]): RawTensor =
   ## Interpret an openarray as a CPU Tensor
   ##
   ## Input:
   ##      - An array or a seq
   ## Result:
   ##      - A view Tensor of the same shape
+  let shape = getShape(oa)
+  result = empty(shape.asTorchView(), T.toScalarKind())
+
   return from_blob(
     oa[0].unsafeAddr,
     oa.len.int64,
     toScalarKind(T)
   ).clone()
 
-func toTensor*[T: seq|array](oa: openarray[T]): Tensor =
+func toRawTensorFromSeq*[T: seq|array](oa: openarray[T]): RawTensor =
   ## Interpret an openarray of openarray as a CPU Tensor
   ##
   ## Input:
@@ -153,9 +209,15 @@ func toTensor*[T: seq|array](oa: openarray[T]): Tensor =
   for i, val in enumerate(flatIter(oa)):
     data[i] = val
 
-# CppString -> Nim string
+# Trick to avoid ambiguous call when using toRawTensor in to toTensor
+func toRawTensor*[T: SomeTorchType](oa: openarray[T]): RawTensor =
+  toRawTensorFromScalar[T](oa)
 
-func toCppString*(t: Tensor): CppString =
+func toRawTensor*[T: seq|array](oa: openarray[T]): RawTensor =
+  toRawTensorFromSeq[T](oa)
+
+# CppString -> Nim string
+func toCppString*(t: RawTensor): CppString =
   ## Tensors don't have a `$` equivilent so we have to put it into
   ## a ostringstream and convert it to a CppString.
   {.emit: """
@@ -164,5 +226,5 @@ func toCppString*(t: Tensor): CppString =
   result = stream.str();
   """.}
 
-proc `$`*(t: Tensor): string =
-  "Tensor\n" & $t.toCppString
+proc `$`*(t: RawTensor): string =
+  "Tensor\n" & $(toCppString(t))
