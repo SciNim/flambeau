@@ -76,7 +76,6 @@ func masked_select*[T](self: Tensor[T], mask: Tensor[T]): Tensor[T] {.noinit.} =
 # and out-of-place `index_fill` and `masked_fill`
 # that does in-place + clone
 # we only exposes the in-place version.
-
 func index_fill_mut*[T](self: var Tensor[T], mask: Tensor[T], value: T or Tensor[T]) =
   index_fill_mut(convertRawTensor(self), convertRawTensor(mask), value)
 
@@ -85,40 +84,60 @@ func masked_fill_mut*[T](self: var Tensor[T], mask: Tensor[T], value: T or Tenso
 
 # TODO Move check to func and rewrite those as macros
 template `[]`*[T](t: Tensor[T], args: varargs[untyped]): untyped =
-  when compileOption("boundChecks"):
-    check_index(t, args)
   convertTensor[T](convertRawTensor(t)[args])
 
 template `[]=`*[T](t: var Tensor[T], args: varargs[untyped]): untyped =
-  when compileOption("boundChecks"):
-    check_index(t, args)
   `[]=`(convertRawTensor(t), args)
 
-# TODO for Arraymancer compatibility
-# proc atContiguousIndex*[T](t: Tensor[T], idx: int): T {.noSideEffect,inline.} =
-#   ## Return value of tensor at contiguous index
-#   ## i.e. as treat the tensor as flattened
-#   when T is KnownSupportsCopyMem:
-#     return t.unsafe_raw_buf[t.getContiguousIndex(idx)]
-#   else:
-#     return t.storage.raw_buffer[t.getContiguousIndex(idx)]
-
-# proc atContiguousIndex*[T](t: var Tensor[T], idx: int): var T {.noSideEffect,inline.} =
-#   ## Return value of tensor at contiguous index (mutable)
-#   ## i.e. as treat the tensor as flattened
-#   when T is KnownSupportsCopyMem:
-#     return t.unsafe_raw_buf[t.getContiguousIndex(idx)]
-#   else:
-#     return t.storage.raw_buffer[t.getContiguousIndex(idx)]
-
-# proc atAxisIndex*[T](t: Tensor[T], axis, idx: int, length = 1): Tensor[T] {.noInit,inline.} =
-#   ## Returns a sliced tensor in the given axis index
-
+# TODO finish porting these Arraymancer proc
+# proc getIndex*[T](t: Tensor[T], idx: varargs[int]): int {.noSideEffect,inline.} =
+#   ## Convert [i, j, k, l ...] to the proper index.
 #   when compileOption("boundChecks"):
-#     check_axis_index(t, axis, idx, length)
+#     t.check_index(idx)
+#   result = t.offset
+#   for i in 0..<idx.len:
+#     result += t.strides()[i]*idx[i]
 
-#   result = t
-#   result.shape[axis] = length
-#   result.offset += result.strides[axis]*idx
+# proc getContiguousIndex*[T](t: Tensor[T], idx: int): int {.noSideEffect,inline.} =
+#   result = t.offset
+#   if idx != 0:
+#     var z = 1
+#     for i in countdown(t.rank - 1,0):
+#       let coord = (idx div z) mod t.shape[i]
+#       result += coord*t.strides[i]
+#       z *= t.shape[i]
+
+# proc atIndex*[T](t: Tensor[T], idx: varargs[int]): T {.noSideEffect,inline.} =
+#   ## Get the value at input coordinates
+#   ## This used to be `[]` before slicing was implemented
+#   when T is KnownSupportsCopyMem:
+#     result = t.unsafe_raw_buf[t.getIndex(idx)]
+#   else:
+#     result = t.storage.raw_buffer[t.getIndex(idx)]
+
+# proc atIndex*[T](t: var Tensor[T], idx: varargs[int]): var T {.noSideEffect,inline.} =
+#   ## Get the value at input coordinates
+#   ## This allows inplace operators t[1,2] += 10 syntax
+#   when T is KnownSupportsCopyMem:
+#     result = t.unsafe_raw_buf[t.getIndex(idx)]
+#   else:
+#     result = t.storage.raw_buffer[t.getIndex(idx)]
+
+# proc atIndexMut*[T](t: var Tensor[T], idx: varargs[int], val: T) {.noSideEffect,inline.} =
+#   ## Set the value at input coordinates
+#   ## This used to be `[]=` before slicing was implemented
+#   when T is KnownSupportsCopyMem:
+#     t.unsafe_raw_buf[t.getIndex(idx)] = val
+#   else:
+#     t.storage.raw_buffer[t.getIndex(idx)] = val
+
+
+# TODO for Arraymancer compatibility
+proc atContiguousIndex*[T](t: var Tensor[T], idx: int): var T {.noSideEffect,inline.} =
+  ## Return value of tensor at contiguous index (mutable)
+  ## i.e. as treat the tensor as flattened
+  data_ptr(t)[idx]
+
+# TODO Add asContiguous and rowMajor / colMajor utilities
 
 # TODO iterators

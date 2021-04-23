@@ -4,11 +4,11 @@ import ../raw/sugar/[interop, indexing]
 import ../tensors
 import std/[complex, macros]
 
+{.experimental: "views".}
 {.push inline, noinit.}
 
 # # algorithms:
 # # -----------------------------------------------------------------------
-#
 func sort*[T](self: Tensor[T], axis: int64 = -1, descending: bool = false): tuple[values: Tensor[T], originalIndices: Tensor[int64]] =
   ## Sorts the elements of the input tensor along a given dimension in ascending order by value.
   ## If dim is not given, the last dimension of the input is chosen (dim=-1).
@@ -22,6 +22,32 @@ func argsort*[T](self: Tensor[T], axis: int64 = -1, descending: bool = false): T
   convertTensor[int64](
     rawtensors.argsort(convertRawTensor(self), axis, descending)
   )
+{.pop.}
+
+func catImpl(tensorargs: varargs[RawTensor, convertRawTensor], axis: int64): RawTensor =
+  let tensors : ArrayRef[RawTensor] = tensorargs.asTorchView()
+  rawtensors.cat(tensors, axis)
+
+{.push noinit.}
+func cat*[T](tensorargs: varargs[Tensor[T]], axis: int64): Tensor[T] =
+  convertTensor[T](
+    catImpl(tensorargs, axis)
+  )
+
+func cat*[T](tensorargs: varargs[Tensor[T]]): Tensor[T] =
+  let axis : int64 = 0
+  convertTensor[T](
+    catImpl(tensorargs, axis)
+  )
+{.pop.}
+
+{.push inline, noinit.}
+func flip*[T](self: Tensor[T], dims: openArray[int64]): Tensor[T] =
+  let rawdims = dims.asTorchView()
+  convertTensor[T](
+    rawtensors.flip(convertRawTensor(self), rawdims)
+  )
+
 #
 # # math
 # # -----------------------------------------------------------------------
@@ -211,3 +237,22 @@ func unsqueeze*[T](self: Tensor[T], axis: int64): Tensor[T] =
     rawtensors.unsqueeze(convertRawTensor(self), axis)
   )
 
+func sqrt*[T](self: Tensor[T]) : Tensor[T] =
+  convertTensor[T](
+    rawtensors.sqrt(convertRawTensor(self))
+  )
+
+func square*[T](self: Tensor[T]) : Tensor[T] =
+  convertTensor[T](
+    rawtensors.square(convertRawTensor(self))
+  )
+
+func pow*[T](self: Tensor[T], exponent: Tensor[T]) : Tensor[T] =
+  convertTensor[T](
+    rawtensors.pow(convertTensor[T](self), convertTensor[T](exponent))
+  )
+
+func pow*[T](self: Tensor[T], exponent: Scalar) : Tensor[T] =
+  convertTensor[T](
+    rawtensors.pow(convertRawTensor(self), exponent)
+  )

@@ -567,13 +567,15 @@ func stddev*(self: RawTensor, axis: IntArrayRef, unbiased: bool = true, keepdim:
 
 # algorithms:
 # -----------------------------------------------------------------------
-
 func sort*(self: RawTensor, axis: int64 = -1, descending: bool = false): CppTuple2[RawTensor, RawTensor] {.importcpp: "#.sort(@)".}
   ## Sorts the elements of the input tensor along a given dimension in ascending order by value.
   ## If dim is not given, the last dimension of the input is chosen (dim=-1).
   ## Returns (values, originalIndices) or type (TensorT, TensorInt64)
   ## where originalIndices is the original index of each values (before sorting)
 func argsort*(self: RawTensor, axis: int64 = -1, descending: bool = false): RawTensor {.importcpp: "#.argsort(@)".}
+
+func cat*(tensors: ArrayRef[RawTensor], axis: int64 = 0): RawTensor {.importcpp: "torch::cat(@)".}
+func flip*(self: RawTensor, dims: IntArrayRef): RawTensor {.importcpp: "#.flip(@)".}
 
 # math
 # -----------------------------------------------------------------------
@@ -612,6 +614,10 @@ func dot*(self: RawTensor, other: RawTensor): RawTensor {.importcpp: "#.dot(@)".
 func squeeze*(self: RawTensor): RawTensor {.importcpp: "#.squeeze()".}
 func squeeze*(self: RawTensor, axis: int64): RawTensor {.importcpp: "#.squeeze(@)".}
 func unsqueeze*(self: RawTensor, axis: int64): RawTensor {.importcpp: "#.unsqueeze(@)".}
+func square*(self: RawTensor): RawTensor {.importcpp: "#.square()".}
+func sqrt*(self: RawTensor): RawTensor {.importcpp: "#.sqrt()".}
+func pow*(self: RawTensor, exponent: RawTensor): RawTensor  {.importcpp: "#.pow(@)".}
+func pow*(self: RawTensor, exponent: Scalar): RawTensor {.importcpp: "#.pow(@)".}
 
 # FFT
 # -----------------------------------------------------------------------

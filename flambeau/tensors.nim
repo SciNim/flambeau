@@ -59,10 +59,18 @@ func sizes*[T](self: Tensor[T]): IntArrayRef =
 
 func shape*[T](self: Tensor[T]): seq[int64] =
   ## This is Arraymancer and Numpy "shape"
-  result = asNimView(sizes(convertRawTensor(self)))
+  let tmp = sizes(convertRawTensor(self))
+  let r = self.rank()
+  result = newSeq[int64](r)
+  for i in 0..<r:
+    result[i] = tmp[i]
 
-func strides*[T](self: Tensor[T]): openArray[int64] =
-  strides(convertRawTensor(self))
+func strides*[T](self: Tensor[T]): seq[int64] =
+  let tmp = strides(convertRawTensor(self))
+  let r = self.rank()
+  result = newSeq[int64](r)
+  for i in 0..<r:
+    result[i] = tmp[i]
 
 func ndimension*[T](self: Tensor[T]): int64 =
   ## This is Arraymancer rank
@@ -273,8 +281,8 @@ func rand*[T](size: openArray[int64]): Tensor[T] {.noinit.} =
 # Shapeshifting
 # -----------------------------------------------------------------------
 
-func reshape*[T](self: Tensor[T], shape: openArray[int64]): Tensor[T] {.noinit.} =
-  let dims = sizes.asTorchView()
+func reshape*[T](self: Tensor[T], size: openArray[int64]): Tensor[T] {.noinit.} =
+  let dims = size.asTorchView()
   convertTensor[T](
     reshape(convertRawTensor(self), dims)
   )
