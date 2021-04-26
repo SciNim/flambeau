@@ -62,12 +62,12 @@ func index_put*[T](self: var Tensor[T], idx: varargs[int|int64], val: T or Tenso
 
 # Fancy Indexing
 # -----------------------------------------------------------------------
-func index_select*[T](self: Tensor[T], axis: int64, indices: Tensor[T]): Tensor[T] {.noinit.} =
+func index_select*[T](self: Tensor[T], axis: int64, indices: Tensor[int|int64]): Tensor[T] {.noinit.} =
   convertTensor[T](
-    index_select(convertRawTensor(self), axis, indices)
+    index_select(convertRawTensor(self), axis, convertRawTensor(indices))
   )
 
-func masked_select*[T](self: Tensor[T], mask: Tensor[T]): Tensor[T] {.noinit.} =
+func masked_select*[T](self: Tensor[T], mask: Tensor[int64]): Tensor[T] {.noinit.} =
   convertTensor[T](
     masked_select(convertRawTensor(self), convertRawTensor(mask))
   )
@@ -133,7 +133,7 @@ template `[]=`*[T](t: var Tensor[T], args: varargs[untyped]): untyped =
 
 
 # TODO for Arraymancer compatibility
-proc atContiguousIndex*[T](t: var Tensor[T], idx: int): var T {.noSideEffect,inline.} =
+proc atContiguousIndex*[T](t: var Tensor[T], idx: int|int64): var T {.noSideEffect,inline.} =
   ## Return value of tensor at contiguous index (mutable)
   ## i.e. as treat the tensor as flattened
   data_ptr(t)[idx]
