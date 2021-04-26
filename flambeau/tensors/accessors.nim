@@ -62,7 +62,7 @@ func index_put*[T](self: var Tensor[T], idx: varargs[int|int64], val: T or Tenso
 
 # Fancy Indexing
 # -----------------------------------------------------------------------
-func index_select*[T](self: Tensor[T], axis: int64, indices: Tensor[int|int64]): Tensor[T] {.noinit.} =
+func index_select*[T](self: Tensor[T], axis: int64, indices: Tensor[int64]): Tensor[T] {.noinit.} =
   convertTensor[T](
     index_select(convertRawTensor(self), axis, convertRawTensor(indices))
   )
