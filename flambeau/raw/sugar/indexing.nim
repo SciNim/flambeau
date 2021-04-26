@@ -662,8 +662,8 @@ macro `[]`*(t: RawTensor, args: varargs[untyped]): untyped =
   let new_args = getAST(desugarSlices(args))
 
   result = quote do:
-    when compileOption("boundChecks"):
-      check_index(`t`, `new_args`)
+    # when compileOption("boundChecks"):
+      # check_index(`t`, `new_args`)
     slice_typed_dispatch(`t`, `new_args`)
 
 macro `[]=`*(t: var RawTensor, args: varargs[untyped]): untyped =
@@ -697,6 +697,6 @@ macro `[]=`*(t: var RawTensor, args: varargs[untyped]): untyped =
   let new_args = getAST(desugarSlices(tmp))
 
   result = quote do:
-    when compileOption("boundChecks"):
-      check_index(`t`, `new_args`)
+    # when compileOption("boundChecks"):
+      # check_index(`t`, `new_args`)
     slice_typed_dispatch_mut(`t`, `new_args`,`val`)
