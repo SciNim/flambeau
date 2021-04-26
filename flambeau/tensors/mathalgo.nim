@@ -29,12 +29,12 @@ func catImpl(tensorargs: varargs[RawTensor, convertRawTensor], axis: int64): Raw
   rawtensors.cat(tensors, axis)
 
 {.push noinit.}
-func cat*[T](tensorargs: varargs[Tensor[T]], axis: int64): Tensor[T] =
+func cat*[T](tensorargs: varargs[RawTensor, convertRawTensor], axis: int64): Tensor[T] =
   convertTensor[T](
     catImpl(tensorargs, axis)
   )
 
-func cat*[T](tensorargs: varargs[Tensor[T]]): Tensor[T] =
+func cat*[T](tensorargs: varargs[RawTensor, convertRawTensor]): Tensor[T] =
   let axis : int64 = 0
   convertTensor[T](
     catImpl(tensorargs, axis)
