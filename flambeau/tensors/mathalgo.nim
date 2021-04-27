@@ -2,7 +2,7 @@ import ../raw/bindings/[rawtensors, c10]
 import ../raw/cpp/[std_cpp]
 import ../raw/sugar/[interop, indexing]
 import ../tensors
-import std/[complex, macros]
+import std/[complex, macros, sugar]
 
 {.experimental: "views".}
 {.push inline, noinit.}
@@ -24,22 +24,25 @@ func argsort*[T](self: Tensor[T], axis: int64 = -1, descending: bool = false): T
   )
 {.pop.}
 
+macro unpackVarargs_last(callee, arg_last: untyped; args: varargs[untyped]):untyped =
+  result = newCall(callee)
+  for a in args:
+    result.add a
+  result.add arg_last
+
 func catImpl(tensorargs: varargs[RawTensor, convertRawTensor], axis: int64): RawTensor =
   let tensors : ArrayRef[RawTensor] = tensorargs.asTorchView()
   rawtensors.cat(tensors, axis)
 
-{.push noinit.}
-func cat*[T](tensorargs: varargs[RawTensor, convertRawTensor], axis: int64): Tensor[T] =
+template cat*[T](tensorargs: varargs[Tensor[T]], axis: int64): Tensor[T] =
   convertTensor[T](
-    catImpl(tensorargs, axis)
+    unpackVarargs_last(catImpl, axis, tensorargs)
   )
 
-func cat*[T](tensorargs: varargs[RawTensor, convertRawTensor]): Tensor[T] =
-  let axis : int64 = 0
+template cat*[T](tensorargs: varargs[Tensor[T]]): Tensor[T] =
   convertTensor[T](
-    catImpl(tensorargs, axis)
+    unpackVarargs_last(catImpl, 0.int64, tensorargs)
   )
-{.pop.}
 
 {.push inline, noinit.}
 func flip*[T](self: Tensor[T], dims: openArray[int64]): Tensor[T] =
