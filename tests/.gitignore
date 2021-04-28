@@ -4,4 +4,7 @@ raw/test_rawtensor
 raw/test_noinitensor
 tensor/test_tensor
 tensor/test_aggregate
+tensor/test_accessors
 tensor/test_dummy
+nimcache
+testresults

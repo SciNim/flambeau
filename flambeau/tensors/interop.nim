@@ -42,12 +42,6 @@ func toTensor*[T: seq|array](oa: openArray[T]): auto {.noinit.} =
   var res: RawTensor = toRawTensorFromSeq(oa)
   result = convertTensor[V](res)
 
-template `[]`*[T](t: Tensor[T], args: varargs[untyped]): untyped =
-  convertTensor[T](convertRawTensor(t)[args])
-
-template `[]=`*[T](t: var Tensor[T], args: varargs[untyped]): untyped =
-  convertRawTensor(t) = [args]
-
 proc `$`*[T](t: Tensor[T]): string =
   # `$`(convertRawTensor(t))
   "Tensor\n" & $(toCppString(convertRawTensor(t)))

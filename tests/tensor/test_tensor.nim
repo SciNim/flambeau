@@ -1,5 +1,6 @@
 import unittest
 import sequtils
+import strutils
 import complex
 import sugar
 
@@ -47,15 +48,14 @@ proc main() =
         let refval: float64 = i.float64 / 130.0
         check (val - refval) < 1e-12
 
-    # test "inv":
-    #   let t = [[1, 2], [3, 4]].toTensor
-    #   echo t.inv()
-
   suite "Tensor utils":
     test "Print":
-      let shape = [2'i64, 3, 4]
-      let t = rand[float64](shape)
-      echo t
+      let t = [
+        [[1.0'f64, -1.0, -1.0], [-1.0, 1.0, -1.0], [-1.0, -1.0, 1.0]],
+        [[1.0'f64, -1.0, -1.0], [-1.0, 1.0, -1.0], [-1.0, -1.0, 1.0]],
+      ].toTensor()
+      var s = `$`(t).strip()
+      check s.toHex == "54656E736F720A28312C2E2C2E29203D200A202031202D31202D310A202D31202031202D310A202D31202D312020310A0A28322C2E2C2E29203D200A202031202D31202D310A202D31202031202D310A202D31202D312020310A5B20435055446F75626C65547970657B322C332C337D205D"
 
     test "sort, argsort":
       let t = [2, 3, 4, 1, 5, 6].toTensor
@@ -66,11 +66,31 @@ proc main() =
       check s.originalIndices == args
       check args == [3, 0, 1, 2, 4, 5].toTensor().to(int64)
 
-    test "all, any":
-      discard
+    test "reshape":
+      block:
+        var tt : Tensor[int] = [[-2, -6], [-12, -20]].toTensor()
+        check tt.shape() == [2'i64, 2]
+        let tt2 = tt.reshape(@[2'i64, 2, 1])
+        check tt2.shape() == [2'i64, 2, 1]
 
-    test "squeezen unsqueeze":
-      discard
+      block:
+        var tt : Tensor[int] = [[1, 2, 3, 4], [5, 6, 7, 8]].toTensor()
+        var tt3 = tt.reshape([4'i64, 2])
+        check tt3.shape() == [4'i64, 2]
+        check tt3 == [[1, 2], [3, 4], [5, 6], [7, 8]].toTensor()
+
+    test "Flip, Concat":
+      var inttens: Tensor[int] = [[1, 2, 3], [4, 5, 6]].toTensor()
+      var fliptens = flip(inttens, [1'i64])
+      check fliptens == [[3, 2, 1], [6, 5, 4]].toTensor()
+      var catfliptens = concat(fliptens, inttens)
+      check catfliptens == [[3, 2, 1], [6, 5, 4], [1, 2, 3], [4, 5, 6]].toTensor()
+
+      # test "all, any":
+      #   discard
+      #
+      # test "squeezen unsqueeze":
+      #   discard
 
   suite "Operations":
     test "add, addmv, addmm":

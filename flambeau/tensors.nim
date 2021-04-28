@@ -57,16 +57,28 @@ func sizes*[T](self: Tensor[T]): IntArrayRef =
   ## This is Arraymancer and Numpy "shape"
   sizes(convertRawTensor(self))
 
-func shape*[T](self: Tensor[T]): seq[int64] =
-  ## This is Arraymancer and Numpy "shape"
-  result = asNimView(sizes(convertRawTensor(self)))
-
-func strides*[T](self: Tensor[T]): openArray[int64] =
-  strides(convertRawTensor(self))
-
 func ndimension*[T](self: Tensor[T]): int64 =
   ## This is Arraymancer rank
   ndimension(convertRawTensor(self))
+
+func rank*[T](self: Tensor[T]): int64 =
+  ##  For arraymancer compatibility
+  ndimension[T](self)
+
+func shape*[T](self: Tensor[T]): seq[int64] =
+  ## This is Arraymancer and Numpy "shape"
+  let tmp = sizes(convertRawTensor(self))
+  let r = self.ndimension()
+  result = newSeq[int64](r)
+  for i in 0..<r:
+    result[i] = tmp[i]
+
+func strides*[T](self: Tensor[T]): seq[int64] =
+  let tmp = strides(convertRawTensor(self))
+  let r = self.ndimension()
+  result = newSeq[int64](r)
+  for i in 0..<r:
+    result[i] = tmp[i]
 
 func nbytes*[T](self: Tensor[T]): uint =
   ## Bytes-size of the Tensor
@@ -266,72 +278,11 @@ func rand*[T](size: openArray[int64]): Tensor[T] {.noinit.} =
     rawtensors.rand(dims)
   )
 
-# Indexing
-# -----------------------------------------------------------------------
-import complex
-import cppstl/std_complex
-
-func item*[T](self: Tensor[T]): T =
-  ## Extract the scalar from a 0-dimensional tensor
-  result = item(convertRawTensor(self), T)
-
-func item*(self: Tensor[Complex32]): Complex32 =
-  item(convertRawTensor(self), typedesc[Complex32]).toCppComplex().toComplex()
-
-func item*(self: Tensor[Complex64]): Complex64 =
-  item(convertRawTensor(self), typedesc[Complex64]).toCppComplex().toComplex()
-
-# Unsure what those corresponds to in Python
-# func `[]`*[T](self: Tensor, index: Scalar): Tensor
-# func `[]`*[T](self: Tensor, index: Tensor): Tensor
-# func `[]`*[T](self: Tensor, index: int64): Tensor
-
-func index*[T](self: Tensor[T], args: varargs): Tensor[T] {.noinit.} =
-  ## Tensor indexing. It is recommended
-  ## to Nimify this in a high-level wrapper.
-  ## `tensor.index(indexers)`
-  convertTensor[T](
-    index(convertRawTensor(self), args)
-  )
-# We can't use the construct `#.index_put_({@}, #)`
-# so hardcode sizes,
-# 6d seems reasonable, that would be a batch of 3D videos (videoID/batchID, Time, Color Channel, Height, Width, Depth)
-# If you need more you likely aren't indexing individual values.
-
-func index_put*[T](self: var Tensor[T], idx: varargs[int|int64], val: T or Tensor[T]) =
-  ## Tensor mutation at index. It is recommended
-  convertTensor[T](
-    index_put(convertRawTensor(self), idx, val)
-  )
-
-# Fancy Indexing
-# -----------------------------------------------------------------------
-func index_select*[T](self: Tensor[T], axis: int64, indices: Tensor[T]): Tensor[T] {.noinit.} =
-  convertTensor[T](
-    index_select(convertRawTensor(self), axis, indices)
-  )
-
-func masked_select*[T](self: Tensor[T], mask: Tensor[T]): Tensor[T] {.noinit.} =
-  convertTensor[T](
-    masked_select(convertRawTensor(self), convertRawTensor(mask))
-  )
-
-# PyTorch exposes in-place `index_fill_` and `masked_fill_`
-# and out-of-place `index_fill` and `masked_fill`
-# that does in-place + clone
-# we only exposes the in-place version.
-
-func index_fill_mut*[T](self: var Tensor[T], mask: Tensor[T], value: T or Tensor[T]) =
-  index_fill_mut(convertRawTensor(self), convertRawTensor(mask), value)
-
-func masked_fill_mut*[T](self: var Tensor[T], mask: Tensor[T], value: T or Tensor[T]) =
-  masked_fill_mut(convertRawTensor(self), convertRawTensor(mask), value)
-
 # Shapeshifting
 # -----------------------------------------------------------------------
 
-func reshape*[T](self: Tensor[T], shape: openArray[int64]): Tensor[T] {.noinit.} =
-  let dims = sizes.asTorchView()
+func reshape*[T](self: Tensor[T], size: openArray[int64]): Tensor[T] {.noinit.} =
+  let dims = size.asTorchView()
   convertTensor[T](
     reshape(convertRawTensor(self), dims)
   )
@@ -601,5 +552,7 @@ import tensors/aggregate
 export aggregate
 import tensors/interop
 export interop
+import tensors/accessors
+export accessors
 
 # #func convolution*[T](self: Tensor, weight: Tensor, bias: Tensor, stride, padding, dilation: int64, transposed: bool, outputPadding: int64, groups: int64): Tensor
