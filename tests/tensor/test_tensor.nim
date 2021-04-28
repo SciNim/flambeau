@@ -79,11 +79,11 @@ proc main() =
         check tt3.shape() == [4'i64, 2]
         check tt3 == [[1, 2], [3, 4], [5, 6], [7, 8]].toTensor()
 
-    test "Flip, Cat":
+    test "Flip, Concat":
       var inttens: Tensor[int] = [[1, 2, 3], [4, 5, 6]].toTensor()
       var fliptens = flip(inttens, [1'i64])
       check fliptens == [[3, 2, 1], [6, 5, 4]].toTensor()
-      var catfliptens = cat(fliptens, inttens)
+      var catfliptens = concat(fliptens, inttens)
       check catfliptens == [[3, 2, 1], [6, 5, 4], [1, 2, 3], [4, 5, 6]].toTensor()
 
       # test "all, any":

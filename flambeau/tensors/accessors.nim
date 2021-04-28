@@ -33,11 +33,13 @@ func item*[T](self: Tensor[T]): T =
       raise newException(IndexDefect, ".item() can only be called on one-element Tensor")
   ## Extract the scalar from a 0-dimensional tensor
   result = item(convertRawTensor(self), T)
+
 func item*(self: Tensor[Complex32]): Complex32 =
   when compileOption("boundChecks"):
     if numel(self) > 1:
       raise newException(IndexDefect, ".item() can only be called on one-element Tensor")
   item(convertRawTensor(self), typedesc[Complex32]).toCppComplex().toComplex()
+
 func item*(self: Tensor[Complex64]): Complex64 =
   when compileOption("boundChecks"):
     if numel(self) > 1:

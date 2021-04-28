@@ -30,18 +30,20 @@ macro unpackVarargs_last(callee, arg_last: untyped; args: varargs[untyped]):unty
     result.add a
   result.add arg_last
 
-func catImpl(tensorargs: varargs[RawTensor, convertRawTensor], axis: int64): RawTensor =
+func concatImpl(tensorargs: varargs[RawTensor, convertRawTensor], axis: int64): RawTensor =
   let tensors : ArrayRef[RawTensor] = tensorargs.asTorchView()
   rawtensors.cat(tensors, axis)
 
-template cat*[T](tensorargs: varargs[Tensor[T]], axis: int64): Tensor[T] =
+template concat*[T](tensorargs: varargs[Tensor[T]], axis: int64): Tensor[T] =
+  ## High level API for torch::cat
   convertTensor[T](
-    unpackVarargs_last(catImpl, axis, tensorargs)
+    unpackVarargs_last(concatImpl, axis, tensorargs)
   )
 
-template cat*[T](tensorargs: varargs[Tensor[T]]): Tensor[T] =
+template concat*[T](tensorargs: varargs[Tensor[T]]): Tensor[T] =
+  ## High level API for torch::cat
   convertTensor[T](
-    unpackVarargs_last(catImpl, 0.int64, tensorargs)
+    unpackVarargs_last(concatImpl, 0.int64, tensorargs)
   )
 
 {.push inline, noinit.}
