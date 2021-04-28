@@ -60,14 +60,14 @@ func sizes*[T](self: Tensor[T]): IntArrayRef =
 func shape*[T](self: Tensor[T]): seq[int64] =
   ## This is Arraymancer and Numpy "shape"
   let tmp = sizes(convertRawTensor(self))
-  let r = self.rank()
+  let r = self.ndimension()
   result = newSeq[int64](r)
   for i in 0..<r:
     result[i] = tmp[i]
 
 func strides*[T](self: Tensor[T]): seq[int64] =
   let tmp = strides(convertRawTensor(self))
-  let r = self.rank()
+  let r = self.ndimension()
   result = newSeq[int64](r)
   for i in 0..<r:
     result[i] = tmp[i]
@@ -77,7 +77,7 @@ func ndimension*[T](self: Tensor[T]): int64 =
   ndimension(convertRawTensor(self))
 
 func rank*[T](self: Tensor[T]): int64 =
-  ##  For arraymancer compativility
+  ##  For arraymancer compatibility
   ndimension[T](self)
 
 func nbytes*[T](self: Tensor[T]): uint =

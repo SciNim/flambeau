@@ -9,12 +9,12 @@ import ../raw/sugar/interop as rawinterop
 # Checkers func to Raise IndexDefect
 # -----------------------------------------------------------------------
 func check_index*[T](t: Tensor[T], idx: varargs[int]) {.inline.}=
-  if unlikely(idx.len != t.rank):
+  if unlikely(idx.len != t.ndimension):
     raise newException(
       IndexDefect, "Number of arguments: " &
                   $(idx.len) &
                   ", is different from tensor rank: " &
-                  $(t.rank)
+                  $(t.ndimension)
     )
   for i in 0 ..< t.shape.len:
     if unlikely(not(0 <= idx[i] and idx[i] < t.shape[i])):
@@ -28,11 +28,20 @@ func check_index*[T](t: Tensor[T], idx: varargs[int]) {.inline.}=
 # Item Access
 # -----------------------------------------------------------------------
 func item*[T](self: Tensor[T]): T =
+  when compileOption("boundChecks"):
+    if numel(self) > 1:
+      raise newException(IndexDefect, ".item() can only be called on one-element Tensor")
   ## Extract the scalar from a 0-dimensional tensor
   result = item(convertRawTensor(self), T)
 func item*(self: Tensor[Complex32]): Complex32 =
+  when compileOption("boundChecks"):
+    if numel(self) > 1:
+      raise newException(IndexDefect, ".item() can only be called on one-element Tensor")
   item(convertRawTensor(self), typedesc[Complex32]).toCppComplex().toComplex()
 func item*(self: Tensor[Complex64]): Complex64 =
+  when compileOption("boundChecks"):
+    if numel(self) > 1:
+      raise newException(IndexDefect, ".item() can only be called on one-element Tensor")
   item(convertRawTensor(self), typedesc[Complex64]).toCppComplex().toComplex()
 
 # Indexing
