@@ -29,7 +29,8 @@ template convertRawTensor*[T](t: Tensor[T]): untyped =
   t.raw
 
 {.push inline.}
-func convertTensor*[T](t: RawTensor): Tensor[T] {.noinit.} =
+func convertTensor*[T: SomeTorchType](t: RawTensor): Tensor[T] {.noinit.} =
+  # if T is complex then T = Complex32 gets convertes to kComplexF32 by converter
   result.raw = t.to(T)
 
 # Strings & Debugging
@@ -109,7 +110,12 @@ func data_ptr*[T](self: Tensor[T]): ptr UncheckedArray[T] =
   ## It is recommended to use this only on contiguous tensors
   ## (freshly created or freshly cloned) and to avoid
   ## sliced tensors.
-  data_ptr(convertRawTensor(self), T)
+  when T is byte|uint8|SomeSignedInt|SomeFloat:
+    data_ptr(convertRawTensor(self), T)
+  elif T is Complex32:
+    cast[ptr UncheckedArray[Complex32]](data_ptr(convertRawTensor(self), C10_Complex[float32]))
+  elif T is Complex64:
+    cast[ptr UncheckedArray[Complex64]](data_ptr(convertRawTensor(self), C10_Complex[float64]))
 
 # Backend
 # -----------------------------------------------------------------------
@@ -174,7 +180,7 @@ func to*[T](self: Tensor[T], device: Device): Tensor[T] {.noinit.} =
 # dtype
 # -----------------------------------------------------------------------
 func to*[T](self: Tensor[T], dtype: typedesc[SomeTorchType]): Tensor[dtype] {.noinit.} =
-  # Use typedesc -> ScalarKind converter
+  # Use typedesc -> ScalarKind converter here : for T = Complex32 T is converted to kComplexF32
   convertTensor[dtype](
     rawtensors.to(convertRawTensor(self), dtype)
   )

@@ -20,3 +20,5 @@ export tensors # TODO, don't export low-level procs and types like C++ slices.
 import ./flambeau/raw/cpp/std_cpp
 export std_cpp
 
+import ./flambeau/raw/bindings/c10
+export c10
