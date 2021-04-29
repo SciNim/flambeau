@@ -28,17 +28,10 @@ proc initTensor*[T](): Tensor[T] {.constructor, noinit.} =
 template convertRawTensor*[T](t: Tensor[T]): untyped =
   t.raw
 
-type
-  SomeNumTorchType = uint8|byte or SomeSignedInt or SomeFloat
-
 {.push inline.}
 func convertTensor*[T: SomeTorchType](t: RawTensor): Tensor[T] {.noinit.} =
-  when T is SomeNumTorchType:
-    result.raw = t.to(T)
-  elif T is Complex32:
-    result.raw = t.to(kComplexF32)
-  elif T is Complex64:
-    result.raw = t.to(kComplexF64)
+  # if T is complex then T = Complex32 gets convertes to kComplexF32 by converter
+  result.raw = t.to(T)
 
 # Strings & Debugging
 # -----------------------------------------------------------------------
@@ -117,7 +110,7 @@ func data_ptr*[T](self: Tensor[T]): ptr UncheckedArray[T] =
   ## It is recommended to use this only on contiguous tensors
   ## (freshly created or freshly cloned) and to avoid
   ## sliced tensors.
-  when T is SomeNumTorchType:
+  when T is byte|uint8|SomeSignedInt|SomeFloat:
     data_ptr(convertRawTensor(self), T)
   elif T is Complex32:
     cast[ptr UncheckedArray[Complex32]](data_ptr(convertRawTensor(self), C10_Complex[float32]))
