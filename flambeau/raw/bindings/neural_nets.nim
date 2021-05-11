@@ -224,7 +224,7 @@ proc to*(module: ModuleHolder or SharedModule, device: Device) {.importcpp: "#->
 func train*(module: var ModuleHolder or SharedModule, on = true) {.importcpp: "#->train(#)".}
   ## Enable training mode
 
-func eval*(module: var Module or SharedModule) {.importcpp: "#->eval()".}
+func eval*(module: var ModuleHolder or SharedModule) {.importcpp: "#->eval()".}
   ## Enable evaluation mode
 
 # Linear layer

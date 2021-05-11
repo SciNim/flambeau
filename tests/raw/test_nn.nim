@@ -50,6 +50,50 @@ proc main() =
       check input_mutable == input
       input_mutable.dropout_mut(training=true)
       check input_mutable != input
+    #[ I get SIGSEGV when running this
+    test "nll_loss":
+      let inputSize = [26'i64, 10]
+      let targetSize = [26'i64]
+      let input = zeros(inputSize.asTorchView, kFloat32)
+      let target = zeros(targetSize.asTorchView, kFloat32)
+      let loss1 = nll_loss(input, target)
+      #check loss1.dim == 0
+      #check loss1.numel == 1
+    ]#
+    test "binary_cross_entropy_with_logits":
+      let inputSize = [26'i64, 10]
+      let input = rand(inputSize.asTorchView, kFloat32)
+      let target = rand(inputSize.asTorchView, kFloat32)
+      let loss = binary_cross_entropy_with_logits(input, target)
+      let loss_sigmoid = sigmoid_cross_entropy(input, target)
+      check loss.dim == 0
+      check loss.numel == 1
+      check loss == loss_sigmoid
 
+  suite "Module API":
+    test "Linear":
+      var linear = Linear.init(100, 10)
+      let inputSize = [22'i64, 100] # 100 features in 22 batches
+      let outputSize = [22'i64, 10] # 10 features in 22 batches
+      let input = rand(inputSize.asTorchView, kFloat32)
+      let output = linear.forward(input)
+      check output.sizes == input.sizes
+    test "Conv2d":
+      var conv = Conv2d.init(32, 64, 3) # Take in 32 channels and outputs 64 channel using a kernel with size 3x3
+      let inputSize = [17'i64, 32, 128, 128] # 17 batches of 32 channel images with size 128x128
+      let outputSize = [17'i64, 64, 128, 128]
+      let input = rand(inputSize.asTorchView, kFloat32)
+      let output = conv.forward(input)
+      check output.sizes == outputSize.asTorchView
+    test "Dropout":
+      var dropout = Dropout.init()
+      let inputSize = [18'i64, 100]
+      let input = rand(inputSize.asTorchView, kFloat32)
+      let outputTraining = dropout.forward(input)
+      check outputTraining.sizes == inputSize.asTorchView
+      check outputTraining != input
+      dropout.eval()
+      let outputEval = dropout.forward(input)
+      check outputEval == input
 
 main()
