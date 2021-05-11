@@ -118,7 +118,7 @@ macro defModule*(s: untyped): untyped =
               paramsList.add fieldName
               # TODO Remove Obi Wan Kenobi ?
               initParams.add (fieldName, "Hello there! - Obi Wan Kenobi", @[a], netParam)
-              newFields.add nnkIdentDefs.newTree(fieldNameSection, ident"Tensor", newEmptyNode())
+              newFields.add nnkIdentDefs.newTree(fieldNameSection, ident"RawTensor", newEmptyNode())
             else: # not custom net
               let callStmt = f[2]
               if callStmt.kind == nnkIdent: # fc1 = Linear
@@ -164,4 +164,4 @@ macro defModule*(s: untyped): untyped =
   result.add emitSection
   result.add typeSections
   result.add initProcs
-  # echo result.repr
+  echo result.repr

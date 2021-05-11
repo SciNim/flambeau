@@ -81,18 +81,19 @@ defModule:
       anotherNet = custom Net
       p = param 0.01 * randint(1, 100)
 
-func forward(net: Net, x: Tensor): Tensor =
+func forward(net: Net, x: RawTensor): RawTensor =
   var x = net.conv1.forward(x).max_pool2d(2).relu()
   x = net.conv2_drop.forward net.conv2.forward(x)
          .max_pool2d(2)
          .relu()
-  x = x.view(-1, 320)
+  let viewIndex = [-1'i64, 320]
+  x = x.view(viewIndex.asTorchView)
   x = net.fc1.forward(x).relu()
   x = x.dropout(p = 0.5, net.is_training())
   x = net.fc2.forward(x)
   return x.log_softmax(axis = 1)
 
-proc forward(net: Net2, x: Tensor): Tensor =
+proc forward(net: Net2, x: RawTensor): RawTensor =
   net.anotherNet.forward(x)
 
 proc train[DataLoader](
@@ -159,8 +160,8 @@ proc main() =
   model.to(device)
 
   let train_dataset = mnist(kDataRoot)
-                        .map(Normalize[Tensor].init(0.1307, 0.3081))
-                        .map(Stack[Example[Tensor, Tensor]].init())
+                        .map(Normalize[RawTensor].init(0.1307, 0.3081))
+                        .map(Stack[Example[RawTensor, RawTensor]].init())
   let train_dataset_size = value(train_dataset.size())
   let train_loader = make_data_loader(
     SequentialSampler,
@@ -169,8 +170,8 @@ proc main() =
   )
 
   let test_dataset = mnist(kDataRoot, kTest)
-                        .map(Normalize[Tensor].init(0.1307, 0.3081))
-                        .map(Stack[Example[Tensor, Tensor]].init())
+                        .map(Normalize[RawTensor].init(0.1307, 0.3081))
+                        .map(Stack[Example[RawTensor, RawTensor]].init())
   let test_dataset_size = test_dataset.size().value()
   let test_loader = make_data_loader(
     test_dataset,
