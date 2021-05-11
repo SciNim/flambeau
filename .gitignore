@@ -1,5 +1,6 @@
 *.zip
 *.pt
+*.exe
 build
 nimcache
 testresults
