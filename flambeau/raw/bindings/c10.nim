@@ -42,8 +42,8 @@ import ../../libtorch
 type
   ArrayRef*[T] {.importcpp: "c10::ArrayRef", bycopy.} = object
     # The field are private so we can't use them, but `lent` enforces borrow checking
-    p: lent UncheckedArray[T]
-    len: csize_t
+    #p: lent UncheckedArray[T]
+    #len: csize_t
 
   IntArrayRef* = ArrayRef[int64]
 
