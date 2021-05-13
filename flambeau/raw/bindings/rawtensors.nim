@@ -409,8 +409,8 @@ func `*`*(self: RawTensor, b: RawTensor): RawTensor {.importcpp: "(# * #)".}
 func `*`*(a: SomeNumber, b: RawTensor): RawTensor {.importcpp: "(# * #)".}
 func `*`*(self: RawTensor, b: SomeNumber): RawTensor {.importcpp: "(# * #)".}
 
-func `+`*(a: cfloat or cdouble, b: RawTensor): RawTensor {.importcpp: "(# + #)".}
-func `+`*(self: RawTensor, b: cfloat or cdouble): RawTensor {.importcpp: "(# + #)".}
+func `+`*(a: SomeNumber, b: RawTensor): RawTensor {.importcpp: "(# + #)".}
+func `+`*(self: RawTensor, b: SomeNumber): RawTensor {.importcpp: "(# + #)".}
 
 func `+=`*(self: var RawTensor, b: RawTensor) {.importcpp: "(# += #)".}
 func `+=`*(self: var RawTensor, s: Scalar) {.importcpp: "(# += #)".}

@@ -136,7 +136,9 @@ type
     Sum = 2  # Sum losses
 
 func nll_loss*(input, target: RawTensor): RawTensor {.importcpp: "torch::nll_loss(@)".}
+  ## target must be int (Long)!
 func nll_loss*(input, target: RawTensor, red: Reduction): RawTensor {.importcpp: "torch::nll_loss(#, #, /*weight=*/{}, #)".}
+  ## target must be int (Long)!
 
 func binary_cross_entropy_with_logits*(input, target: RawTensor): RawTensor {.importcpp: "torch::binary_cross_entropy_with_logits(@)".}
   ## Sigmoid + Log + Negative loglikelihood

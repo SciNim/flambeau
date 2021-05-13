@@ -50,17 +50,16 @@ proc main() =
       check input_mutable == input
       input_mutable.dropout_mut(training=true)
       check input_mutable != input
-    #[ 
+    
     #I get SIGSEGV when running this
     test "nll_loss":
       let inputSize = [26'i64, 10]
       let targetSize = [26'i64]
-      let input = zeros(inputSize.asTorchView, kFloat32)
-      let target = zeros(targetSize.asTorchView, kFloat32)
+      let input = zeros(inputSize.asTorchView, kFloat32) + 0.5
+      let target = zeros(targetSize.asTorchView, kInt64) + 1
       let loss1 = nll_loss(input, target)
-      #check loss1.dim == 0
-      #check loss1.numel == 1
-    ]#
+      check loss1.dim == 0
+    
     test "binary_cross_entropy_with_logits":
       let inputSize = [26'i64, 10]
       let input = rand(inputSize.asTorchView, kFloat32)
@@ -90,12 +89,11 @@ proc main() =
     test "Dropout":
       var dropout = Dropout.init()
       let inputSize = [18'i64, 100]
-      let input = rand(inputSize.asTorchView, kFloat32)
+      let input = rand([18'i64, 100].asTorchView, kFloat32)
       let outputTraining = dropout.forward(input)
       check outputTraining.sizes == inputSize.asTorchView
       check outputTraining != input
       dropout.eval()
       let outputEval = dropout.forward(input)
       check outputEval == input
-
 main()
