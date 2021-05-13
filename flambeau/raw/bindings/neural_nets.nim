@@ -243,7 +243,11 @@ type
     weight*{.importc.}: RawTensor
     bias*{.importc.}: RawTensor
 
+func init*(T: type LinearOptions, in_features, out_features: int64): T {.constructor, importcpp: "torch::nn::LinearOptions(@)".}
+func bias*(options: LinearOptions, bias: bool): LinearOptions {.importcpp: "#.bias(@)".}
+
 func init*(T: type Linear, in_features, out_features: int64): T {.constructor, importcpp:"torch::nn::Linear(@)".}
+func init*(T: type Linear, options: LinearOptions): T {.constructor, importcpp:"torch::nn::Linear(@)".}
 
 func reset*(linear: Linear){.importcpp: "#.reset()".}
   ## reset() must perform initialization of all members with reference semantics,

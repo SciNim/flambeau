@@ -72,7 +72,8 @@ proc main() =
 
   suite "Module API":
     test "Linear":
-      var linear = Linear.init(100, 10)
+      let linearOptions = LinearOptions.init(100, 10).bias(false)
+      var linear = Linear.init(linearOptions)
       let inputSize = [22'i64, 100] # 100 features in 22 batches
       let outputSize = [22'i64, 10] # 10 features in 22 batches
       let input = rand(inputSize.asTorchView, kFloat32)
