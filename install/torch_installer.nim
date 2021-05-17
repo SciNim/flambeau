@@ -62,8 +62,8 @@ proc getUrlAndFilename(version = "1.8.1", accel = Cuda111, abi = Cpp11): tuple[u
   result.url = &"https://download.pytorch.org/libtorch/{accel}/{result.filename}"
 
 proc downloadLibTorch(url, targetDir, filename: string) =
-  if not fileExists(targetDir / "libtorch.zip"):
-    url.downloadTo(targetDir, "libtorch.zip")
+  if not fileExists(targetDir / filename):
+    url.downloadTo(targetDir, filename)
   else:
     echo "File is already downloaded"
 
