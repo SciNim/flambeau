@@ -88,7 +88,7 @@ proc downloadLibTorch(url, targetDir, filename: string) =
   echo "Copy done!"
   removeDir(tmpDir)
   echo "Done."
-  
+
   if delete:
     echo "Deleting \"", tmpZip, "\""
     removeFile(tmpZip)
@@ -115,6 +115,6 @@ proc uncompress(targetDir, filename: string, delete = false) =
 
 when isMainModule:
   let (url, filename) = getUrlAndFilename()
-  let target = getProjectDir().parentDir() / "vendor"
+  let target = getProjectDir().parentDir().parentDir() / "vendor"
   downloadLibTorch(url, target, filename)
-  uncompress(target, filename)
+  uncompress(target, filename, true)
