@@ -10,6 +10,7 @@ version       = "0.0.1"
 author        = "Mamy André-Ratsimbazafy"
 description   = "A state-of-the-art tensor and deep learning backend on CPU, Nvidia Cuda, AMD HIP, OpenCL, Vulkan, OpenGL"
 license       = "MIT or Apache License 2.0"
+installDirs   = @["vendor"]
 
 ### Dependencies
 requires "nim >= 1.4.2"
@@ -37,9 +38,6 @@ task build_torchvision, "Build the dependency torchvision":
     const libName = "libtorchvision.so"
 
   const libBuilder = "install/torchvision_build.nim"
-
-  if not dirExists "vendor":
-    mkDir "vendor"
   switch("out", "vendor/" & libName)
   switch("define", "danger")
   switch("app", "lib")
@@ -49,7 +47,7 @@ task build_torchvision, "Build the dependency torchvision":
 
 
 task install_libtorch, "Download and install libtorch":
-  const libInstaller = "install/torch_installer.nim"
+  const libInstaller = "flambeau" / "install" / "torch_installer.nim"
   # Using -b:cpp r avoir creating a local binary
   selfExec("-b:cpp r --skipParentCfg:on " & libInstaller)
 
@@ -60,8 +58,8 @@ task setup, "Setup repo":
   if not dirExists "vendor" / "libtorch":
     install_libtorchTask()
 
-before install:
+after install:
   setupTask()
 
-before develop:
+after develop:
   setupTask()

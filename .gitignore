@@ -4,6 +4,5 @@
 build
 nimcache
 testresults
-vendor
-install/libtorch
-install/torch_installer
+libtorch
+torch_installer
