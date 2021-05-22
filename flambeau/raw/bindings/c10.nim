@@ -42,8 +42,8 @@ import ../../libtorch
 type
   ArrayRef*[T] {.importcpp: "c10::ArrayRef", bycopy.} = object
     # The field are private so we can't use them, but `lent` enforces borrow checking
-    p: lent UncheckedArray[T]
-    len: csize_t
+    #p: lent UncheckedArray[T]
+    #len: csize_t
 
   IntArrayRef* = ArrayRef[int64]
 
@@ -53,6 +53,7 @@ func size*(ar: ArrayRef): csize_t {.importcpp: "#.size()".}
 func init*[T](AR: type ArrayRef[T], p: ptr T, len: SomeInteger): ArrayRef[T] {.constructor, importcpp: "c10::ArrayRef<'*0>(@)".}
 func init*[T](AR: type ArrayRef[T]): ArrayRef[T] {.constructor, varargs, importcpp: "c10::ArrayRef<'*0>({@})".}
 
+func `==`*[T](ar1, ar2: ArrayRef[T]): bool {.importcpp: "(# == #)".}
 # Optional
 # -----------------------------------------------------------------------
 

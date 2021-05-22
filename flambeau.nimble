@@ -16,6 +16,8 @@ installDirs   = @["vendor"]
 requires "nim >= 1.4.2"
 requires "zip"
 requires "cppstl >= 0.3.0"
+requires "fusion"
+
 backend = "cpp"
 
 import os

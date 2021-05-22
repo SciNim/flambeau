@@ -136,7 +136,9 @@ type
     Sum = 2  # Sum losses
 
 func nll_loss*(input, target: RawTensor): RawTensor {.importcpp: "torch::nll_loss(@)".}
+  ## target must be int (Long)!
 func nll_loss*(input, target: RawTensor, red: Reduction): RawTensor {.importcpp: "torch::nll_loss(#, #, /*weight=*/{}, #)".}
+  ## target must be int (Long)!
 
 func binary_cross_entropy_with_logits*(input, target: RawTensor): RawTensor {.importcpp: "torch::binary_cross_entropy_with_logits(@)".}
   ## Sigmoid + Log + Negative loglikelihood
@@ -224,7 +226,7 @@ proc to*(module: ModuleHolder or SharedModule, device: Device) {.importcpp: "#->
 func train*(module: var ModuleHolder or SharedModule, on = true) {.importcpp: "#->train(#)".}
   ## Enable training mode
 
-func eval*(module: var Module or SharedModule) {.importcpp: "#->eval()".}
+func eval*(module: var ModuleHolder or SharedModule) {.importcpp: "#->eval()".}
   ## Enable evaluation mode
 
 # Linear layer
@@ -241,7 +243,11 @@ type
     weight*{.importc.}: RawTensor
     bias*{.importc.}: RawTensor
 
+func init*(T: type LinearOptions, in_features, out_features: int64): T {.constructor, importcpp: "torch::nn::LinearOptions(@)".}
+func bias*(options: LinearOptions, bias: bool): LinearOptions {.importcpp: "#.bias(@)".}
+
 func init*(T: type Linear, in_features, out_features: int64): T {.constructor, importcpp:"torch::nn::Linear(@)".}
+func init*(T: type Linear, options: LinearOptions): T {.constructor, importcpp:"torch::nn::Linear(@)".}
 
 func reset*(linear: Linear){.importcpp: "#.reset()".}
   ## reset() must perform initialization of all members with reference semantics,
@@ -271,9 +277,22 @@ type
     weight*{.importc.}: RawTensor
     bias*{.importc.}: RawTensor
 
+func init*(T: type Conv2dOptions, in_channels, out_channels, kernel_size: int64 or array[2, int64]): T {.constructor, importcpp:"torch::nn::Conv2dOptions(@)".}
+func bias*(options: Conv2dOptions, bias: bool): Conv2dOptions {.importcpp: "#.bias(@)".}
+func stride*(options: Conv2dOptions, stride: int64): Conv2dOptions {.importcpp: "#.stride(@)".}
+func stride*(options: Conv2dOptions, stride: array[2, int64]): Conv2dOptions {.importcpp: "#.stride(@)".}
+func padding*(options: Conv2dOptions, padding: int64): Conv2dOptions {.importcpp: "#.padding(@)".}
+func dilation*(options: Conv2dOptions, dilation: int64 or array[2, int64]): Conv2dOptions {.importcpp: "#.dilation(@)".}
+func groups*(options: Conv2dOptions, groups: int64): Conv2dOptions {.importcpp: "#.groups(@)".}
+
+func stride*(options: Conv2dOptions): IntArrayRef {.importcpp: "at::ArrayRef<int64_t>(#.stride())".}
+
+
+
 func init*(T: type Conv2d, in_channels, out_channels, kernel_size: int64): T {.constructor, importcpp:"torch::nn::Conv2d(@)".}
 func init*(T: type Conv2d, in_channels, out_channels,
            kernel_size: array[2, int64]): T {.constructor, importcpp:"torch::nn::Conv2d(@)".}
+func init*(T: type Conv2d, options: Conv2dOptions): T {.constructor, importcpp:"torch::nn::Conv2d(@)".}
 
 func reset*(conv2d: Conv2d){.importcpp: "#.reset()".}
   ## reset() must perform initialization of all members with reference semantics,

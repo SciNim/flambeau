@@ -31,7 +31,8 @@ template asNimView*[T](ar: ArrayRef[T]): openArray[T] =
   toOpenArray(ar.data.unsafeAddr, 0, ar.size.int - 1)
 
 template asTorchView*[T](oa: openarray[T]): ArrayRef[T] =
-  ArrayRef[T].init(oa[0].unsafeAddr, oa.len)
+  let a = oa
+  ArrayRef[T].init(a[0].unsafeAddr, oa.len)
 
 template asTorchView*(meta: Metadata): ArrayRef[int64] =
   ArrayRef[int64].init(meta.data[0].unsafeAddr, meta.len)
