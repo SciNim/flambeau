@@ -13,7 +13,7 @@ The library installation including:
 
 ### External dependencies
 
-Initialize submodule : 
+Initialize submodule :
 ``git submodule update --init --recursive``
 
 On Ubuntu :
@@ -28,14 +28,27 @@ On OpenSuse :
 
 ``cd flambeau``
 
-``nimble install`` or ``nimble develop`` 
+``nimble install`` or ``nimble develop``
 
 Note that install and develop will download and build libtorch so it may take a while.
 
 
-Torchvision can now be built if desired: 
+Torchvision can now be built if desired:
 
 ``nimble build_torchvision``
+
+## CUDA support
+
+By default the Torch installation downloaded by this package contains
+CUDA support. However, by default Nim packages using Flambeau compile
+*without* CUDA support. This is controlled by the `cuda` compile time
+option. Compile with:
+
+```sh
+nim cpp -d:cuda <foo>
+```
+
+to compile with CUDA support.
 
 ## Limitations
 
