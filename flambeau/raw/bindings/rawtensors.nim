@@ -56,6 +56,8 @@ proc manual_seed*(_: type Torch, seed: uint64) {.sideeffect, importcpp: "torch::
 
 proc hasCuda*(_: type Torch): bool{.sideeffect, importcpp: "torch::hasCuda()".}
   ## Returns true if libtorch was compiled with CUDA support
+proc deviceCount*(_: type Torch): csize_t {.sideeffect, importcpp: "torch::cuda::device_count()".}
+  ## Returns true if libtorch was compiled with CUDA support
 proc cuda_is_available*(_: type Torch): bool{.sideeffect, importcpp: "torch::cuda::is_available()".}
   ## Returns true if libtorch was compiled with CUDA support
   ## and at least one CUDA device is available
