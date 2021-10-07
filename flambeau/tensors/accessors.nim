@@ -2,28 +2,38 @@ import std/[complex, macros]
 import cppstl/std_complex
 import ../raw/bindings/[rawtensors]
 import ../raw/cpp/[std_cpp]
-import ../raw/sugar/[indexing]
 import ../tensors
 import ../raw/sugar/interop as rawinterop
 
 # Checkers func to Raise IndexDefect
+# TODO: Where should we use them ?
 # -----------------------------------------------------------------------
-func check_index*[T](t: Tensor[T], idx: varargs[int]) {.inline.}=
-  if unlikely(idx.len != t.ndimension):
-    raise newException(
-      IndexDefect, "Number of arguments: " &
-                  $(idx.len) &
-                  ", is different from tensor rank: " &
-                  $(t.ndimension)
-    )
-  for i in 0 ..< t.shape.len:
-    if unlikely(not(0 <= idx[i] and idx[i] < t.shape[i])):
-      raise newException(
-        IndexDefect, "Out-of-bounds access: " &
-                    "Tensor of shape " & $t.shape &
-                    " being indexed by " & $idx
-      )
+# func check_index*[T](t: Tensor[T], idx: varargs[int]) {.inline.}=
+#   if unlikely(idx.len != t.ndimension):
+#     raise newException(
+#         IndexDefect, "Error Out-of-bounds access." &
+#                     " Index must match Tensor rank ! Expected: " & $(t.ndimension) & ", got: " & $(idx.len) & " elements"
+#     )
+#   for i in 0 ..< t.shape.len:
+#     if unlikely(not(0 <= idx[i] and idx[i] < t.shape[i])):
+#       raise newException(
+#         IndexDefect, "Error Out-of-bounds access." &
+#                     " Index [" & $idx & "] " & " must be in range of Tensor dimensions " & $t.sizes()
+#       )
 
+# func check_index*(t: RawTensor, idx: varargs[int]) {.inline.}=
+#   if unlikely(idx.len != t.ndimension):
+#     raise newException(
+#         IndexDefect, "Error Out-of-bounds access." &
+#                     " Index must match Tensor rank ! Expected: " & $(t.ndimension) & ", got: " & $(idx.len) & " elements"
+#     )
+#   for i in 0 ..< t.ndimension:
+#     let dim : int64 = t.sizes()[i]
+#     if unlikely(not(0 <= idx[i] and idx[i] < dim)):
+#       raise newException(
+#         IndexDefect, "Error Out-of-bounds access." &
+#                     " Index [" & $idx & "] " & " must be in range of Tensor dimensions " & $t.sizes()
+#       )
 
 # Item Access
 # -----------------------------------------------------------------------
@@ -32,19 +42,19 @@ func item*[T](self: Tensor[T]): T =
     if numel(self) > 1:
       raise newException(IndexDefect, ".item() can only be called on one-element Tensor")
   ## Extract the scalar from a 0-dimensional tensor
-  result = item(convertRawTensor(self), T)
+  result = item(asRaw(self), T)
 
 func item*(self: Tensor[Complex32]): Complex32 =
   when compileOption("boundChecks"):
     if numel(self) > 1:
       raise newException(IndexDefect, ".item() can only be called on one-element Tensor")
-  item(convertRawTensor(self), typedesc[Complex32]).toCppComplex().toComplex()
+  item(asRaw(self), typedesc[Complex32]).toCppComplex().toComplex()
 
 func item*(self: Tensor[Complex64]): Complex64 =
   when compileOption("boundChecks"):
     if numel(self) > 1:
       raise newException(IndexDefect, ".item() can only be called on one-element Tensor")
-  item(convertRawTensor(self), typedesc[Complex64]).toCppComplex().toComplex()
+  item(asRaw(self), typedesc[Complex64]).toCppComplex().toComplex()
 
 # Indexing
 # -----------------------------------------------------------------------
@@ -57,8 +67,8 @@ func index*[T](self: Tensor[T], args: varargs): Tensor[T] {.noinit.} =
   ## Tensor indexing. It is recommended
   ## to Nimify this in a high-level wrapper.
   ## `tensor.index(indexers)`
-  convertTensor[T](
-    index(convertRawTensor(self), args)
+  asTensor[T](
+    index(asRaw(self), args)
   )
 # We can't use the construct `#.index_put_({@}, #)`
 # so hardcode sizes,
@@ -67,20 +77,20 @@ func index*[T](self: Tensor[T], args: varargs): Tensor[T] {.noinit.} =
 
 func index_put*[T](self: var Tensor[T], idx: varargs[int|int64], val: T or Tensor[T]) =
   ## Tensor mutation at index. It is recommended
-  convertTensor[T](
-    index_put(convertRawTensor(self), idx, val)
+  asTensor[T](
+    index_put(asRaw(self), idx, val)
   )
 
 # Fancy Indexing
 # -----------------------------------------------------------------------
 func index_select*[T](self: Tensor[T], axis: int64, indices: Tensor[int64]): Tensor[T] {.noinit.} =
-  convertTensor[T](
-    index_select(convertRawTensor(self), axis, convertRawTensor(indices))
+  asTensor[T](
+    index_select(asRaw(self), axis, asRaw(indices))
   )
 
 func masked_select*[T](self: Tensor[T], mask: Tensor[int64]): Tensor[T] {.noinit.} =
-  convertTensor[T](
-    masked_select(convertRawTensor(self), convertRawTensor(mask))
+  asTensor[T](
+    masked_select(asRaw(self), asRaw(mask))
   )
 
 # PyTorch exposes in-place `index_fill_` and `masked_fill_`
@@ -88,17 +98,10 @@ func masked_select*[T](self: Tensor[T], mask: Tensor[int64]): Tensor[T] {.noinit
 # that does in-place + clone
 # we only exposes the in-place version.
 func index_fill_mut*[T](self: var Tensor[T], mask: Tensor[T], value: T or Tensor[T]) =
-  index_fill_mut(convertRawTensor(self), convertRawTensor(mask), value)
+  index_fill_mut(asRaw(self), asRaw(mask), value)
 
 func masked_fill_mut*[T](self: var Tensor[T], mask: Tensor[T], value: T or Tensor[T]) =
-  masked_fill_mut(convertRawTensor(self), convertRawTensor(mask), value)
-
-# TODO Move check to func and rewrite those as macros
-template `[]`*[T](t: Tensor[T], args: varargs[untyped]): untyped =
-  convertTensor[T](convertRawTensor(t)[args])
-
-template `[]=`*[T](t: var Tensor[T], args: varargs[untyped]): untyped =
-  `[]=`(convertRawTensor(t), args)
+  masked_fill_mut(asRaw(self), asRaw(mask), value)
 
 # TODO finish porting these Arraymancer proc
 # proc getIndex*[T](t: Tensor[T], idx: varargs[int]): int {.noSideEffect,inline.} =

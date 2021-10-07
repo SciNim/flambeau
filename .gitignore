@@ -1,6 +1,7 @@
 *.zip
 *.pt
 *.exe
+.vscode
 build
 nimcache
 testresults

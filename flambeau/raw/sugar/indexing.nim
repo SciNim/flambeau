@@ -179,12 +179,16 @@ import std/macros
 
 func sliceNone(): NimNode =
   bindSym("SliceSpan")
+
 func indexNone(): NimNode =
   bindSym("IndexNone")
+
 func succ(node: NimNode): NimNode =
   newCall(bindsym"succ", node)
+
 func `-`(node: NimNode): NimNode =
   newCall(bindsym"-", node)
+
 func Slice(nodes: varargs[NimNode]): NimNode =
   result = newCall(bindSym"torchSlice")
   for node in nodes:
@@ -608,25 +612,7 @@ macro slice_typed_dispatch_mut(t: typed, args: varargs[typed], val: typed): unty
 # #######################################################################
 # Checkers func to Raise IndexDefect
 # -----------------------------------------------------------------------
-import interop
-{.experimental: "views".} # TODO this is ignored
-func check_index*(t: RawTensor, idx: varargs[int]) {.inline.}=
-  if unlikely(idx.len != t.ndimension):
-    raise newException(
-      IndexDefect, "Number of arguments: " &
-                  $(idx.len) &
-                  ", is different from tensor rank: " &
-                  $(t.ndimension)
-    )
-  for i in 0 ..< t.ndimension:
-    let dim : int64 = t.sizes()[i]
-    if unlikely(not(0 <= idx[i] and idx[i] < dim)):
-      raise newException(
-        IndexDefect, "Out-of-bounds access: " &
-                    "Tensor of shape " & $t.sizes()&
-                    " being indexed by " & $idx
-      )
-
+import ./interop
 
 macro `[]`*(t: RawTensor, args: varargs[untyped]): untyped =
   ## Slice a Tensor
@@ -662,8 +648,6 @@ macro `[]`*(t: RawTensor, args: varargs[untyped]): untyped =
   let new_args = getAST(desugarSlices(args))
 
   result = quote do:
-    # when compileOption("boundChecks"):
-      # check_index(`t`, `new_args`)
     slice_typed_dispatch(`t`, `new_args`)
 
 macro `[]=`*(t: var RawTensor, args: varargs[untyped]): untyped =
@@ -697,6 +681,4 @@ macro `[]=`*(t: var RawTensor, args: varargs[untyped]): untyped =
   let new_args = getAST(desugarSlices(tmp))
 
   result = quote do:
-    # when compileOption("boundChecks"):
-      # check_index(`t`, `new_args`)
     slice_typed_dispatch_mut(`t`, `new_args`,`val`)
