@@ -350,11 +350,11 @@ macro desugarSlices(args: untyped): void =
       ## [1..^10|1] into [{Slice(1, -10, 1)}]
       ## [1..<10|1] into [{Slice(1, 10, 1)}]
       if nnk[0].eqident(".."):
-        r.add Slice(nnk[1], succ(nnk[2][0]), nnk[2][1])
+        r.add Slice(nnk[1], succ(nnk[2][1]), nnk[2][2])
       elif nnk[0].eqident("..^"):
-        r.add Slice(nnk[1], -nnk[2][0], nnk[2][1])
+        r.add Slice(nnk[1], -nnk[2][1], nnk[2][2])
       elif nnk[0].eqident("..<"):
-        r.add Slice(nnk[1], nnk[2][0], nnk[2][1])
+        r.add Slice(nnk[1], nnk[2][1], nnk[2][2])
       else:
         error "Unreachable"
     elif nnk0_inf_dotdot_all:

@@ -8,8 +8,6 @@
 import std/macros
 import ../bindings/c10
 import cppstl
-# Avoid breaking import
-export cppstl
 
 # ############################################################
 #
@@ -82,4 +80,3 @@ proc `$`*[T: SomeFloat](z: C10_Complex[T]): string =
   result.add ", "
   result.add $(z.imag())
   result.add ")"
-

@@ -239,9 +239,9 @@ proc main() =
       test "Bounds checking":
         var t_van = t_van_immut.clone
         expect(IndexDefect):
-          t_van[0..1,0..1] = [111, 222, 333, 444, 555]
+          t_van[0..1,0..1] = [111, 222, 333, 444, 555].toRawTensor()
         expect(IndexDefect):
-          t_van[0..1,0..1] = [111, 222, 333]
+          t_van[0..1,0..1] = [111, 222, 333].toRawTensor()
         expect(IndexDefect):
           t_van[^2..^1,2..4] = t_van[1, 4..2|-1]
         expect(IndexDefect):
@@ -265,34 +265,34 @@ proc main() =
       check: a[2, `...`, 2] == a[2, _, _, _, 2]
       check: a[2, 1..2, `...`, 2] == a[2, 1..2, _, _, 2]
     ]#
-  suite "Axis slicing":
-    let a =  [[  1,  2,  3,  4,  5,  6],
-              [  7,  8,  9, 10, 11, 12],
-              [ 13, 14, 15, 16, 17, 18]].toRawTensor
-    test "atAxisIndex slicing":
+  # suite "Axis slicing":
+  #   let a =  [[  1,  2,  3,  4,  5,  6],
+  #             [  7,  8,  9, 10, 11, 12],
+  #             [ 13, 14, 15, 16, 17, 18]].toRawTensor()
+  #   test "atAxisIndex slicing":
 
-      check:
-        a.atAxisIndex(0, 0) == [[  1,  2,  3,  4,  5,  6]].toRawTensor
-        a.atAxisIndex(0, 1) == [[  7,  8,  9, 10, 11, 12]].toRawTensor
-        a.atAxisIndex(0, 2) == [[ 13, 14, 15, 16, 17, 18]].toRawTensor
+  #     check:
+  #       a.atAxisIndex(0, 0) == [[  1,  2,  3,  4,  5,  6]].toRawTensor()
+  #       a.atAxisIndex(0, 1) == [[  7,  8,  9, 10, 11, 12]].toRawTensor()
+  #       a.atAxisIndex(0, 2) == [[ 13, 14, 15, 16, 17, 18]].toRawTensor()
 
-        a.atAxisIndex(0, 0, 2) ==  [[  1,  2,  3,  4,  5,  6],
-                                    [  7,  8,  9, 10, 11, 12]].toRawTensor
-        a.atAxisIndex(0, 1, 2) ==  [[  7,  8,  9, 10, 11, 12],
-                                    [ 13, 14, 15, 16, 17, 18]].toRawTensor
+  #       a.atAxisIndex(0, 0, 2) ==  [[  1,  2,  3,  4,  5,  6],
+  #                                   [  7,  8,  9, 10, 11, 12]].toRawTensor()
+  #       a.atAxisIndex(0, 1, 2) ==  [[  7,  8,  9, 10, 11, 12],
+  #                                   [ 13, 14, 15, 16, 17, 18]].toRawTensor()
 
-        a.atAxisIndex(1, 0) == [[1],
-                                [7],
-                                [13]].toRawTensor
-        a.atAxisIndex(1, 1, 2) ==  [[2, 3],
-                                    [8, 9],
-                                    [14, 15]].toRawTensor
+  #       a.atAxisIndex(1, 0) == [[1],
+  #                               [7],
+  #                               [13]].toRawTensor()
+  #       a.atAxisIndex(1, 1, 2) ==  [[2, 3],
+  #                                   [8, 9],
+  #                                   [14, 15]].toRawTensor()
 
-    when compileOption("boundChecks") and not defined(openmp):
-      test "atAxisIndex bounds checking":
-        expect(IndexDefect):
-          echo a.atAxisIndex(0, 3)
-        expect(IndexDefect):
-          echo a.atAxisIndex(1, 3, 6)
+  #   when compileOption("boundChecks") and not defined(openmp):
+  #     test "atAxisIndex bounds checking":
+  #       expect(IndexDefect):
+  #         echo a.atAxisIndex(0, 3)
+  #       expect(IndexDefect):
+  #         echo a.atAxisIndex(1, 3, 6)
 
 main()
