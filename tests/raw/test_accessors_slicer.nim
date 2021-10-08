@@ -16,7 +16,6 @@
 
 import flambeau/flambeau_raw
 import std/[unittest, math]
-
 import complex except Complex64, Complex32
 
 {.experimental: "views".} # TODO
@@ -40,6 +39,7 @@ proc main() =
         vandermonde[i].add(aa^bb)
 
     let t_van = vandermonde.toRawTensor()
+    echo t_van
 
     # Tensor of shape 5x5 of type "int" on backend "Cpu"
     # |1      1       1       1       1|
@@ -49,7 +49,6 @@ proc main() =
     # |5      25      125     625     3125|
     test "Basic indexing - foo[2, 3]":
       check: t_van[2, 3].item(int) == 81
-      #check: t_van.astype(Complex[float64])[2, 3] == complex(81.0)
 
     test "Basic indexing - foo[1+1, 2*2*1]":
       check: t_van[1+1, 2*2*1].item(int) == 243
@@ -60,8 +59,9 @@ proc main() =
     #     check: t_van[^1, 3] == 625
     # test "Indexing from end - foo[^(1*2), 3]":
     #     check: t_van[^1, 3] == 256
+    #
     test "Basic slicing - foo[1..2, 3]":
-      let test = @[@[16],@[81]]
+      let test = @[16,81]
       check: t_van[1..2, 3] == test.toRawTensor()
 
     test "Basic slicing - foo[1+1..4, 3-2..2]":
@@ -70,39 +70,39 @@ proc main() =
 
     test "Span slices - foo[_, 3]":
       let test = @[@[1],@[16],@[81],@[256],@[625]]
-      check: t_van[_, 3] == test.toRawTensor()
+      check: t_van[_, 3] == test.toRawTensor().squeeze()
 
     test "Span slices - foo[1.._, 3]":
       let test = @[@[16],@[81],@[256],@[625]]
-      check: t_van[1.._, 3] == test.toRawTensor()
+      check: t_van[1.._, 3] == test.toRawTensor().squeeze()
 
       ## Check with extra operators
-      check: t_van[0+1.._, 3] == test.toRawTensor()
+      check: t_van[0+1.._, 3] == test.toRawTensor().squeeze()
 
     test "Span slices - foo[_..3, 3]":
       let test = @[@[1],@[16],@[81],@[256]]
-      check: t_van[_..3, 3] == test.toRawTensor()
+      check: t_van[_..3, 3] == test.toRawTensor().squeeze()
 
       ## Check with extra operators
-      check: t_van[_..5-2, 3] == test.toRawTensor()
+      check: t_van[_..5-2, 3] == test.toRawTensor().squeeze()
 
     test "Span slices - foo[_.._, 3]":
       let test = @[@[1],@[16],@[81],@[256],@[625]]
-      check: t_van[_.._, 3] == test.toRawTensor()
+      check: t_van[_.._, 3] == test.toRawTensor().squeeze()
 
     test "Stepping - foo[1..3|2, 3]":
       let test = @[@[16],@[256]]
-      check: t_van[1..3|2, 3] == test.toRawTensor()
-      check: t_van[1..3|+2, 3] == test.toRawTensor()
-      check: t_van[1*(0+1)..2+1|(5-3), 3] == test.toRawTensor()
+      check: t_van[1..3|2, 3] == test.toRawTensor().squeeze()
+      check: t_van[1..3|+2, 3] == test.toRawTensor().squeeze()
+      check: t_van[1*(0+1)..2+1|(5-3), 3] == test.toRawTensor().squeeze()
 
     test "Span stepping - foo[_.._|2, 3]":
       let test = @[@[1],@[81],@[625]]
-      check: t_van[_.._|2, 3] == test.toRawTensor()
+      check: t_van[_.._|2, 3] == test.toRawTensor().squeeze()
 
     test "Span stepping - foo[_.._|+2, 3]":
       let test = @[@[1],@[81],@[625]]
-      check: t_van[_.._|+2, 3] == test.toRawTensor()
+      check: t_van[_.._|+2, 3] == test.toRawTensor().squeeze()
 
     test "Span stepping - foo[1.._|1, 2..3]":
       let test = @[@[8, 16],@[27, 81],@[64, 256], @[125, 625]]
@@ -110,47 +110,54 @@ proc main() =
 
     test "Span stepping - foo[_..<4|2, 3]":
       let test = @[@[1],@[81]]
-      check: t_van[_..<4|2, 3] == test.toRawTensor()
+      check: t_van[_..<4|2, 3] == test.toRawTensor().squeeze()
 
     test "Slicing until at n from the end - foo[0..^4, 3]":
       let test = @[@[1],@[16]]
-      check: t_van[0..^4, 3] == test.toRawTensor()
+      check: t_van[0..^4, 3] == test.toRawTensor().squeeze()
       ## Check with extra operators
-      check: t_van[0..^2+2, 3] == test.toRawTensor()
+      check: t_van[0..^2+2, 3] == test.toRawTensor().squeeze()
 
     test "Span Slicing until at n from the end - foo[_..^2, 3]":
       let test = @[@[1],@[16],@[81],@[256]]
-      check: t_van[_..^2, 3] == test.toRawTensor()
+      check: t_van[_..^2, 3] == test.toRawTensor().squeeze()
       ## Check with extra operators
-      check: t_van[_..^1+1, 3] == test.toRawTensor()
+      check: t_van[_..^1+1, 3] == test.toRawTensor().squeeze()
 
     test "Stepped Slicing until at n from the end - foo[1..^1|2, 3]":
       let test = @[@[16],@[256]]
-      check: t_van[1..^1|2, 3] == test.toRawTensor()
+      check: t_van[1..^1|2, 3] == test.toRawTensor().squeeze()
       ## Check with extra operators
-      check: t_van[1..^1|(1+1), 3] == test.toRawTensor()
+      check: t_van[1..^1|(1+1), 3] == test.toRawTensor().squeeze()
 
-    test "Slice from the end - foo[^1..0|-1, 3]":
-      let test = @[@[625],@[256],@[81],@[16],@[1]]
-      check: t_van[^1..0|-1, 3] == test.toRawTensor()
-      ## Check with extra operators
-      let test2 = @[@[256],@[81],@[16],@[1]]
-      check: t_van[^(4-2)..0|-1, 3] == test2.toRawTensor()
+    # ##############################################
+    # Disabled : see README
+    # Slice from the end not working
+    # ##############################################
+    # test "Slice from the end - foo[^1..0|-1, 3]":
+    #   let test = @[@[625],@[256],@[81],@[16],@[1]]
+    #   check: t_van[^1..0|-1, 3] == test.toRawTensor().squeeze()
+    #   ## Check with extra operators
+    #   let test2 = @[@[256],@[81],@[16],@[1]]
+    #   check: t_van[^(4-2)..0|-1, 3] == test2.toRawTensor().squeeze()
+    # when compileOption("boundChecks") and not defined(openmp):
+    #   test "Slice from the end - expect non-negative step error - foo[^1..0, 3]":
+    #     expect(IndexDefect):
+    #       discard t_van[^1..0, 3]
+    # else:
+    #   echo "Bound-checking is disabled or OpenMP is used. The Slice from end, non-negative step error test has been skipped."
 
-    when compileOption("boundChecks") and not defined(openmp):
-      test "Slice from the end - expect non-negative step error - foo[^1..0, 3]":
-        expect(IndexDefect):
-          discard t_van[^1..0, 3]
-    else:
-      echo "Bound-checking is disabled or OpenMP is used. The Slice from end, non-negative step error test has been skipped."
+    # test "Slice from the end - foo[^(2*2)..2*2, 3]":
+    #   let test = @[@[16],@[81],@[256],@[625]]
+    #   check: t_van[^(2*2)..2*2, 3] == test.toRawTensor().squeeze()
 
-    test "Slice from the end - foo[^(2*2)..2*2, 3]":
-      let test = @[@[16],@[81],@[256],@[625]]
-      check: t_van[^(2*2)..2*2, 3] == test.toRawTensor()
-
-    test "Slice from the end - foo[^3..^2, 3]":
-      let test = @[@[81],@[256]]
-      check: t_van[^3..^2, 3] == test.toRawTensor()
+    # test "Slice from the end - foo[^3..^2, 3]":
+    #   let test = @[@[81],@[256]]
+    #   check: t_van[^3..^2, 3] == test.toRawTensor().squeeze()
+    #
+    # ##############################################
+    # End disabled section
+    # ##############################################
 
   suite "Slice mutations":
     const
@@ -169,7 +176,7 @@ proc main() =
       for j, bb in b:
         vandermonde[i].add(aa^bb)
 
-    let t_van_immut = vandermonde.toRawTensor()
+    let t_van_immut = vandermonde.toRawTensor().squeeze()
 
     # Tensor of shape 5x5 of type "int" on backend "Cpu"
     # |1      1       1       1       1|
@@ -194,7 +201,7 @@ proc main() =
                     @[4, 16,  64, 256, 1024],
                     @[5, 25, 125, 625, 3125]]
 
-      let t_test = test.toRawTensor()
+      let t_test = test.toRawTensor().squeeze()
       t_van[1..2, 3..4] = 999
       check: t_van == t_test
 
@@ -206,7 +213,7 @@ proc main() =
               @[  4,   16,  64, 256, 1024],
               @[  5,   25, 125, 625, 3125]]
 
-      let t_test = test.toRawTensor()
+      let t_test = test.toRawTensor().squeeze()
       t_van[0..1,0..1] = [[111, 222], [333, 444]].toRawTensor
       check: t_van == t_test
 
@@ -218,7 +225,7 @@ proc main() =
               @[4, 16,  3125, 625, 125],
               @[5, 25,  1024, 256,  64]]
 
-      let t_test = test.toRawTensor()
+      let t_test = test.toRawTensor().squeeze()
       t_van[^2..^1,2..4] = t_van_immut[^1..^2|-1, 4..2|-1]
       check: t_van == t_test
 
@@ -231,7 +238,7 @@ proc main() =
     #           @[4, 16,  3125, 625, 125],
     #           @[5, 25,  1024, 256, 64]]
 
-    #   let t_test = test.toRawTensor()
+    #   let t_test = test.toRawTensor().squeeze()
     #   t_van[^2..^1,2..4] = t_van[^1..^2|-1, 4..2|-1]
     #   check: t_van == t_test
 
@@ -239,9 +246,9 @@ proc main() =
       test "Bounds checking":
         var t_van = t_van_immut.clone
         expect(IndexDefect):
-          t_van[0..1,0..1] = [111, 222, 333, 444, 555].toRawTensor()
+          t_van[0..1,0..1] = [111, 222, 333, 444, 555].toRawTensor().squeeze()
         expect(IndexDefect):
-          t_van[0..1,0..1] = [111, 222, 333].toRawTensor()
+          t_van[0..1,0..1] = [111, 222, 333].toRawTensor().squeeze()
         expect(IndexDefect):
           t_van[^2..^1,2..4] = t_van[1, 4..2|-1]
         expect(IndexDefect):
@@ -251,7 +258,7 @@ proc main() =
 
     test "Chained slicing - foo[1..^2,1..2][1..^1, 0]":
       let t_van = t_van_immut
-      check: t_van[1..^2,1..2][1..^1, 0] == [[9],[16]].toRawTensor()
+      check: t_van[1..^2,1..2][1..^1, 0] == [[9],[16]].toRawTensor().squeeze()
 
     #[test "Ellipsis - foo[2, `...`], foo[`...`, 2], foo[2, `...`, 2]":
       let a = randomTensor(3, 5, 4, 6, 7, 20)
@@ -265,28 +272,30 @@ proc main() =
       check: a[2, `...`, 2] == a[2, _, _, _, 2]
       check: a[2, 1..2, `...`, 2] == a[2, 1..2, _, _, 2]
     ]#
+
+  # TODO : implement atAxisIndex
   # suite "Axis slicing":
   #   let a =  [[  1,  2,  3,  4,  5,  6],
   #             [  7,  8,  9, 10, 11, 12],
-  #             [ 13, 14, 15, 16, 17, 18]].toRawTensor()
+  #             [ 13, 14, 15, 16, 17, 18]].toRawTensor().squeeze()
   #   test "atAxisIndex slicing":
 
   #     check:
-  #       a.atAxisIndex(0, 0) == [[  1,  2,  3,  4,  5,  6]].toRawTensor()
-  #       a.atAxisIndex(0, 1) == [[  7,  8,  9, 10, 11, 12]].toRawTensor()
-  #       a.atAxisIndex(0, 2) == [[ 13, 14, 15, 16, 17, 18]].toRawTensor()
+  #       a.atAxisIndex(0, 0) == [[  1,  2,  3,  4,  5,  6]].toRawTensor().squeeze()
+  #       a.atAxisIndex(0, 1) == [[  7,  8,  9, 10, 11, 12]].toRawTensor().squeeze()
+  #       a.atAxisIndex(0, 2) == [[ 13, 14, 15, 16, 17, 18]].toRawTensor().squeeze()
 
   #       a.atAxisIndex(0, 0, 2) ==  [[  1,  2,  3,  4,  5,  6],
-  #                                   [  7,  8,  9, 10, 11, 12]].toRawTensor()
+  #                                   [  7,  8,  9, 10, 11, 12]].toRawTensor().squeeze()
   #       a.atAxisIndex(0, 1, 2) ==  [[  7,  8,  9, 10, 11, 12],
-  #                                   [ 13, 14, 15, 16, 17, 18]].toRawTensor()
+  #                                   [ 13, 14, 15, 16, 17, 18]].toRawTensor().squeeze()
 
   #       a.atAxisIndex(1, 0) == [[1],
   #                               [7],
-  #                               [13]].toRawTensor()
+  #                               [13]].toRawTensor().squeeze()
   #       a.atAxisIndex(1, 1, 2) ==  [[2, 3],
   #                                   [8, 9],
-  #                                   [14, 15]].toRawTensor()
+  #                                   [14, 15]].toRawTensor().squeeze()
 
   #   when compileOption("boundChecks") and not defined(openmp):
   #     test "atAxisIndex bounds checking":

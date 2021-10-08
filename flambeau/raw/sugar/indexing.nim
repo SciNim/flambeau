@@ -181,7 +181,11 @@ func sliceNone(): NimNode =
   bindSym("SliceSpan")
 
 func indexNone(): NimNode =
-  bindSym("IndexNone")
+  bindSym("None")
+
+proc sliceEllipsis(): NimNode =
+  # Ellipsis is a ``importcpp`` global variable therefore the compiler cannot prove noSideEffect -> not a func
+  bindSym("Ellipsis")
 
 func succ(node: NimNode): NimNode =
   newCall(bindsym"succ", node)
@@ -282,19 +286,26 @@ macro desugarSlices(args: untyped): void =
     ###### Core desugaring logic
     if nnk_joker:
       ## [_, 3] into [{None, 3}]
-      r.add(sliceNone())
+      r.add(sliceEllipsis())
     elif nnk0_inf_dotdot and nnk1_joker and nnk2_joker:
       ## [_.._, 3] into [{None, 3}]
-      r.add(sliceNone())
+      r.add(sliceEllipsis())
     elif nnk0_inf_dotdot and nnk1_joker and nnk20_bar_all and nnk21_joker:
       ## [_.._|2, 3] into [{Slice(None, None, 2), 3}]
       ## [_.._|+2, 3] into [{Slice(None, None, 2), 3}]
       ## [_.._|-2 doesn't make sense and will throw out of bounds
+      echo "****"
+      echo nnk[2][2].toStrLit.strVal
+      echo "****"
       r.add(Slice(indexNone(), indexNone(), nnk[2][2]))
     elif nnk0_inf_dotdot_all and nnk1_joker and nnk20_bar_all:
       ## [_..10|1, 3] into [{Slice(None, 10+1, 1), 3}] (for inclusive)
       ## [_..^10|1, 3] into [{Slice(None, -10, 1), 3}]
       ## [_..<10|1, 3] into [{Slice(None, 10, 1), 3}] (exclusive)
+      echo "----"
+      echo nnk[2][2].toStrLit.strVal
+      echo "----"
+
       if nnk[0].eqident(".."):
         r.add Slice(indexNone(), succ(nnk[2][1]), nnk[2][2])
       elif nnk[0].eqident("..^"):
@@ -414,7 +425,7 @@ proc getFancySelector(ast: NimNode, axis: var int, selector: var NimNode): Fancy
     let cur = ast[i]
     # Important: sameType doesn't work for generic type like Array, Seq or Tensors ...
     #            https://github.com/nim-lang/Nim/issues/14021
-    if cur.kind in {nnkIdent, nnkSym} and cur.eqIdent"SliceSpan":
+    if cur.kind in {nnkIdent, nnkSym} and cur.eqIdent"Ellipsis":
       # Found a span
       discard
     elif (cur.kind == nnkCall and cur[0].eqIdent"torchSlice") or cur.isInt():

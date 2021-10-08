@@ -382,6 +382,16 @@ type
     IndexSlice = 4
     IndexTensor = 5
 
+# The None used in Torch isn't actually the enum but a c10::nullopt
+const None* : Nullopt_t = c10.nullopt
+
+type EllipsisIndexType* {.importcpp: "torch::indexing::EllipsisIndexType".} = object
+
+proc SliceEllipsis*(): EllipsisIndexType {.constructor.} =
+  {.emit: "result = torch::indexing::EllipsisIndexType::EllipsisIndexType()".}
+
+let Ellipsis* {.importcpp: "torch::indexing::Ellipsis".} : EllipsisIndexType
+
   # SomeSlicer* = TensorIndexType|SomeSignedInt
 
 proc SliceSpan*(): TorchSlice {.importcpp: "at::indexing::Slice()".}
@@ -389,14 +399,9 @@ proc SliceSpan*(): TorchSlice {.importcpp: "at::indexing::Slice()".}
     ## This is Python ":", span / whole dimension
 
 func torchSlice*(){.importcpp: "torch::indexing::Slice(@)", constructor.}
-
-# func torchSlice*(start: SomeSlicer): TorchSlice {.importcpp: "torch::indexing::Slice(@)", constructor.}
-# func torchSlice*(start: SomeSlicer, stop: SomeSlicer): TorchSlice {.importcpp: "torch::indexing::Slice(@)", constructor.}
-# func torchSlice*(start: SomeSlicer, stop: SomeSlicer, step: SomeSlicer): TorchSlice {.importcpp: "torch::indexing::Slice(@)", constructor.}
-
-func torchSlice*(start: TensorIndexType|SomeSignedInt): TorchSlice {.importcpp: "torch::indexing::Slice(@)", constructor.}
-func torchSlice*(start: TensorIndexType|SomeSignedInt, stop: TensorIndexType|SomeSignedInt): TorchSlice {.importcpp: "torch::indexing::Slice(@)", constructor.}
-func torchSlice*(start: TensorIndexType|SomeSignedInt, stop: TensorIndexType|SomeSignedInt, step: TensorIndexType|SomeSignedInt): TorchSlice {.importcpp: "torch::indexing::Slice(@)", constructor.}
+func torchSlice*(start: Nullopt_t|SomeSignedInt): TorchSlice {.importcpp: "torch::indexing::Slice(@)", constructor.}
+func torchSlice*(start: Nullopt_t|SomeSignedInt, stop: Nullopt_t|SomeSignedInt): TorchSlice {.importcpp: "torch::indexing::Slice(@)", constructor.}
+func torchSlice*(start: Nullopt_t|SomeSignedInt, stop: Nullopt_t|SomeSignedInt, step: Nullopt_t|SomeSignedInt): TorchSlice {.importcpp: "torch::indexing::Slice(@)", constructor.}
 
 
 func start*(s: TorchSlice): int64 {.importcpp: "#.start()".}

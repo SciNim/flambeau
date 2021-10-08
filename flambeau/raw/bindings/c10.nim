@@ -59,7 +59,10 @@ func `==`*[T](ar1, ar2: ArrayRef[T]): bool {.importcpp: "(# == #)".}
 
 type
   Optional*[T] {.bycopy, importcpp: "c10::optional".} = object
-  Nullopt_t* {.bycopy, importcpp: "c10::nullopt_t".} = object
+  Nullopt_t* {.bycopy, importcpp: "c10::nullopt_t".} = distinct int
+
+# Nullopt is nullopt_t{0}
+const nullopt* : Nullopt_t = Nullopt_t(0)
 
 func value*[T](o: Optional[T]): T {.importcpp: "#.value()".}
 
