@@ -383,12 +383,9 @@ type
     IndexTensor = 5
 
 # The None used in Torch isn't actually the enum but a c10::nullopt
-const None* : Nullopt_t = c10.nullopt
+let None* {.importcpp: "torch::indexing::None".} : Nullopt_t
 
 type EllipsisIndexType* {.importcpp: "torch::indexing::EllipsisIndexType".} = object
-
-proc SliceEllipsis*(): EllipsisIndexType {.constructor.} =
-  {.emit: "result = torch::indexing::EllipsisIndexType::EllipsisIndexType()".}
 
 let Ellipsis* {.importcpp: "torch::indexing::Ellipsis".} : EllipsisIndexType
 

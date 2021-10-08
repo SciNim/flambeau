@@ -177,10 +177,10 @@ func `^`*(s: Slice): TorchSlice {.inline.} =
 
 import std/macros
 
-func sliceNone(): NimNode =
+func sliceNone(): NimNode {.used.} =
   bindSym("SliceSpan")
 
-func indexNone(): NimNode =
+proc indexNone(): NimNode =
   bindSym("None")
 
 proc sliceEllipsis(): NimNode =
@@ -274,7 +274,7 @@ macro desugarSlices(args: untyped): void =
     )
 
     # Node is of the form "* `op` * | *" or "* `op` * |+ *" or "* `op` * |- *"
-    let nnk20_bar_all = nnk20_bar_pos or nnk20_bar_min
+    let nnk20_bar_all = nnk20_bar_pos # or nnk20_bar_min
 
     # Node is of the form "* `op1` _ `op2` *"
     let nnk21_joker = (
@@ -287,6 +287,8 @@ macro desugarSlices(args: untyped): void =
     if nnk_joker:
       ## [_, 3] into [{None, 3}]
       r.add(sliceEllipsis())
+    elif nnk20_bar_min:
+      error "Negative steps are not supported using Torch. Steps must be greater than zero."
     elif nnk0_inf_dotdot and nnk1_joker and nnk2_joker:
       ## [_.._, 3] into [{None, 3}]
       r.add(sliceEllipsis())
@@ -294,22 +296,18 @@ macro desugarSlices(args: untyped): void =
       ## [_.._|2, 3] into [{Slice(None, None, 2), 3}]
       ## [_.._|+2, 3] into [{Slice(None, None, 2), 3}]
       ## [_.._|-2 doesn't make sense and will throw out of bounds
-      echo "****"
-      echo nnk[2][2].toStrLit.strVal
-      echo "****"
       r.add(Slice(indexNone(), indexNone(), nnk[2][2]))
     elif nnk0_inf_dotdot_all and nnk1_joker and nnk20_bar_all:
       ## [_..10|1, 3] into [{Slice(None, 10+1, 1), 3}] (for inclusive)
       ## [_..^10|1, 3] into [{Slice(None, -10, 1), 3}]
       ## [_..<10|1, 3] into [{Slice(None, 10, 1), 3}] (exclusive)
-      echo "----"
-      echo nnk[2][2].toStrLit.strVal
-      echo "----"
-
       if nnk[0].eqident(".."):
         r.add Slice(indexNone(), succ(nnk[2][1]), nnk[2][2])
       elif nnk[0].eqident("..^"):
-        r.add Slice(indexNone(), -nnk[2][1], nnk[2][2])
+        if nnk[2][1] == (newIntLitNode(0)):
+          error "Slicing does not support '^0' syntax."
+        else:
+          r.add Slice(indexNone(), -nnk[2][1], nnk[2][2])
       elif nnk[0].eqident("..<"):
         r.add Slice(indexNone(), nnk[2][1], nnk[2][2])
       else:
@@ -321,7 +319,10 @@ macro desugarSlices(args: untyped): void =
       if nnk[0].eqident(".."):
         r.add Slice(indexNone(), succ(nnk[2]))
       elif nnk[0].eqident("..^"):
-        r.add Slice(indexNone(), -nnk[2])
+        if nnk[2] == (newIntLitNode(0)):
+          error "Slicing does not support '^0' syntax."
+        else:
+          r.add Slice(indexNone(), -nnk[2])
       elif nnk[0].eqident("..<"):
         r.add Slice(indexNone(), nnk[2])
       else:
@@ -334,14 +335,18 @@ macro desugarSlices(args: untyped): void =
       ## [1.._|+1, 3] into [{Slice(1, None, 1), 3}]
       r.add Slice(nnk[1], indexNone(), nnk[2][2])
     elif nnk0_inf_dotdot and nnk20_bar_min and nnk21_joker:
+      # Unreachable because nnk20_bar_min is disallowed
       ## Raise error on [5.._|-1, 3]
       raise newException(IndexDefect, "Please use explicit end of range " &
                        "instead of `_` " &
                        "when the steps are negative")
     elif nnk0_inf_dotdot_all and nnk10_hat and nnk20_bar_all:
+      # TODO disable negative step at CT
       ## [^1..2|-1, 3] into [{Slice(-1, 2, -1), 3}]
       r.add Slice(-nnk[1][1], nnk[2][1], -nnk[2][2])
+      # error "Slicing Tensor in reverse is equivalent to usnig negative steps. Negative steps are not allowed in Torch. Use flip() instead."
     elif nnk0_inf_dotdot_all and nnk10_hat:
+      # TODO disable negative step at CT
       ## [^1..2*3, 3] into [{Slice(-1, 2*3 + 1), 3}]
       ## [^1..0, 3] into [{Slice(-1, 0 + 1), 3}]
       ## [^1..<10, 3] into [{Slice(-1, 10), 3}]
@@ -363,7 +368,10 @@ macro desugarSlices(args: untyped): void =
       if nnk[0].eqident(".."):
         r.add Slice(nnk[1], succ(nnk[2][1]), nnk[2][2])
       elif nnk[0].eqident("..^"):
-        r.add Slice(nnk[1], -nnk[2][1], nnk[2][2])
+        if nnk[2][1] == (newIntLitNode(0)):
+          error "Slicing does not support '^0' syntax."
+        else:
+          r.add Slice(nnk[1], -nnk[2][1], nnk[2][2])
       elif nnk[0].eqident("..<"):
         r.add Slice(nnk[1], nnk[2][1], nnk[2][2])
       else:
@@ -375,14 +383,20 @@ macro desugarSlices(args: untyped): void =
       if nnk[0].eqident(".."):
         r.add Slice(nnk[1], succ(nnk[2]))
       elif nnk[0].eqident("..^"):
-        r.add Slice(nnk[1], -nnk[2])
+        if nnk[2] == (newIntLitNode(0)):
+          error "Slicing does not support '^0' syntax."
+        else:
+          r.add Slice(nnk[1], -nnk[2])
       elif nnk[0].eqident("..<"):
         r.add Slice(nnk[1], nnk[2])
       else:
         error "Unreachable"
     elif nnk0_pre_hat:
       ## [^2, 3] into [^2..^2|1, 3]
-      r.add(-nnk[1])
+      if nnk[1] == (newIntLitNode(0)):
+          error "Slicing does not support '^0' syntax."
+      else:
+        r.add(-nnk[1])
     else:
       r.add(nnk)
   # echo "\nAfter modif"
@@ -623,7 +637,6 @@ macro slice_typed_dispatch_mut(t: typed, args: varargs[typed], val: typed): unty
 # #######################################################################
 # Checkers func to Raise IndexDefect
 # -----------------------------------------------------------------------
-import ./interop
 
 macro `[]`*(t: RawTensor, args: varargs[untyped]): untyped =
   ## Slice a Tensor
