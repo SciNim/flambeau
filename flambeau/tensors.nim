@@ -34,6 +34,9 @@ proc initTensor*[T](): Tensor[T] {.constructor, noinit.} =
 func asRaw*[T: SomeTorchType](t: Tensor[T]): RawTensor =
   t.raw
 
+func asRaw*[T: SomeTorchType](t: var Tensor[T]): var RawTensor =
+  t.raw
+
 func asTensor*[T: SomeTorchType](t: RawTensor): Tensor[T] {.noinit.} =
   # if T is complex then T = Complex32 gets convertes to kComplexF32 by converter
   result.raw = t.to(T)

@@ -12,10 +12,16 @@ macro square_bracket_slice[T](t: Tensor[T], args: varargs[untyped]): untyped =
 template `[]`*[T](t: Tensor[T], args: varargs[untyped]): Tensor[T] =
   asTensor[T](square_bracket_slice[T](t, args))
 
-macro `[]=`*[T](t: var Tensor[T], args: varargs[untyped]): untyped =
+macro square_bracket_assign*[T](t: var Tensor[T], args: varargs[untyped]): untyped =
   var tmp = args
   let val = tmp.pop
   let new_args = getAST(desugarSlices(tmp))
 
   result = quote do:
-    slice_typed_dispatch_mut(asRaw(`t`), `new_args`,`val`)
+    when `val` is Tensor:
+      slice_typed_dispatch_mut(asRaw(`t`), `new_args`, asRaw(`val`))
+    else:
+      slice_typed_dispatch_mut(asRaw(`t`), `new_args`, `val`)
+
+template `[]=`*[T](t: var Tensor[T], args: varargs[untyped]) =
+  square_bracket_assign(t, args)

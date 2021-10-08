@@ -43,5 +43,4 @@ func toTensor*[T: seq|array](oa: openArray[T]): auto {.noinit.} =
   result = asTensor[V](res)
 
 proc `$`*[T](t: Tensor[T]): string =
-  # `$`(asRaw(t))
-  "Tensor\n" & $(toCppString(asRaw(t)))
+  $(asRaw(t))

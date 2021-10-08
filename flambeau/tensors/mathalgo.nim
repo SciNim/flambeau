@@ -2,7 +2,7 @@ import ../raw/bindings/[rawtensors, c10]
 import ../raw/cpp/[std_cpp]
 import ../raw/sugar/[interop, indexing]
 import ../tensors
-import std/[complex, macros, sugar]
+import std/[complex, macros]
 
 {.experimental: "views".}
 {.push inline, noinit.}

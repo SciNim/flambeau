@@ -38,7 +38,7 @@ proc main() =
         vandermonde[i].add(aa^bb)
 
     let t_van = vandermonde.toRawTensor()
-    echo t_van
+    # echo t_van
 
     # Tensor of shape 5x5 of type "int" on backend "Cpu"
     # |1      1       1       1       1|

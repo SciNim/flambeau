@@ -1,7 +1,7 @@
 import ../tensors
 import ../raw/bindings/[rawtensors]
-import ../raw/cpp/[std_cpp]
 import ../raw/sugar/[interop, indexing]
+import cppstl/std_string
 import std/[complex, macros]
 
 type
