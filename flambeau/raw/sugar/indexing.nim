@@ -177,14 +177,22 @@ func `^`*(s: Slice): TorchSlice {.inline.} =
 
 import std/macros
 
-func sliceNone(): NimNode =
+func sliceNone(): NimNode {.used.} =
   bindSym("SliceSpan")
-func indexNone(): NimNode =
-  bindSym("IndexNone")
+
+proc indexNone(): NimNode =
+  bindSym("None")
+
+proc sliceEllipsis(): NimNode =
+  # Ellipsis is a ``importcpp`` global variable therefore the compiler cannot prove noSideEffect -> not a func
+  bindSym("Ellipsis")
+
 func succ(node: NimNode): NimNode =
   newCall(bindsym"succ", node)
+
 func `-`(node: NimNode): NimNode =
   newCall(bindsym"-", node)
+
 func Slice(nodes: varargs[NimNode]): NimNode =
   result = newCall(bindSym"torchSlice")
   for node in nodes:
@@ -266,7 +274,7 @@ macro desugarSlices(args: untyped): void =
     )
 
     # Node is of the form "* `op` * | *" or "* `op` * |+ *" or "* `op` * |- *"
-    let nnk20_bar_all = nnk20_bar_pos or nnk20_bar_min
+    let nnk20_bar_all = nnk20_bar_pos # or nnk20_bar_min
 
     # Node is of the form "* `op1` _ `op2` *"
     let nnk21_joker = (
@@ -278,10 +286,12 @@ macro desugarSlices(args: untyped): void =
     ###### Core desugaring logic
     if nnk_joker:
       ## [_, 3] into [{None, 3}]
-      r.add(sliceNone())
+      r.add(sliceEllipsis())
+    elif nnk20_bar_min:
+      error "Negative steps are not supported using Torch. Steps must be greater than zero."
     elif nnk0_inf_dotdot and nnk1_joker and nnk2_joker:
       ## [_.._, 3] into [{None, 3}]
-      r.add(sliceNone())
+      r.add(sliceEllipsis())
     elif nnk0_inf_dotdot and nnk1_joker and nnk20_bar_all and nnk21_joker:
       ## [_.._|2, 3] into [{Slice(None, None, 2), 3}]
       ## [_.._|+2, 3] into [{Slice(None, None, 2), 3}]
@@ -294,7 +304,10 @@ macro desugarSlices(args: untyped): void =
       if nnk[0].eqident(".."):
         r.add Slice(indexNone(), succ(nnk[2][1]), nnk[2][2])
       elif nnk[0].eqident("..^"):
-        r.add Slice(indexNone(), -nnk[2][1], nnk[2][2])
+        if nnk[2][1] == (newIntLitNode(0)):
+          error "Slicing does not support '^0' syntax."
+        else:
+          r.add Slice(indexNone(), -nnk[2][1], nnk[2][2])
       elif nnk[0].eqident("..<"):
         r.add Slice(indexNone(), nnk[2][1], nnk[2][2])
       else:
@@ -306,7 +319,10 @@ macro desugarSlices(args: untyped): void =
       if nnk[0].eqident(".."):
         r.add Slice(indexNone(), succ(nnk[2]))
       elif nnk[0].eqident("..^"):
-        r.add Slice(indexNone(), -nnk[2])
+        if nnk[2] == (newIntLitNode(0)):
+          error "Slicing does not support '^0' syntax."
+        else:
+          r.add Slice(indexNone(), -nnk[2])
       elif nnk[0].eqident("..<"):
         r.add Slice(indexNone(), nnk[2])
       else:
@@ -319,14 +335,18 @@ macro desugarSlices(args: untyped): void =
       ## [1.._|+1, 3] into [{Slice(1, None, 1), 3}]
       r.add Slice(nnk[1], indexNone(), nnk[2][2])
     elif nnk0_inf_dotdot and nnk20_bar_min and nnk21_joker:
+      # Unreachable because nnk20_bar_min is disallowed
       ## Raise error on [5.._|-1, 3]
       raise newException(IndexDefect, "Please use explicit end of range " &
                        "instead of `_` " &
                        "when the steps are negative")
     elif nnk0_inf_dotdot_all and nnk10_hat and nnk20_bar_all:
+      # TODO disable negative step at CT
       ## [^1..2|-1, 3] into [{Slice(-1, 2, -1), 3}]
       r.add Slice(-nnk[1][1], nnk[2][1], -nnk[2][2])
+      # error "Slicing Tensor in reverse is equivalent to usnig negative steps. Negative steps are not allowed in Torch. Use flip() instead."
     elif nnk0_inf_dotdot_all and nnk10_hat:
+      # TODO disable negative step at CT
       ## [^1..2*3, 3] into [{Slice(-1, 2*3 + 1), 3}]
       ## [^1..0, 3] into [{Slice(-1, 0 + 1), 3}]
       ## [^1..<10, 3] into [{Slice(-1, 10), 3}]
@@ -346,11 +366,14 @@ macro desugarSlices(args: untyped): void =
       ## [1..^10|1] into [{Slice(1, -10, 1)}]
       ## [1..<10|1] into [{Slice(1, 10, 1)}]
       if nnk[0].eqident(".."):
-        r.add Slice(nnk[1], succ(nnk[2][0]), nnk[2][1])
+        r.add Slice(nnk[1], succ(nnk[2][1]), nnk[2][2])
       elif nnk[0].eqident("..^"):
-        r.add Slice(nnk[1], -nnk[2][0], nnk[2][1])
+        if nnk[2][1] == (newIntLitNode(0)):
+          error "Slicing does not support '^0' syntax."
+        else:
+          r.add Slice(nnk[1], -nnk[2][1], nnk[2][2])
       elif nnk[0].eqident("..<"):
-        r.add Slice(nnk[1], nnk[2][0], nnk[2][1])
+        r.add Slice(nnk[1], nnk[2][1], nnk[2][2])
       else:
         error "Unreachable"
     elif nnk0_inf_dotdot_all:
@@ -360,14 +383,20 @@ macro desugarSlices(args: untyped): void =
       if nnk[0].eqident(".."):
         r.add Slice(nnk[1], succ(nnk[2]))
       elif nnk[0].eqident("..^"):
-        r.add Slice(nnk[1], -nnk[2])
+        if nnk[2] == (newIntLitNode(0)):
+          error "Slicing does not support '^0' syntax."
+        else:
+          r.add Slice(nnk[1], -nnk[2])
       elif nnk[0].eqident("..<"):
         r.add Slice(nnk[1], nnk[2])
       else:
         error "Unreachable"
     elif nnk0_pre_hat:
       ## [^2, 3] into [^2..^2|1, 3]
-      r.add(-nnk[1])
+      if nnk[1] == (newIntLitNode(0)):
+          error "Slicing does not support '^0' syntax."
+      else:
+        r.add(-nnk[1])
     else:
       r.add(nnk)
   # echo "\nAfter modif"
@@ -410,7 +439,7 @@ proc getFancySelector(ast: NimNode, axis: var int, selector: var NimNode): Fancy
     let cur = ast[i]
     # Important: sameType doesn't work for generic type like Array, Seq or Tensors ...
     #            https://github.com/nim-lang/Nim/issues/14021
-    if cur.kind in {nnkIdent, nnkSym} and cur.eqIdent"SliceSpan":
+    if cur.kind in {nnkIdent, nnkSym} and cur.eqIdent"Ellipsis":
       # Found a span
       discard
     elif (cur.kind == nnkCall and cur[0].eqIdent"torchSlice") or cur.isInt():
@@ -608,25 +637,6 @@ macro slice_typed_dispatch_mut(t: typed, args: varargs[typed], val: typed): unty
 # #######################################################################
 # Checkers func to Raise IndexDefect
 # -----------------------------------------------------------------------
-import interop
-{.experimental: "views".} # TODO this is ignored
-func check_index*(t: RawTensor, idx: varargs[int]) {.inline.}=
-  if unlikely(idx.len != t.ndimension):
-    raise newException(
-      IndexDefect, "Number of arguments: " &
-                  $(idx.len) &
-                  ", is different from tensor rank: " &
-                  $(t.ndimension)
-    )
-  for i in 0 ..< t.ndimension:
-    let dim : int64 = t.sizes()[i]
-    if unlikely(not(0 <= idx[i] and idx[i] < dim)):
-      raise newException(
-        IndexDefect, "Out-of-bounds access: " &
-                    "Tensor of shape " & $t.sizes()&
-                    " being indexed by " & $idx
-      )
-
 
 macro `[]`*(t: RawTensor, args: varargs[untyped]): untyped =
   ## Slice a Tensor
@@ -662,8 +672,6 @@ macro `[]`*(t: RawTensor, args: varargs[untyped]): untyped =
   let new_args = getAST(desugarSlices(args))
 
   result = quote do:
-    # when compileOption("boundChecks"):
-      # check_index(`t`, `new_args`)
     slice_typed_dispatch(`t`, `new_args`)
 
 macro `[]=`*(t: var RawTensor, args: varargs[untyped]): untyped =
@@ -697,6 +705,4 @@ macro `[]=`*(t: var RawTensor, args: varargs[untyped]): untyped =
   let new_args = getAST(desugarSlices(tmp))
 
   result = quote do:
-    # when compileOption("boundChecks"):
-      # check_index(`t`, `new_args`)
     slice_typed_dispatch_mut(`t`, `new_args`,`val`)

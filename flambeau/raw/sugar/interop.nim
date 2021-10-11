@@ -31,8 +31,9 @@ template asNimView*[T](ar: ArrayRef[T]): openArray[T] =
   toOpenArray(ar.data.unsafeAddr, 0, ar.size.int - 1)
 
 template asTorchView*[T](oa: openarray[T]): ArrayRef[T] =
+  # Don't remove. This makes @[1, 2, 3].asTorchView works
   let a = oa
-  ArrayRef[T].init(a[0].unsafeAddr, oa.len)
+  ArrayRef[T].init(oa[0].unsafeAddr, oa.len)
 
 template asTorchView*(meta: Metadata): ArrayRef[int64] =
   ArrayRef[int64].init(meta.data[0].unsafeAddr, meta.len)
@@ -57,7 +58,8 @@ func `[]`*[T](ar: ArrayRef[T], idx: SomeInteger) : T =
   when compileOption("boundChecks"):
     if idx < 0 or idx >= ar.len():
       raise newException(IndexDefect, &"ArrayRef `[]` access out-of-bounds. Index constrained by 0 <= {idx} <= ArrayRef.len() = {ar.len()}.")
-  ar.data()[idx]
+  let data = ar.data()
+  result = data[idx]
 
 func `[]=`*[T](ar: var ArrayRef[T], idx: SomeInteger, val: T) =
   when compileOption("boundChecks"):

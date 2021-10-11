@@ -8,6 +8,7 @@
 import
   # Standard library
   std/complex,
+  cppstl/std_string,
   # Internal
   ../cpp/std_cpp,
   ../../libtorch,
@@ -381,16 +382,25 @@ type
     IndexSlice = 4
     IndexTensor = 5
 
-  SomeSlicer* = TensorIndexType or SomeSignedInt
+# The None used in Torch isn't actually the enum but a c10::nullopt
+let None* {.importcpp: "torch::indexing::None".} : Nullopt_t
+
+type EllipsisIndexType* {.importcpp: "torch::indexing::EllipsisIndexType".} = object
+
+let Ellipsis* {.importcpp: "torch::indexing::Ellipsis".} : EllipsisIndexType
+
+  # SomeSlicer* = TensorIndexType|SomeSignedInt
 
 proc SliceSpan*(): TorchSlice {.importcpp: "at::indexing::Slice()".}
     ## This is passed to the "index" function
     ## This is Python ":", span / whole dimension
 
 func torchSlice*(){.importcpp: "torch::indexing::Slice(@)", constructor.}
-func torchSlice*(start: SomeSlicer): TorchSlice {.importcpp: "torch::indexing::Slice(@)", constructor.}
-func torchSlice*(start: SomeSlicer, stop: SomeSlicer): TorchSlice {.importcpp: "torch::indexing::Slice(@)", constructor.}
-func torchSlice*(start: SomeSlicer, stop: SomeSlicer, step: SomeSlicer): TorchSlice {.importcpp: "torch::indexing::Slice(@)", constructor.}
+func torchSlice*(start: Nullopt_t|SomeSignedInt): TorchSlice {.importcpp: "torch::indexing::Slice(@)", constructor.}
+func torchSlice*(start: Nullopt_t|SomeSignedInt, stop: Nullopt_t|SomeSignedInt): TorchSlice {.importcpp: "torch::indexing::Slice(@)", constructor.}
+func torchSlice*(start: Nullopt_t|SomeSignedInt, stop: Nullopt_t|SomeSignedInt, step: Nullopt_t|SomeSignedInt): TorchSlice {.importcpp: "torch::indexing::Slice(@)", constructor.}
+
+
 func start*(s: TorchSlice): int64 {.importcpp: "#.start()".}
 func stop*(s: TorchSlice): int64 {.importcpp: "#.stop()".}
 func step*(s: TorchSlice): int64 {.importcpp: "#.step()".}
