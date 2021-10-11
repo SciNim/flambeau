@@ -1,8 +1,8 @@
-import unittest
-import sequtils
-import strutils
-import complex
-import sugar
+import std/unittest
+import std/sequtils
+import std/strutils
+import std/complex
+import std/sugar
 
 import ../../flambeau
 
