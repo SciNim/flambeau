@@ -30,7 +30,7 @@ macro unpackVarargs_last(callee, arg_last: untyped; args: varargs[untyped]):unty
     result.add a
   result.add arg_last
 
-func concatImpl(tensorargs: varargs[RawTensor, raw], axis: int64): RawTensor =
+func concatImpl(tensorargs: varargs[RawTensor, asRaw], axis: int64): RawTensor =
   let tensors : ArrayRef[RawTensor] = tensorargs.asTorchView()
   rawtensors.cat(tensors, axis)
 
