@@ -1,8 +1,8 @@
 # Copyright 2021 the Flambeaucontributors
 #
 import flambeau
-import unittest
-import complex
+import std/unittest
+import std/complex
 
 {.experimental: "views".} # TODO
 
@@ -108,4 +108,3 @@ proc main() =
           check: res == 36
         ]#
 main()
-GC_fullCollect()

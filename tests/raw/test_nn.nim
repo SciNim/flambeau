@@ -1,5 +1,5 @@
 import ../../flambeau/[flambeau_raw, flambeau_nn]
-import unittest
+import std/unittest
 
 {.experimental: "views".} # TODO
 
@@ -25,7 +25,7 @@ proc main() =
       check output.sizes == outputSize.asTorchView
     test "relu":
       let inputSize = [23'i64, 3, 128, 256]
-      var input = zeros(inputSize.asTorchView, kFloat32) + 1.0'f32 
+      var input = zeros(inputSize.asTorchView, kFloat32) + 1.0'f32
       let output = relu(input)
       check output == input
       input.relu_mut()
@@ -50,7 +50,7 @@ proc main() =
       check input_mutable == input
       input_mutable.dropout_mut(training=true)
       check input_mutable != input
-    
+
     #I get SIGSEGV when running this
     test "nll_loss":
       let inputSize = [26'i64, 10]
@@ -59,7 +59,7 @@ proc main() =
       let target = zeros(targetSize.asTorchView, kInt64) + 1
       let loss1 = nll_loss(input, target)
       check loss1.dim == 0
-    
+
     test "binary_cross_entropy_with_logits":
       let inputSize = [26'i64, 10]
       let input = rand(inputSize.asTorchView, kFloat32)

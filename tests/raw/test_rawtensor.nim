@@ -1,7 +1,7 @@
-import unittest
-import sequtils
-import complex
-import sugar
+import std/unittest
+import std/sequtils
+import std/complex
+import std/sugar
 
 import ../../flambeau/flambeau_raw
 
@@ -86,7 +86,7 @@ proc main() =
 
     test "item(Complex64)":
       # Check item for complex
-      let m = c64input[0].item(Complex64)
+      let m : C10_Complex[float64] = c64input[0].item(Complex64)
       check m.real is float64
       check m.imag is float64
 

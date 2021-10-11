@@ -233,6 +233,11 @@ proc main() =
       t_van[1..2, 1..3] = t_van_immut[3..4, 1..3|1]
       check: t_van == t_test
 
+    test "Slicing from the end":
+      # Other slicing from the end are forbidden because we cannot prove at CT that it does not result in slicing with negative steps
+      var t_van = t_van_immut.clone
+      check: t_van[^2..^1, 2..4] == @[@[27, 81, 243], @[64, 256, 1024]].toRawTensor()
+
     when compileOption("boundChecks") and not defined(openmp) and false:
       # No bound checking implemented for now
       test "Bounds checking":
