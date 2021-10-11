@@ -8,6 +8,7 @@
 import std/macros
 import ../bindings/c10
 import cppstl
+export cppstl
 
 # ############################################################
 #
@@ -71,8 +72,9 @@ template get*(tup: CppTuple, index: static int): auto =
 
 converter toCppComplex*[T: SomeFloat](c: C10_Complex[T]): CppComplex[T] {.inline.} =
   result = initCppComplex(c.real(), c.imag())
-converter toC10_Complex*[T: SomeFloat](c: CppComplex[T]): C10_Complex[T] {.inline.} =
-  result = initC10_Complex(c.real(), c.imag())
+
+# converter toC10_Complex*[T: SomeFloat](c: CppComplex[T]): C10_Complex[T] {.inline.} =
+#   result = initC10_Complex(c.real(), c.imag())
 
 proc `$`*[T: SomeFloat](z: C10_Complex[T]): string =
   result.add "("

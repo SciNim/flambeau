@@ -6,6 +6,7 @@
 # at your option. This file may not be copied, modified, or distributed except according to those terms.
 
 import ../../libtorch
+import cppstl/std_vector
 
 # c10 is a collection of utilities in PyTorch
 
@@ -51,6 +52,7 @@ func data*[T](ar: ArrayRef[T]): lent UncheckedArray[T] {.importcpp: "const_cast<
 func size*(ar: ArrayRef): csize_t {.importcpp: "#.size()".}
 
 func init*[T](AR: type ArrayRef[T], p: ptr T, len: SomeInteger): ArrayRef[T] {.constructor, importcpp: "c10::ArrayRef<'*0>(@)".}
+func init*[T](AR: type ArrayRef[T], vec: CppVector[T]): ArrayRef[T] {.constructor, importcpp: "c10::ArrayRef<'*0>(@)".}
 func init*[T](AR: type ArrayRef[T]): ArrayRef[T] {.constructor, varargs, importcpp: "c10::ArrayRef<'*0>({@})".}
 
 func `==`*[T](ar1, ar2: ArrayRef[T]): bool {.importcpp: "(# == #)".}
