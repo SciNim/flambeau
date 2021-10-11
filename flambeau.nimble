@@ -46,6 +46,35 @@ task build_torchvision, "Build the dependency torchvision":
   setCommand "cpp", libBuilder
 
 
+task test_raw, "Execute RawTensor tests ":
+  withDir "tests/raw":
+    for fstr in listFiles("."):
+      if fstr.endsWith(".nim") and fstr.startsWith("./test_"):
+        echo "Running ", fstr
+        selfExec("cpp -r -d:release " & fstr)
+        selfExec("cpp -r --gc:arc -d:release " & fstr)
+
+task test_tensor, "Execute Tensor[T] tests ":
+  withDir "tests/tensor":
+    for fstr in listFiles("."):
+      if fstr.endsWith(".nim") and fstr.startsWith("./test_"):
+        echo "Running ", fstr
+        selfExec("cpp -r -d:release " & fstr)
+        selfExec("cpp -r --gc:arc -d:release " & fstr)
+
+task test, "Execute all tests ":
+  testRawTask()
+  testTensorTask()
+
+task runExamples, "Run all examples":
+  withDir "examples/proof_of_concepts":
+    for fstr in listFiles("."):
+      if fstr.endsWith(".nim") and fstr.startsWith("./poc"):
+        echo "Running ", fstr
+        selfExec("cpp -r -d:release " & fstr)
+        selfExec("cpp -r --gc:arc -d:release " & fstr)
+
+
 task install_libtorch, "Download and install libtorch":
   const libInstaller = "flambeau" / "install" / "torch_installer.nim"
   # Using -b:cpp r avoir creating a local binary

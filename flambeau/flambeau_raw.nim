@@ -21,6 +21,8 @@ export rawtensors # TODO, don't export low-level procs and types like C++ slices
 
 # C++ Standard Library
 # ----------------------------------------------------------------
+import ./raw/bindings/c10
+export c10
 
 import ./raw/cpp/std_cpp
 export std_cpp
