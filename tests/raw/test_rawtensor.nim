@@ -86,7 +86,7 @@ proc main() =
 
     test "item(Complex64)":
       # Check item for complex
-      let m : C10_Complex[float64] = c64input[0].item(Complex64)
+      let m: C10_Complex[float64] = c64input[0].item(Complex64)
       check m.real is float64
       check m.imag is float64
 

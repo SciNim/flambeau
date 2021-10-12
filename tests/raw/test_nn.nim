@@ -38,17 +38,17 @@ proc main() =
     test "dropout":
       let inputSize = [25'i64, 1000]
       let input = rand(inputSize.asTorchView, kFloat32)
-      let outputTraining = dropout(input, training=true)
-      let outputNotTraining = dropout(input, training=false)
+      let outputTraining = dropout(input, training = true)
+      let outputNotTraining = dropout(input, training = false)
       check outputTraining.sizes == inputSize.asTorchView
       check outputTraining != input
       check outputNotTraining.sizes == inputSize.asTorchView
       check outputNotTraining == input
 
       var input_mutable = input.clone()
-      input_mutable.dropout_mut(training=false)
+      input_mutable.dropout_mut(training = false)
       check input_mutable == input
-      input_mutable.dropout_mut(training=true)
+      input_mutable.dropout_mut(training = true)
       check input_mutable != input
 
     #I get SIGSEGV when running this
@@ -81,7 +81,7 @@ proc main() =
       check output.sizes == outputSize.asTorchView
     test "Conv2d":
       var convOptions = Conv2dOptions.init(32, 64, 3).stride(1).padding(1)
-      var conv = Conv2d.init(convOptions)#(32, 64, 3) # Take in 32 channels and outputs 64 channel using a kernel with size 3x3
+      var conv = Conv2d.init(convOptions) #(32, 64, 3) # Take in 32 channels and outputs 64 channel using a kernel with size 3x3
       let inputSize = [17'i64, 32, 128, 128] # 17 batches of 32 channel images with size 128x128
       let outputSize = [17'i64, 64, 128, 128]
       let input = rand(inputSize.asTorchView, kFloat32)
