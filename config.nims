@@ -7,6 +7,6 @@
 
 switch("threads", "on")
 when defined(windows):
-  {.passC: "-DNOMINMAX".}
+  switch("passC", "/DNOMINMAX")
   switch("cc", "vcc")
   switch("passC", "/W0") # The console is flooded with NOTES and WARNINGS from vcc, this disables them.
