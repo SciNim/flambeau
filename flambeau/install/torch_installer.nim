@@ -98,11 +98,17 @@ proc downloadLibTorch(url, targetDir, filename: string) =
 proc uncompress(targetDir, filename: string, delete = false) =
   var z: ZipArchive
   let tmp = targetDir / filename
-  if not z.open(tmp):
-    raise newException(IOError, &"Could not open zip file: \"{tmp}\"")
-  defer: z.close()
   echo "Decompressing \"", tmp, "\" and storing into \"", targetDir, "\""
-  z.extractAll(targetDir)
+  when not defined(windows):
+    if not z.open(tmp):
+      raise newException(IOError, &"Could not open zip file: \"{tmp}\"")
+    defer: z.close()
+    z.extractAll(targetDir)
+  else:
+    let cmd = &"tar -xf {tmp} -C {targetDir}"
+    let errCode = execShellCmd(cmd)
+    if errCode != 0:
+      raise newException(IOError, &"Could not unzip zip file: \"{tmp}\"")
   echo "Done."
   if delete:
     echo "Deleting \"", tmp, "\""
