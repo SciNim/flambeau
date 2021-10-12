@@ -48,9 +48,9 @@ task build_torchvision, "Build the dependency torchvision":
 
 task test_raw, "Execute RawTensor tests ":
   let skipGcArc= @["./test_nn.nim"]
-  withDir "tests/raw":
+  withDir "tests" / "raw":
     for fstr in listFiles("."):
-      if fstr.endsWith(".nim") and fstr.startsWith("./test_"):
+      if fstr.endsWith(".nim") and fstr.startsWith("." / "test_"):
         echo "Running ", fstr
         if fstr notin skipGcArc:
           selfExec("cpp -r -d:release " & fstr)
@@ -60,9 +60,9 @@ task test_raw, "Execute RawTensor tests ":
           selfExec("cpp -r -d:release " & fstr)
 
 task test_tensor, "Execute Tensor[T] tests ":
-  withDir "tests/tensor":
+  withDir "tests" / "tensor":
     for fstr in listFiles("."):
-      if fstr.endsWith(".nim") and fstr.startsWith("./test_"):
+      if fstr.endsWith(".nim") and fstr.startsWith("." / "test_"):
         echo "Running ", fstr
         selfExec("cpp -r -d:release " & fstr)
         selfExec("cpp -r --gc:arc -d:release " & fstr)
@@ -72,9 +72,9 @@ task test, "Execute all tests ":
   testTensorTask()
 
 task runExamples, "Run all examples":
-  withDir "examples/proof_of_concepts":
+  withDir "examples" / "proof_of_concepts":
     for fstr in listFiles("."):
-      if fstr.endsWith(".nim") and fstr.startsWith("./poc"):
+      if fstr.endsWith(".nim") and fstr.startsWith("." / "poc"):
         echo "Running ", fstr
         selfExec("cpp -r -d:release " & fstr)
         selfExec("cpp -r --gc:arc -d:release " & fstr)
