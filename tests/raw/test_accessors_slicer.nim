@@ -69,8 +69,8 @@ proc main() =
       check: t_van[1+1..4, 3-2..2] == test.toRawTensor()
 
     test "Span slices - foo[_, 3]":
-      let test = @[@[1], @[16], @[81], @[256], @[625]]
-      check: t_van[_, 3] == test.toRawTensor().squeeze()
+      let test = @[1, 16, 81, 256, 625]
+      check: t_van[_, 3] == test.toRawTensor()
 
     test "Span slices - foo[1.._, 3]":
       let test = @[@[16], @[81], @[256], @[625]]

@@ -22,10 +22,21 @@ proc main() =
       b[2, 3] = 111
       check: b[2, 3].item() == 111
 
-      # var c = zeros[Complex[float64]](@[3, 4])
-      # c[1, 2] = complex64(12.0, 6.0)
-      # check: c[1, 2].re - 12.0 <= 1e9
-      # check: c[1, 2].im - 6.0 <= 1e9
+      let complex_init = Complex64(re: -0.5, im: 0.5)
+      var c = @[
+        @[complex_init, complex_init, complex_init, complex_init],
+        @[complex_init, complex_init, complex_init, complex_init],
+        @[complex_init, complex_init, complex_init, complex_init]].toTensor
+
+      c[0, 2] = complex64(1.2, 6.6)
+      check: c[0, 2].item() == Complex64(re: 1.2, im: 6.6)
+
+      let complex_constant = Complex64(re: 2.5, im: 2.5)
+      c[1.._, 1.._] = complex_constant
+      check: c[1, 1].item() == complex_constant
+      check: c[1.._, 1.._] == @[
+        @[complex_constant, complex_constant, complex_constant],
+        @[complex_constant, complex_constant, complex_constant]].toTensor()
 
     # when compileOption("boundChecks") and not defined(openmp):
     #   test "Out of bounds checking":

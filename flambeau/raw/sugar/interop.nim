@@ -7,10 +7,10 @@
 
 import
   std/[complex, enumerate, macros, strformat],
-  # External
-  cppstl/std_string,
   # Internal
   ../bindings/[c10, rawtensors],
+  # cppstl included by std_cpp
+  ../cpp/[std_cpp],
   ../private/dynamic_stack_arrays
 
 # #######################################################################

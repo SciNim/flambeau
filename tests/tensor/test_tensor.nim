@@ -108,6 +108,7 @@ proc main() =
     test "item()":
       # Check item for complex
       let m = c64input[0].item()
+      check: $typeof(m) == "Complex64"
       check m.re is float64
       check m.im is float64
 

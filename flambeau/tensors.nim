@@ -253,6 +253,16 @@ func clone*[T](self: Tensor[T]): Tensor[T] {.noinit.} =
     rawtensors.clone(asRaw(self))
   )
 
+# TODO : make these works for complex helper
+# func view_as_real*[T: SomeFloat](self: Tensor[Complex[T]]) : Tensor[T] =
+#   asTensor[T](
+#     view_as_real(asRaw(self))
+#   )
+# func view_as_complex*[T: SomeFloat](self: Tensor[T]) : Tensor[Complex[T]] =
+#   asTensor[Complex[T]](
+#     view_as_complex(asRaw(self))
+#   )
+
 # Random sampling
 # -----------------------------------------------------------------------
 

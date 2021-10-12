@@ -144,7 +144,7 @@ func init*(T: type TensorOptions): TensorOptions {.constructor, importcpp: "torc
 #
 # Hence in Nim we don't need to care about Scalar or defined converters
 # (except maybe for complex)
-type Scalar* = SomeNumber or bool or Complex
+type Scalar* = SomeNumber or bool or C10_Complex
 
 # TensorAccessors
 # -----------------------------------------------------------------------
@@ -277,9 +277,12 @@ func empty*(size: IntArrayRef, device: DeviceKind): RawTensor {.importcpp: "torc
 
 func clone*(self: RawTensor): RawTensor {.importcpp: "#.clone()".}
 
+# TODO : Test this
+func view_as_real*(self: RawTensor) : RawTensor {.importcpp: "#.view_as_real()".}
+func view_as_complex*(self: RawTensor) : RawTensor {.importcpp: "#.view_as_complex()".}
+
 # Random sampling
 # -----------------------------------------------------------------------
-
 func random_mut*(self: var RawTensor, start, stopEx: int64) {.importcpp: "#.random_(@)".}
 func randint*(start, stopEx: int64): RawTensor {.varargs, importcpp: "torch::randint(#, #, {@})".}
 func randint*(start, stopEx: int64, size: IntArrayRef): RawTensor {.importcpp: "torch::randint(@)".}
