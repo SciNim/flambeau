@@ -37,7 +37,7 @@ task build_torchvision, "Build the dependency torchvision":
   else:
     const libName = "libtorchvision.so"
 
-  const libBuilder = "install/torchvision_build.nim"
+  const libBuilder = "flambeau/install/torchvision_build.nim"
   switch("out", "vendor/" & libName)
   switch("define", "danger")
   switch("app", "lib")
