@@ -10,8 +10,8 @@ jobs:
   tests:
     strategy:
       matrix:
-        os: [ubuntu-latest]
-        # os: [ubuntu-latest, macos-latest, windows-latest]
+        # os: [ubuntu-latest]
+        os: [ubuntu-latest, windows-latest]
 
     runs-on: ${{ matrix.os }}
     # runs-on: ubuntu-latest
@@ -20,6 +20,7 @@ jobs:
       - name: "install_nim"
         id: install_nim
         uses: iffy/install-nim@v3.2.2
+      - run: git submodule update --recursive --init
       - run: nimble install -y
       - run: nimble test
       # TODO : make examples works
