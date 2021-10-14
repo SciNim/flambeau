@@ -4,7 +4,7 @@ import std/strutils
 import std/complex
 import std/sugar
 
-import ../../flambeau
+import flambeau
 
 {.experimental: "views".} # TODO
 

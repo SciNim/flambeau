@@ -1,4 +1,4 @@
-import ../../flambeau/flambeau_raw
+import flambeau/flambeau_raw
 import std/[macros, unittest]
 
 {.experimental: "views".} # TODO

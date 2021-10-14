@@ -3,7 +3,7 @@ import std/sequtils
 import std/complex
 import std/sugar
 
-import ../../flambeau/flambeau_raw
+import flambeau/flambeau_raw
 
 {.experimental: "views".} # TODO
 
