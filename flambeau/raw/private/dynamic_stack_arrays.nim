@@ -172,3 +172,7 @@ func concat*[T](dsas: varargs[DynamicStackArray[T]]): DynamicStackArray[T] =
 func max*[T](a: DynamicStackArray[T]): T =
   for val in a:
     result = max(result, val)
+
+func toSeq*[T](a: DynamicStackArray[T]) : seq[T] =
+  for e in items(a):
+    result.add e

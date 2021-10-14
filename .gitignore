@@ -2,7 +2,7 @@
 *.pt
 *.exe
 .vscode
-build
+bin
 nimcache
 testresults
 libtorch

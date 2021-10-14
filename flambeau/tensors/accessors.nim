@@ -48,13 +48,13 @@ func item*(self: Tensor[Complex32]): Complex32 =
   when compileOption("boundChecks"):
     if numel(self) > 1:
       raise newException(IndexDefect, ".item() can only be called on one-element Tensor")
-  item(asRaw(self), typedesc[Complex32]).toCppComplex().toComplex()
+  item(asRaw(self), typedesc[Complex32]).toComplex()
 
 func item*(self: Tensor[Complex64]): Complex64 =
   when compileOption("boundChecks"):
     if numel(self) > 1:
       raise newException(IndexDefect, ".item() can only be called on one-element Tensor")
-  item(asRaw(self), typedesc[Complex64]).toCppComplex().toComplex()
+  item(asRaw(self), typedesc[Complex64]).toComplex()
 
 # Indexing
 # -----------------------------------------------------------------------
@@ -63,23 +63,67 @@ func item*(self: Tensor[Complex64]): Complex64 =
 # func `[]`*[T](self: Tensor, index: Tensor): Tensor
 # func `[]`*[T](self: Tensor, index: int64): Tensor
 
-func index*[T](self: Tensor[T], args: varargs): Tensor[T] {.noinit.} =
-  ## Tensor indexing. It is recommended
-  ## to Nimify this in a high-level wrapper.
-  ## `tensor.index(indexers)`
+template index*[T](self: Tensor[T], args: varargs[untyped]): Tensor[T] =
+  ## Tensor indexing
   asTensor[T](
     index(asRaw(self), args)
   )
-# We can't use the construct `#.index_put_({@}, #)`
-# so hardcode sizes,
-# 6d seems reasonable, that would be a batch of 3D videos (videoID/batchID, Time, Color Channel, Height, Width, Depth)
-# If you need more you likely aren't indexing individual values.
 
-func index_put*[T](self: var Tensor[T], idx: varargs[int|int64], val: T or Tensor[T]) =
-  ## Tensor mutation at index. It is recommended
-  asTensor[T](
-    index_put(asRaw(self), idx, val)
-  )
+# Also, this calls rawtensors.index_put which already follow this pattern so writing more code for less bug and more consistency seems worth it
+# For reference:
+#   We can't use the construct `#.index_put_({@}, #)`
+#   so hardcode sizes,
+#   6d seems reasonable, that would be a batch of 3D videos (videoID/batchID, Time, Color Channel, Height, Width, Depth)
+#   If you need more you likely aren't indexing individual values.
+#
+# This is kinda ugly but varargs[untyped] + template cause all sort of trouble
+func index_put*[T](self: var Tensor[T], i0: auto, val: T or Tensor[T]) =
+  when val is Tensor:
+    index_put(asRaw(self), i0, asRaw(val))
+  elif T is Complex:
+    index_put(asRaw(self), i0, toC10_Complex(val))
+  else:
+    index_put(asRaw(self), i0, val)
+
+func index_put*[T](self: var Tensor[T], i0, i1: auto, val: T or Tensor[T]) =
+  when val is Tensor:
+    index_put(asRaw(self), i0, i1, asRaw(val))
+  elif T is Complex:
+    index_put(asRaw(self), i0, i1, toC10_Complex(val))
+  else:
+    index_put(asRaw(self), i0, i1, val)
+
+func index_put*[T](self: var Tensor[T], i0, i1, i2: auto, val: T or Tensor[T]) =
+  when val is Tensor:
+    index_put(asRaw(self), i0, i1, i2, asRaw(val))
+  elif T is Complex:
+    index_put(asRaw(self), i0, i1, i2, toC10_Complex(val))
+  else:
+    index_put(asRaw(self), i0, i1, i2, val)
+
+func index_put*[T](self: var Tensor[T], i0, i1, i2, i3: auto, val: T or Tensor[T]) =
+  when val is Tensor:
+    index_put(asRaw(self), i0, i1, i2, i3, asRaw(val))
+  elif T is Complex:
+    index_put(asRaw(self), i0, i1, i2, i3, toC10_Complex(val))
+  else:
+    index_put(asRaw(self), i0, i1, i2, i3, val)
+
+func index_put*[T](self: var Tensor[T], i0, i1, i2, i3, i4: auto, val: T or Tensor[T]) =
+  when val is Tensor:
+    index_put(asRaw(self), i0, i1, i2, i3, i4, asRaw(val))
+  elif T is Complex:
+    index_put(asRaw(self), i0, i1, i2, i3, i4, toC10_Complex(val))
+  else:
+    index_put(asRaw(self), i0, i1, i2, i3, i4, val)
+
+func index_put*[T](self: var Tensor[T], i0, i1, i2, i3, i4, i5: auto, val: T or Tensor[T]) =
+  when val is Tensor:
+    index_put(asRaw(self), i0, i1, i2, i3, i4, i5, asRaw(val))
+  elif T is Complex:
+    index_put(asRaw(self), i0, i1, i2, i3, i4, i5, toC10_Complex(val))
+  else:
+    index_put(asRaw(self), i0, i1, i2, i3, i4, i5, val)
 
 # Fancy Indexing
 # -----------------------------------------------------------------------

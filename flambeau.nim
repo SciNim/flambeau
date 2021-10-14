@@ -12,11 +12,10 @@ when not defined(cpp):
   {.error: "Flambeau requires C++ backend required to use Torch".}
 
 import ./flambeau/tensors
-export tensors # TODO, don't export low-level procs and types like C++ slices.
+export tensors
 
 # C++ Standard Library
 # ----------------------------------------------------------------
-
 import ./flambeau/raw/cpp/std_cpp
 export std_cpp
 

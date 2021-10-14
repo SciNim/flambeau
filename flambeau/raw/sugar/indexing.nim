@@ -288,7 +288,7 @@ macro desugarSlices(args: untyped): void =
       ## [_, 3] into [{None, 3}]
       r.add(sliceEllipsis())
     elif nnk20_bar_min:
-      error "Negative steps are not supported using Torch. Steps must be greater than zero."
+      error "Negative steps are not supported when indexing in torch::Tensor. The use of flip() is recommended."
     elif nnk0_inf_dotdot and nnk1_joker and nnk2_joker:
       ## [_.._, 3] into [{None, 3}]
       r.add(sliceEllipsis())
@@ -335,7 +335,7 @@ macro desugarSlices(args: untyped): void =
       ## [1.._|+1, 3] into [{Slice(1, None, 1), 3}]
       r.add Slice(nnk[1], indexNone(), nnk[2][2])
     elif nnk0_inf_dotdot and nnk20_bar_min and nnk21_joker:
-      # Unreachable because nnk20_bar_min is disallowed
+      # TODO : Remove ? This is actually unreachable because nnk20_bar_min is disallowed
       ## Raise error on [5.._|-1, 3]
       raise newException(IndexDefect, "Please use explicit end of range " &
                        "instead of `_` " &
@@ -343,8 +343,8 @@ macro desugarSlices(args: untyped): void =
     elif nnk0_inf_dotdot_all and nnk10_hat and nnk20_bar_all:
       # TODO disable negative step at CT
       ## [^1..2|-1, 3] into [{Slice(-1, 2, -1), 3}]
-      r.add Slice(-nnk[1][1], nnk[2][1], -nnk[2][2])
-      # error "Slicing Tensor in reverse is equivalent to usnig negative steps. Negative steps are not allowed in Torch. Use flip() instead."
+      # r.add Slice(-nnk[1][1], nnk[2][1], -nnk[2][2])
+      error "Slicing Tensor in reverse is equivalent to using negative steps. Negative steps are not supported when indexing torch::tensor. Use flip() instead."
     elif nnk0_inf_dotdot_all and nnk10_hat:
       # TODO disable negative step at CT
       ## [^1..2*3, 3] into [{Slice(-1, 2*3 + 1), 3}]
@@ -354,11 +354,16 @@ macro desugarSlices(args: untyped): void =
       ## Note: apart from the last case, the other
       ## should throw a non-negative step error
       if nnk[0].eqident(".."):
-        r.add Slice(nnk[1][1], succ(nnk[2]))
-      elif nnk[0].eqident("..^"):
-        r.add Slice(nnk[1][1], -nnk[2])
+        # r.add Slice(nnk[1][1], succ(nnk[2]))
+        error "Slicing Tensor in reverse is equivalent to using negative steps. Negative steps are not supported when indexing torch::tensor. Use flip() instead."
       elif nnk[0].eqident("..<"):
-        r.add Slice(nnk[1][1], nnk[2])
+        # r.add Slice(nnk[1][1], nnk[2])
+        error "Slicing Tensor in reverse is equivalent to using negative steps. Negative steps are not supported when indexing torch::tensor. Use flip() instead."
+      elif nnk[0].eqident("..^"):
+        if nnk[1][1].toStrLit.strVal[0] > nnk[2].toStrLit.strVal[0]:
+          r.add Slice(nnk[1][1], -nnk[2])
+        else:
+          error "Slicing Tensor in reverse is equivalent to using negative steps. Negative steps are not supported when indexing torch::tensor. Use flip() instead."
       else:
         error "Unreachable"
     elif nnk0_inf_dotdot_all and nnk20_bar_all:

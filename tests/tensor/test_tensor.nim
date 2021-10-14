@@ -1,8 +1,8 @@
-import unittest
-import sequtils
-import strutils
-import complex
-import sugar
+import std/unittest
+import std/sequtils
+import std/strutils
+import std/complex
+import std/sugar
 
 import ../../flambeau
 
@@ -54,8 +54,9 @@ proc main() =
         [[1.0'f64, -1.0, -1.0], [-1.0, 1.0, -1.0], [-1.0, -1.0, 1.0]],
         [[1.0'f64, -1.0, -1.0], [-1.0, 1.0, -1.0], [-1.0, -1.0, 1.0]],
       ].toTensor()
-      var s = `$`(t).strip()
-      check s.toHex == "54656E736F720A28312C2E2C2E29203D200A202031202D31202D310A202D31202031202D310A202D31202D312020310A0A28322C2E2C2E29203D200A202031202D31202D310A202D31202031202D310A202D31202D312020310A5B20435055446F75626C65547970657B322C332C337D205D"
+      echo t
+      var s = strip($t)
+      check s.toHex == "54656E736F725B666C6F617436345D0A28312C2E2C2E29203D200A202031202D31202D310A202D31202031202D310A202D31202D312020310A0A28322C2E2C2E29203D200A202031202D31202D310A202D31202031202D310A202D31202D312020310A5B20435055446F75626C65547970657B322C332C337D205D"
 
     test "sort, argsort":
       let t = [2, 3, 4, 1, 5, 6].toTensor
@@ -68,13 +69,13 @@ proc main() =
 
     test "reshape":
       block:
-        var tt : Tensor[int] = [[-2, -6], [-12, -20]].toTensor()
+        var tt: Tensor[int] = [[-2, -6], [-12, -20]].toTensor()
         check tt.shape() == [2'i64, 2]
         let tt2 = tt.reshape(@[2'i64, 2, 1])
         check tt2.shape() == [2'i64, 2, 1]
 
       block:
-        var tt : Tensor[int] = [[1, 2, 3, 4], [5, 6, 7, 8]].toTensor()
+        var tt: Tensor[int] = [[1, 2, 3, 4], [5, 6, 7, 8]].toTensor()
         var tt3 = tt.reshape([4'i64, 2])
         check tt3.shape() == [4'i64, 2]
         check tt3 == [[1, 2], [3, 4], [5, 6], [7, 8]].toTensor()
@@ -107,6 +108,7 @@ proc main() =
     test "item()":
       # Check item for complex
       let m = c64input[0].item()
+      check: $typeof(m) == "Complex64"
       check m.re is float64
       check m.im is float64
 
@@ -120,7 +122,7 @@ proc main() =
       # echo max_input
       # Compare abs of Complex values
       var rel_diff = abs(ifftout - c64input) #.to(float64)
-      # echo rel_diff
+                                             # echo rel_diff
       rel_diff /= max_input
       # This isn't a perfect way of checking if Complex number are close enough
       # But it'll do for this simple case
@@ -181,4 +183,5 @@ proc main() =
       # But it'll do for this simple case
       check mean(rel_diff).item() < 1e-12
 
-main()
+when isMainModule:
+  main()

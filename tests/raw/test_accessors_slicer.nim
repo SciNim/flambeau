@@ -69,8 +69,8 @@ proc main() =
       check: t_van[1+1..4, 3-2..2] == test.toRawTensor()
 
     test "Span slices - foo[_, 3]":
-      let test = @[@[1], @[16], @[81], @[256], @[625]]
-      check: t_van[_, 3] == test.toRawTensor().squeeze()
+      let test = @[1, 16, 81, 256, 625]
+      check: t_van[_, 3] == test.toRawTensor()
 
     test "Span slices - foo[1.._, 3]":
       let test = @[@[16], @[81], @[256], @[625]]
@@ -232,6 +232,11 @@ proc main() =
       t_van[3..4, 1..3] = t_van_immut[1..2, 1..3|+1]
       t_van[1..2, 1..3] = t_van_immut[3..4, 1..3|1]
       check: t_van == t_test
+
+    test "Slicing from the end":
+      # Other slicing from the end are forbidden because we cannot prove at CT that it does not result in slicing with negative steps
+      var t_van = t_van_immut.clone
+      check: t_van[^2..^1, 2..4] == @[@[27, 81, 243], @[64, 256, 1024]].toRawTensor()
 
     when compileOption("boundChecks") and not defined(openmp) and false:
       # No bound checking implemented for now

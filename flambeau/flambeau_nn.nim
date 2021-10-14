@@ -39,6 +39,9 @@ export serialize
 import ./raw/cpp/[std_cpp, emitters]
 export std_cpp, emitters
 
+import cppstl/[std_smartptrs]
+export std_smartptrs
+
 # Convenience helpers
 # ----------------------------------------------------------------
 
@@ -47,4 +50,3 @@ export indexing, interop, moduleSugar
 
 import ./raw/bindings/c10
 export c10
-

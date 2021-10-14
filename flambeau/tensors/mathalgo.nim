@@ -24,32 +24,26 @@ func argsort*[T](self: Tensor[T], axis: int64 = -1, descending: bool = false): T
   )
 {.pop.}
 
-macro unpackVarargs_last(callee, arg_last: untyped; args: varargs[untyped]):untyped =
-  result = newCall(callee)
-  for a in args:
-    result.add a
-  result.add arg_last
-
-func concatImpl(tensorargs: varargs[RawTensor, asRaw], axis: int64): RawTensor =
-  let tensors : ArrayRef[RawTensor] = tensorargs.asTorchView()
-  rawtensors.cat(tensors, axis)
-
-template concat*[T](tensorargs: varargs[Tensor[T]], axis: int64): Tensor[T] =
-  ## High level API for torch::cat
-  asTensor[T](
-    unpackVarargs_last(concatImpl, axis, tensorargs)
-  )
-
-template concat*[T](tensorargs: varargs[Tensor[T]]): Tensor[T] =
-  ## High level API for torch::cat
-  asTensor[T](
-    unpackVarargs_last(concatImpl, 0.int64, tensorargs)
-  )
-
 {.push inline, noinit.}
+
+proc concat*[T](tensorargs: varargs[Tensor[T]], axis: int64): Tensor[T] =
+  var rawVec = initCppVector[RawTensor]()
+  for t in tensorargs:
+    rawVec.pushBack(asRaw(t))
+  let tensors = ArrayRef[RawTensor].init(rawVec)
+
+  ## High level API for torch::cat
+  result = asTensor[T](
+    rawtensors.cat(tensors, axis)
+  )
+
+proc concat*[T](tensorargs: varargs[Tensor[T]]): Tensor[T] =
+  # Overload because varargs + default argument don't mix well
+  result = concat(tensorargs, 0.int64)
+
 func flip*[T](self: Tensor[T], dims: openArray[int64]): Tensor[T] =
   let rawdims = dims.asTorchView()
-  asTensor[T](
+  result = asTensor[T](
     rawtensors.flip(asRaw(self), rawdims)
   )
 

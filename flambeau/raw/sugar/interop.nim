@@ -7,10 +7,10 @@
 
 import
   std/[complex, enumerate, macros, strformat],
-  # External
-  cppstl/std_string,
   # Internal
   ../bindings/[c10, rawtensors],
+  # cppstl included by std_cpp
+  ../cpp/[std_cpp],
   ../private/dynamic_stack_arrays
 
 # #######################################################################
@@ -33,7 +33,7 @@ template asNimView*[T](ar: ArrayRef[T]): openArray[T] =
 template asTorchView*[T](oa: openarray[T]): ArrayRef[T] =
   # Don't remove. This makes @[1, 2, 3].asTorchView works
   let a = oa
-  ArrayRef[T].init(oa[0].unsafeAddr, oa.len)
+  ArrayRef[T].init(a[0].unsafeAddr, a.len)
 
 template asTorchView*(meta: Metadata): ArrayRef[int64] =
   ArrayRef[int64].init(meta.data[0].unsafeAddr, meta.len)
@@ -58,8 +58,7 @@ func `[]`*[T](ar: ArrayRef[T], idx: SomeInteger) : T =
   when compileOption("boundChecks"):
     if idx < 0 or idx >= ar.len():
       raise newException(IndexDefect, &"ArrayRef `[]` access out-of-bounds. Index constrained by 0 <= {idx} <= ArrayRef.len() = {ar.len()}.")
-  let data = ar.data()
-  result = data[idx]
+  result = ar.data()[idx]
 
 func `[]=`*[T](ar: var ArrayRef[T], idx: SomeInteger, val: T) =
   when compileOption("boundChecks"):
@@ -230,4 +229,4 @@ func toCppString*(t: RawTensor): CppString =
   """.}
 
 proc `$`*(t: RawTensor): string =
-  "Tensor\n" & $(toCppString(t))
+  "RawTensor\n" & $(toCppString(t))

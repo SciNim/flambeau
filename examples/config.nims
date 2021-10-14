@@ -1,1 +1,1 @@
-switch("outdir", "build")
+switch("outdir", "bin")

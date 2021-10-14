@@ -18,16 +18,6 @@ type
 proc initTensor*[T](): Tensor[T] {.constructor, noinit.} =
   {.emit: "/* */".}
 
-# proc `=destroy`*[T](x: var Tensor[T]) =
-#   `=destroy`(x)
-
-# proc `=copy`*[T](dest: var Tensor[T], src: Tensor[T]) =
-#   dest.raw = src.raw.clone()
-
-# proc `=sink`*[T](dest: var Tensor[T], src: Tensor[T]) =
-#   `=destroy`(dest)
-#   wasMoved(dest)
-#   dest.raw = src.raw
 
 {.push warning[ProveInit]: off.}
 
@@ -80,11 +70,11 @@ func rank*[T](self: Tensor[T]): int64 =
 
 func shape*[T](self: Tensor[T]): seq[int64] =
   ## This is Arraymancer and Numpy "shape"
-  let tmp = sizes(asRaw(self))
+  let tmpshape = sizes(self)
   let r = self.ndimension()
   result = newSeq[int64](r)
   for i in 0..<r:
-    result[i] = tmp[i]
+    result[i] = tmpshape[i]
 
 func strides*[T](self: Tensor[T]): seq[int64] =
   let tmp = strides(asRaw(self))
@@ -262,6 +252,16 @@ func clone*[T](self: Tensor[T]): Tensor[T] {.noinit.} =
   asTensor[T](
     rawtensors.clone(asRaw(self))
   )
+
+# TODO : make these works for complex helper
+# func view_as_real*[T: SomeFloat](self: Tensor[Complex[T]]) : Tensor[T] =
+#   asTensor[T](
+#     view_as_real(asRaw(self))
+#   )
+# func view_as_complex*[T: SomeFloat](self: Tensor[T]) : Tensor[Complex[T]] =
+#   asTensor[Complex[T]](
+#     view_as_complex(asRaw(self))
+#   )
 
 # Random sampling
 # -----------------------------------------------------------------------

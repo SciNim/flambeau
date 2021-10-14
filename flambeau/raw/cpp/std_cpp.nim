@@ -5,9 +5,10 @@
 #   * Apache v2 license (license terms in the root directory or at http://www.apache.org/licenses/LICENSE-2.0).
 # at your option. This file may not be copied, modified, or distributed except according to those terms.
 
-import std/macros
+import std/[macros, complex]
 import ../bindings/c10
 import cppstl
+export cppstl
 
 # ############################################################
 #
@@ -71,8 +72,15 @@ template get*(tup: CppTuple, index: static int): auto =
 
 converter toCppComplex*[T: SomeFloat](c: C10_Complex[T]): CppComplex[T] {.inline.} =
   result = initCppComplex(c.real(), c.imag())
-converter toC10_Complex*[T: SomeFloat](c: CppComplex[T]): C10_Complex[T] {.inline.} =
+
+func toC10_Complex*[T: SomeFloat](c: CppComplex[T]): C10_Complex[T] {.inline.} =
   result = initC10_Complex(c.real(), c.imag())
+
+func toC10_Complex*[T: SomeFloat](c: Complex[T]): C10_Complex[T] {.inline.} =
+  result = initC10_Complex(c.re, c.im)
+
+func toComplex*[T: SomeFloat](c: C10_Complex[T]): Complex[T] {.inline.} =
+  result = Complex[T](re: c.real(), im: c.imag())
 
 proc `$`*[T: SomeFloat](z: C10_Complex[T]): string =
   result.add "("
