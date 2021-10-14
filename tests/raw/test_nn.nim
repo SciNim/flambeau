@@ -1,4 +1,4 @@
-import ../../flambeau/[flambeau_raw, flambeau_nn]
+import flambeau/[flambeau_raw, flambeau_nn]
 import std/unittest
 
 {.experimental: "views".} # TODO
