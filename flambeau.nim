@@ -6,7 +6,7 @@ static:
 {.passC: dummyHeader}
 
 type
-  RawTensor* {.header:"dummyTorch.h", importcpp: "torch::Tensor", cppNonPod, bycopy.} = object
+  RawTensor* {.header:"dummyTorch.h", importcpp: "torch::Tensor".} = object
   Tensor*[T]  = distinct RawTensor
 
 func initRawTensor*() : RawTensor {.constructor, importcpp: "torch::Tensor".}
