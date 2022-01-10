@@ -1,8 +1,10 @@
 import ../tensors
 import ../raw/bindings/[rawtensors]
 import ../raw/cpp/[std_cpp]
-import ../raw/sugar/[interop, indexing]
+import ../raw/sugar/[rawinterop, indexing]
 import std/[macros]
+
+let t_dont_use_this {.used.} = initRawTensor()
 
 ## Aggregate
 ## -----------------------------------------------------------------------

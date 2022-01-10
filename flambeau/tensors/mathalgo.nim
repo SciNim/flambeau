@@ -1,10 +1,13 @@
 import ../raw/bindings/[rawtensors, c10]
 import ../raw/cpp/[std_cpp]
-import ../raw/sugar/[interop, indexing]
+import ../raw/sugar/[rawinterop, indexing]
 import ../tensors
 import std/[complex, macros]
 
 {.experimental: "views".}
+
+let t_dont_use_this {.used.} = initRawTensor()
+
 {.push inline.}
 
 # # algorithms:
@@ -14,9 +17,10 @@ func sort*[T](self: Tensor[T], axis: int64 = -1, descending: bool = false): tupl
   ## If dim is not given, the last dimension of the input is chosen (dim=-1).
   ## Returns (values, originalIndices) or type (TensorT, TensorInt64)
   ## where originalIndices is the original index of each values (before sorting)
+
   let cppSortTuple = rawtensors.sort(asRaw(self), axis, descending)
-  result.values = asTensor[T](cppSortTuple.get(0))
-  result.originalIndices = asTensor[int64](cppSortTuple.get(1))
+  result.values = asTensor[T](cppSortTuple.get(0).clone())
+  result.originalIndices = asTensor[int64](cppSortTuple.get(1).clone())
 
 func argsort*[T](self: Tensor[T], axis: int64 = -1, descending: bool = false): Tensor[int64] =
   asTensor[int64](

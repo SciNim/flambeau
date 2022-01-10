@@ -1,9 +1,12 @@
 import std/[complex, macros]
 import cppstl/std_complex
+
 import ../raw/bindings/[rawtensors]
 import ../raw/cpp/[std_cpp]
 import ../tensors
-import ../raw/sugar/interop as rawinterop
+import ../raw/sugar/rawinterop 
+
+let t_dont_use_this {.used.} = initRawTensor()
 
 # Checkers func to Raise IndexDefect
 # TODO: Where should we use them ?

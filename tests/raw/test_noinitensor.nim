@@ -57,8 +57,6 @@ func toTensorAg*[T: seq|array](oa: openArray[T]): auto  =
 func `==`*[T](lhs, rhs: TensorAgreggate[T]) : bool = 
   RawTensor(lhs) == RawTensor(rhs)
 
-import flambeau
-
 proc main() =
   suite "RawTensor Initialization and {.noInit.} constraint":
     let a = [[1, 2], [3, 4]].toRawTensor()
@@ -99,11 +97,7 @@ proc main() =
 
     test "TensorAggregate & Tensor[T] ":
       let b = [[1, 2], [3, 4]].toTensorAg()
-      let c = [[1, 2], [3, 4]].toTensor()
-      check: RawTensor(b) == RawTensor(c)
+      check: RawTensor(b) == a
       echo b
-      echo c
-      echo c.flip(@[0.int64])
-      echo c[_, 1]
 
 main()

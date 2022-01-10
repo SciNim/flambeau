@@ -1,8 +1,8 @@
-# Copyright 2021 the Flambeaucontributors
-#
-import flambeau
+# Copyright 2021 the Flambeau contributors
+
 import std/unittest
 import std/complex
+include flambeau
 
 {.experimental: "views".} # TODO
 

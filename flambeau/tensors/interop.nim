@@ -5,24 +5,26 @@ import ../raw/sugar/[indexing]
 import ../raw/private/dynamic_stack_arrays
 import ../tensors
 
-import ../raw/sugar/interop as rawinterop
+import ../raw/sugar/rawinterop
 export rawinterop
 
-#func toTensorView*[T: SomeTorchType](oa: openArray[T]): lent Tensor[T] =
-#  ## Interpret an openarray as a CPU Tensor
-#  ## Important:
-#  ##   the buffer is shared.
-#  ##   There is no copy but modifications are shared
-#  ##   and the view cannot outlive its buffer.
-#  ##
-#  ## Input:
-#  ##      - An array or a seq (can be nested)
-#  ## Result:
-#  ##      - A view Tensor of the same shape
-#  return from_blob[T](
-#    arg[0].unsafeAddr,
-#    arg.len.int64,
-#  )
+let t_dont_use_this {.used.} = initRawTensor()
+
+func toTensorView*[T: SomeTorchType](oa: openArray[T]): lent Tensor[T] =
+  ## Interpret an openarray as a CPU Tensor
+  ## Important:
+  ##   the buffer is shared.
+  ##   There is no copy but modifications are shared
+  ##   and the view cannot outlive its buffer.
+  ##
+  ## Input:
+  ##      - An array or a seq (can be nested)
+  ## Result:
+  ##      - A view Tensor of the same shape
+  return from_blob[T](
+    arg[0].unsafeAddr,
+    arg.len.int64,
+  )
 
 #func toTensorFromScalar*[T: SomeTorchType](arg: openarray[T]): Tensor[T] =
 #  ## Interpret an openarray as a CPU Tensor

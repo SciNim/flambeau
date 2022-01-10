@@ -4,7 +4,8 @@ import std/strutils
 import std/complex
 import std/sugar
 
-import flambeau
+#import flambeau
+include flambeau
 
 {.experimental: "views".} # TODO
 
@@ -59,10 +60,10 @@ proc main() =
       check s.toHex == "54656E736F725B666C6F617436345D0A28312C2E2C2E29203D200A202031202D31202D310A202D31202031202D310A202D31202D312020310A0A28322C2E2C2E29203D200A202031202D31202D310A202D31202031202D310A202D31202D312020310A5B20435055446F75626C65547970657B322C332C337D205D"
 
     test "sort, argsort":
-      let t = [2, 3, 4, 1, 5, 6].toTensor
+      let t = [2, 3, 4, 1, 5, 6].toTensor()
       let
-        s = t.sort()
-        args = t.argsort()
+        s = sort(t)
+        args = argsort(t)
       check s.values == [1, 2, 3, 4, 5, 6].toTensor()
       check s.originalIndices == args
       check args == [3, 0, 1, 2, 4, 5].toTensor().to(int64)

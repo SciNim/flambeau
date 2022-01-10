@@ -12,12 +12,17 @@ when not defined(cpp):
   {.error: "Flambeau requires C++ backend required to use Torch".}
 
 import ./flambeau/tensors
-export tensors
+#export tensors
 
 # C++ Standard Library
 # ----------------------------------------------------------------
 import ./flambeau/raw/cpp/std_cpp
-export std_cpp
+#export std_cpp
 
 import ./flambeau/raw/bindings/c10
-export c10
+#export c10
+
+import ./flambeau/raw/sugar/rawinterop
+
+# I don't know why but if you remove this it doesn't work
+let local_make_sure_name_is_not_used_t {.used.} = toRawTensor(@[0])

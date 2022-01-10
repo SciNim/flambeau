@@ -30,5 +30,5 @@ export std_cpp
 # Convenience helpers
 # ----------------------------------------------------------------
 
-import ./raw/sugar/[indexing, interop]
-export indexing, interop
+import ./raw/sugar/[indexing, rawinterop]
+export indexing, rawinterop
