@@ -32,7 +32,7 @@ template asNimView*[T](ar: ArrayRef[T]): openArray[T] =
 
 template asTorchView*[T](oa: openarray[T]): ArrayRef[T] =
   # Don't remove. This makes @[1, 2, 3].asTorchView works
-  let a = oa
+  let a = @oa
   ArrayRef[T].init(a[0].unsafeAddr, a.len)
 
 template asTorchView*(meta: Metadata): ArrayRef[int64] =
@@ -148,6 +148,9 @@ macro getBaseType*(T: typedesc): untyped =
       result = result[1]
     else: # array
       result = result[2]
+
+  echo "------------------------------"
+  echo result.repr
 
 iterator flatIter*[T](s: openarray[T]): auto {.noSideEffect.}=
   ## Inline iterator on any-depth seq or array

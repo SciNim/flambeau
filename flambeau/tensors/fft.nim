@@ -7,7 +7,7 @@ import std/[complex, macros]
 type
   SomeComplex = Complex32|Complex64
 
-{.push inline, noinit.}
+{.push inline.}
 
 # FFTSHIFT
 # -----------------------------------------------------------------------

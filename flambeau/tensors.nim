@@ -8,30 +8,31 @@ export SomeTorchType
 
 {.experimental: "views".} # TODO
 
+# type
+#   Tensor*[T] {.requiresinit.} = object
+#     ## calling zeroMem on Tensor - which is called as default initialization - will set the refcount to 0 of the internal intrusive_ptr<TensorImpl> and destroy the RawTensor causin a segùentation fault
+#     ## It is imperative to either declare tensor object a ``noinit``, initialize specifically Tensor using ``initTensor``.
+#     ## In addition, all proc that return a Tensor object used as constructor must be declared as ``noinit``.
+#     raw: RawTensor
+
 type
-  Tensor*[T] {.requiresinit.} = object
-    ## calling zeroMem on Tensor - which is called as default initialization - will set the refcount to 0 of the internal intrusive_ptr<TensorImpl> and destroy the RawTensor causin a segùentation fault
-    ## It is imperative to either declare tensor object a ``noinit``, initialize specifically Tensor using ``initTensor``.
-    ## In addition, all proc that return a Tensor object used as constructor must be declared as ``noinit``.
-    raw: RawTensor
+  Tensor*[T]  = distinct RawTensor
 
-proc initTensor*[T](): Tensor[T] {.constructor, noinit.} =
-  {.emit: "/* */".}
+proc initTensor*[T](): Tensor[T] {.constructor.} =
+  RawTensor(result) = initRawTensor()
 
+# {.push warning[ProveInit]: off.}
+template asRaw*[T: SomeTorchType](t: Tensor[T]): RawTensor =
+  RawTensor(t)
 
-{.push warning[ProveInit]: off.}
+template asRaw*[T: SomeTorchType](t: var Tensor[T]): var RawTensor =
+  RawTensor(t)
 
-func asRaw*[T: SomeTorchType](t: Tensor[T]): RawTensor =
-  t.raw
-
-func asRaw*[T: SomeTorchType](t: var Tensor[T]): var RawTensor =
-  t.raw
-
-func asTensor*[T: SomeTorchType](t: RawTensor): Tensor[T] {.noinit.} =
+template asTensor*[T: SomeTorchType](t: RawTensor): Tensor[T] =
   # if T is complex then T = Complex32 gets convertes to kComplexF32 by converter
-  result.raw = t.to(T)
+  Tensor[T](to(t, typedesc[T]))
 
-{.pop.}
+# {.pop.}
 
 {.push inline.}
 
@@ -149,39 +150,39 @@ func is_quantized*[T](self: Tensor[T]): bool =
 func is_meta*[T](self: Tensor[T]): bool =
   is_meta(asRaw(self))
 
-func cpu*[T](self: Tensor[T]): Tensor[T] {.noinit.} =
+func cpu*[T](self: Tensor[T]): Tensor[T] =
   asTensor[T](
     cpu(asRaw(self))
   )
 
-func cuda*[T](self: Tensor[T]): Tensor[T] {.noinit.} =
+func cuda*[T](self: Tensor[T]): Tensor[T] =
   asTensor[T](
     cuda(asRaw(self))
   )
 
-func hip*[T](self: Tensor[T]): Tensor[T] {.noinit.} =
+func hip*[T](self: Tensor[T]): Tensor[T] =
   asTensor[T](
     hip(asRaw(self))
   )
 
-func vulkan*[T](self: Tensor[T]): Tensor[T] {.noinit.} =
+func vulkan*[T](self: Tensor[T]): Tensor[T] =
   asTensor[T](
   vulkan(asRaw(self))
   )
 
-func to*[T](self: Tensor[T], device: DeviceKind): Tensor[T] {.noinit.} =
+func to*[T](self: Tensor[T], device: DeviceKind): Tensor[T] =
   asTensor[T](
     to(asRaw(self), device)
   )
 
-func to*[T](self: Tensor[T], device: Device): Tensor[T] {.noinit.} =
+func to*[T](self: Tensor[T], device: Device): Tensor[T] =
   asTensor[T](
     to(asRaw(self), device)
   )
 
 # dtype
 # -----------------------------------------------------------------------
-func to*[T](self: Tensor[T], dtype: typedesc[SomeTorchType]): Tensor[dtype] {.noinit.} =
+func to*[T](self: Tensor[T], dtype: typedesc[SomeTorchType]): Tensor[dtype] =
   # Use typedesc -> ScalarKind converter here : for T = Complex32 T is converted to kComplexF32
   asTensor[dtype](
     rawtensors.to(asRaw(self), dtype)
@@ -194,29 +195,29 @@ func scalarType*[T](self: Tensor[T]): typedesc =
 # -----------------------------------------------------------------------
 # DeviceType and ScalarType are auto-convertible to TensorOptions
 
-func from_blob*[T](data: pointer, sizes: openArray[int64], options: TensorOptions|DeviceKind): Tensor[T] {.noinit.} =
+func from_blob*[T](data: pointer, sizes: openArray[int64], options: TensorOptions|DeviceKind): Tensor[T] =
   let dims = sizes.asTorchView
   asTensor[T](
     rawtensors.from_blob(data, dims, options)
   )
 
-func from_blob*[T](data: pointer, sizes: openArray[int64]): Tensor[T] {.noinit.} =
+func from_blob*[T](data: pointer, sizes: openArray[int64]): Tensor[T] =
   let dims = sizes.asTorchView
   asTensor[T](
     rawtensors.from_blob(data, dims, T)
   )
 
-func from_blob*[T](data: pointer, sizes: int64, options: TensorOptions|DeviceKind): Tensor[T] {.noinit.} =
+func from_blob*[T](data: pointer, sizes: int64, options: TensorOptions|DeviceKind): Tensor[T] =
   asTensor[T](
     rawtensors.from_blob(data, sizes, options)
   )
 
-func from_blob*[T](data: pointer, sizes: int64): Tensor[T] {.noinit.} =
+func from_blob*[T](data: pointer, sizes: int64): Tensor[T] =
   asTensor[T](
     rawtensors.from_blob(data, sizes, T)
   )
 
-func from_blob*[T](data: pointer, sizes, strides: openArray[int64], options: TensorOptions|DeviceKind): Tensor[T] {.noinit.} =
+func from_blob*[T](data: pointer, sizes, strides: openArray[int64], options: TensorOptions|DeviceKind): Tensor[T] =
   let
     dims = sizes.asTorchView
     stridest = strides.asTorchView
@@ -224,7 +225,7 @@ func from_blob*[T](data: pointer, sizes, strides: openArray[int64], options: Ten
     rawtensors.from_blob(data, dims, stridest, options)
   )
 
-func from_blob*[T](data: pointer, sizes, strides: openArray[int64]): Tensor[T] {.noinit.} =
+func from_blob*[T](data: pointer, sizes, strides: openArray[int64]): Tensor[T] =
   let
     dims = sizes.asTorchView
     stridest = strides.asTorchView
@@ -232,7 +233,7 @@ func from_blob*[T](data: pointer, sizes, strides: openArray[int64]): Tensor[T] {
     rawtensors.from_blob(data, dims, stridest, T)
   )
 
-func empty*[T](size: openArray[int64], options: TensorOptions|DeviceKind): Tensor[T] {.noinit.} =
+func empty*[T](size: openArray[int64], options: TensorOptions|DeviceKind): Tensor[T] =
   ## Create an uninitialized tensor of shape `size`
   ## The tensor data must be filled manually
   ##
@@ -242,13 +243,13 @@ func empty*[T](size: openArray[int64], options: TensorOptions|DeviceKind): Tenso
     rawtensors.empty(dims, options)
   )
 
-func empty*[T](size: openArray[int64]): Tensor[T] {.noinit.} =
+func empty*[T](size: openArray[int64]): Tensor[T] =
   let dims = size.asTorchView()
   asTensor[T](
     rawtensors.empty(dims, T)
   )
 
-func clone*[T](self: Tensor[T]): Tensor[T] {.noinit.} =
+func clone*[T](self: Tensor[T]): Tensor[T] =
   asTensor[T](
     rawtensors.clone(asRaw(self))
   )
@@ -269,28 +270,28 @@ func clone*[T](self: Tensor[T]): Tensor[T] {.noinit.} =
 func random_mut*[T](self: var Tensor[T], start, stopEx: int64) =
   random_mut(asRaw(self), start, stopEx)
 
-func randint*[T](start, stopEx: int64, args: varargs): Tensor[T] {.noinit.} =
+func randint*[T](start, stopEx: int64, args: varargs): Tensor[T]  =
   asTensor[T](
     rawtensors.randint(start, stopEx, args)
   )
 
-func randint*[T](start, stopEx: int64, size: openArray[int64]): Tensor[T] {.noinit.} =
+func randint*[T](start, stopEx: int64, size: openArray[int64]): Tensor[T]  =
   let dims = size.asTorchView()
   asTensor[T](
     rawtensors.randint(start, stopEx, dims)
   )
 
-func rand_like*[T](self: Tensor[T], options: TensorOptions|DeviceKind|Device): Tensor[T] {.noinit.} =
+func rand_like*[T](self: Tensor[T], options: TensorOptions|DeviceKind|Device): Tensor[T]  =
   asTensor[T](
     rawtensors.rand_like(asRaw(self), options)
   )
 
-func rand_like*[T](self: Tensor[T]): Tensor[T] {.noinit.} =
+func rand_like*[T](self: Tensor[T]): Tensor[T]  =
   asTensor[T](
     rawtensors.rand_like(asRaw(self), T)
   )
 
-func rand*[T](size: openArray[int64]): Tensor[T] {.noinit.} =
+func rand*[T](size: openArray[int64]): Tensor[T]  =
   let dims = size.asTorchView()
   asTensor[T](
     rawtensors.rand(dims)
@@ -299,13 +300,13 @@ func rand*[T](size: openArray[int64]): Tensor[T] {.noinit.} =
 # Shapeshifting
 # -----------------------------------------------------------------------
 
-func reshape*[T](self: Tensor[T], size: openArray[int64]): Tensor[T] {.noinit.} =
+func reshape*[T](self: Tensor[T], size: openArray[int64]): Tensor[T]  =
   let dims = size.asTorchView()
   asTensor[T](
     reshape(asRaw(self), dims)
   )
 
-func view*[T](self: Tensor[T], size: openArray[int64]): Tensor[T] {.noinit.} =
+func view*[T](self: Tensor[T], size: openArray[int64]): Tensor[T]  =
   let dims = size.asTorchView()
   asTensor[T](
     reshape(asRaw(self), dims)
@@ -319,7 +320,6 @@ func backward*[T](self: var Tensor[T]) =
 
 # # Functions.h
 # # -----------------------------------------------------------------------
-{.push noinit.}
 func toType*[T](self: Tensor[T], dtype: ScalarKind): Tensor[T] =
   asTensor[T](
     rawtensors.toType(asRaw(self), dtype)
@@ -555,7 +555,6 @@ func argmin*[T](self: Tensor[T], axis: int64, keepdim: bool = false): Tensor[int
   asTensor[int](
     rawtensors.argmin(asRaw(self), axis, keepdim)
   )
-{.pop.}
 
 func allClose*[T](t, other: Tensor[T], rtol: float64 = 1e-5, abstol: float64 = 1e-8, equalNan: bool = false): bool =
   allClose(asRaw(t), asRaw(other), rtol, abstol, equalNan)

@@ -127,12 +127,12 @@ func index_put*[T](self: var Tensor[T], i0, i1, i2, i3, i4, i5: auto, val: T or 
 
 # Fancy Indexing
 # -----------------------------------------------------------------------
-func index_select*[T](self: Tensor[T], axis: int64, indices: Tensor[int64]): Tensor[T] {.noinit.} =
+func index_select*[T](self: Tensor[T], axis: int64, indices: Tensor[int64]): Tensor[T] =
   asTensor[T](
     index_select(asRaw(self), axis, asRaw(indices))
   )
 
-func masked_select*[T](self: Tensor[T], mask: Tensor[int64]): Tensor[T] {.noinit.} =
+func masked_select*[T](self: Tensor[T], mask: Tensor[int64]): Tensor[T] =
   asTensor[T](
     masked_select(asRaw(self), asRaw(mask))
   )

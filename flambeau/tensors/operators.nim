@@ -6,7 +6,7 @@ import std/[complex, macros]
 # Operators
 # -----------------------------------------------------------------------
 {.push inline.}
-{.push noinit.}
+# {.push noinit.}
 func `not`*[T](self: Tensor[T]): Tensor[T] =
   asTensor[T](not asRaw(self))
 

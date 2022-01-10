@@ -9,21 +9,55 @@ macro `//`*(arg: string): untyped =
     {.emit: `lit`.}
 
 type
-  TensorAgreggate*[T] {.requiresinit.} = object
-    raw*: RawTensor
+  TensorAgreggate*[T] = distinct RawTensor
+    # raw*: RawTensor
 
-proc newTensorAggregate[T](): TensorAgreggate[T] {.constructor, noinit.} =
-  {.emit: "/* */".}
+proc newTensorAggregate[T](): TensorAgreggate[T] {.constructor.} =
+  # result = new(TensorAgreggate[T])
+  RawTensor(result) = initRawTensor()
+  # result.raw = initRawTensor()
+  # {.emit: "/* */".}
 
-proc newTensorAggregate[T](a: RawTensor): TensorAgreggate[T] {.noinit.} =
-  result = newTensorAggregate[T]()
-  result.raw = a
+proc newTensorAggregate[T](a: RawTensor): TensorAgreggate[T] =
+  # result = new(TensorAgreggate[T])
+  RawTensor(result) = a
+  # result = newTensorAggregate[T]()
+  # result.raw = a
 
 proc `$`*[T](tensorAg: TensorAgreggate[T]): string =
-  $(tensorAg.raw)
+  $(RawTensor(tensorAg))
 
-proc initTensorAggregate*[T](raw: RawTensor): TensorAgreggate[T] {.noinit.} =
-  assign(result.raw, raw)
+# proc initTensorAggregate*[T](raw: RawTensor): TensorAgreggate[T] =
+#   assign(result.raw, raw)
+
+template toTensorAgImpl[T: SomeTorchType](a: untyped) : TensorAgreggate[T] = 
+  TensorAgreggate[T](toRawTensor(a))
+
+func toTensorAg*[T: SomeTorchType](oa: openArray[T]): TensorAgreggate[T]  =
+  ## Interpret an openarray as a CPU Tensor
+  ##
+  ## Input:
+  ##      - An array or a seq
+  ## Result:
+  ##      - A view Tensor of the same shape
+  #RawTensor(result) = toRawTensorFromScalar[T](oa)
+  return toTensorAgImpl[T](oa)
+
+func toTensorAg*[T: seq|array](oa: openArray[T]): auto  =
+  ## Interpret an openarray of openarray as a CPU Tensor
+  ##
+  ## Input:
+  ##      - A nested array or a seq
+  ## Result:
+  ##      - A view Tensor of the same shape
+  type V = getBaseType(T)
+  return toTensorAgImpl[V](oa)
+
+
+func `==`*[T](lhs, rhs: TensorAgreggate[T]) : bool = 
+  RawTensor(lhs) == RawTensor(rhs)
+
+import flambeau
 
 proc main() =
   suite "RawTensor Initialization and {.noInit.} constraint":
@@ -49,13 +83,24 @@ proc main() =
 
     test "Tensor Aggregate":
       var tensorAg: TensorAgreggate[int] = newTensorAggregate[int](a)
-      check: tensorAg.raw == a
+      echo tensorAg
+
+      check: RawTensor(tensorAg) == a
+      check: $(tensorAg) == $(a)
+      let b = [[1, 2], [3, 4]].toTensorAg()
+      echo b
+      check: tensorAg == b
+
+    test "Tensor Aggregate native ":
+      var tensorAg : TensorAgreggate[int]
+      RawTensor(tensorAg) = a
+      check: RawTensor(tensorAg) == a
       check: $(tensorAg) == $(a)
 
-    test "Tensor Aggregate {.noinit.}":
-      var tensorAg {.noinit.}: TensorAgreggate[int]
-      tensorAg.raw = a
-      check: tensorAg.raw == a
-      check: $(tensorAg) == $(a)
+    test "TensorAggregate & Tensor[T] ":
+      let b = [[1, 2], [3, 4]].toTensorAg()
+      let c = [[1, 2], [3, 4]].toTensor()
+      check: RawTensor(b) == RawTensor(c)
+
 
 main()

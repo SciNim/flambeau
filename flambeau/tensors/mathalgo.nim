@@ -5,7 +5,7 @@ import ../tensors
 import std/[complex, macros]
 
 {.experimental: "views".}
-{.push inline, noinit.}
+{.push inline.}
 
 # # algorithms:
 # # -----------------------------------------------------------------------
@@ -22,9 +22,6 @@ func argsort*[T](self: Tensor[T], axis: int64 = -1, descending: bool = false): T
   asTensor[int64](
     rawtensors.argsort(asRaw(self), axis, descending)
   )
-{.pop.}
-
-{.push inline, noinit.}
 
 proc concat*[T](tensorargs: varargs[Tensor[T]], axis: int64): Tensor[T] =
   var rawVec = initCppVector[RawTensor]()
@@ -50,36 +47,30 @@ func flip*[T](self: Tensor[T], dims: openArray[int64]): Tensor[T] =
 #
 # # math
 # # -----------------------------------------------------------------------
-func abs*[T](self: Tensor[T]): Tensor[T] =
-  asTensor[T](
-    rawtensors.abs(asRaw(self))
-  )
-
 func absolute*[T](self: Tensor[T]): Tensor[T] =
   asTensor[T](
     rawtensors.absolute(asRaw(self))
   )
 
-## Absolute value of Complex type is a float
-func abs*(self: Tensor[Complex32]): Tensor[float32] =
-  asTensor[float32](
-    rawtensors.abs(asRaw(self))
-  )
+func abs*[T](self: Tensor[T]): Tensor[T] =
+  absolute(self)
 
+## Absolute value of Complex type is a float
 func absolute*(self: Tensor[Complex32]): Tensor[float32] =
   asTensor[float32](
     rawtensors.absolute(asRaw(self))
   )
 
-func abs*(self: Tensor[Complex64]): Tensor[float64] =
-  asTensor[float64](
-    rawtensors.abs(asRaw(self))
-  )
+func abs*(self: Tensor[Complex32]): Tensor[float32] =
+  absolute(self)
 
 func absolute*(self: Tensor[Complex64]): Tensor[float64] =
   asTensor[float64](
     rawtensors.absolute(asRaw(self))
   )
+
+func abs*(self: Tensor[Complex64]): Tensor[float64] =
+  absolute(self)
 
 func angle*[T](self: Tensor[T]): Tensor[T] =
   asTensor[T](

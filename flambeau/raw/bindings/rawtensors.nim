@@ -123,7 +123,8 @@ type
     kBfloat16 = 15   # Brain float16
 
 
-  SomeTorchType* = uint8|byte or SomeSignedInt or
+  SomeTorchType* = uint8|byte or 
+                   SomeSignedInt or SomeUnsignedInt or
                    SomeFloat or Complex[float32] or Complex[float64]
   ## Torch Tensor type mapped to Nim type
 
@@ -164,7 +165,7 @@ type Scalar* = SomeNumber or bool or C10_Complex
 # -----------------------------------------------------------------------
 
 type
-  RawTensor* {.importcpp: "torch::Tensor", bycopy.} = object
+  RawTensor* {.importcpp: "torch::Tensor", cppNonPod, bycopy.} = object
 
 # Strings & Debugging
 # -----------------------------------------------------------------------

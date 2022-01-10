@@ -55,7 +55,7 @@ func init*(
        params: CppVector[RawTensor],
        learning_rate: float64
      ): Optim
-     {.constructor, noInit, importcpp:"torch::optim::SGD(@)".}
+     {.constructor, importcpp:"torch::optim::SGD(@)".}
 
 # SGD-specific
 # -----------------------------------------------------------
@@ -75,4 +75,4 @@ func init*(
        params: CppVector[RawTensor],
        options: SGDOptions
      ): T
-     {.constructor, noInit, importcpp:"torch::optim::SGD(@)".}
+     {.constructor, importcpp:"torch::optim::SGD(@)".}

@@ -17,9 +17,9 @@ echo(a[2..^1|2, 3])
 echo "2"
 echo(a[_..^1|+1, 3])
 
-echo "3"
-a[0, _] = @[2, 2, 2, 2, 2].toRawTensor()
-echo(a)
+# echo "3"
+# a[0, _] = @[2, 2, 2, 2, 2].toRawTensor()
+# echo(a)
 
 a[0, _] = @[3, 3, 3, 3, 3].toTensor()
 echo(a)

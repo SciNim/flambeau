@@ -6,7 +6,7 @@ import std/[macros]
 
 ## Aggregate
 ## -----------------------------------------------------------------------
-{.push noinit.}
+# {.push noinit.}
 # sum needs wrapper procs/templates to allow for using nim arrays and single axis.
 func sum*[T](self: Tensor[T]): Tensor[T] =
   asTensor[T](
