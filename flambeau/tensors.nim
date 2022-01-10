@@ -18,10 +18,6 @@ export SomeTorchType
 type
   Tensor*[T]  = distinct RawTensor
 
-proc initTensor*[T](): Tensor[T] {.constructor.} =
-  RawTensor(result) = initRawTensor()
-
-# {.push warning[ProveInit]: off.}
 template asRaw*[T: SomeTorchType](t: Tensor[T]): RawTensor =
   RawTensor(t)
 
@@ -32,9 +28,13 @@ template asTensor*[T: SomeTorchType](t: RawTensor): Tensor[T] =
   # if T is complex then T = Complex32 gets convertes to kComplexF32 by converter
   Tensor[T](to(t, typedesc[T]))
 
-# {.pop.}
+proc initTensor*[T](): Tensor[T] {.constructor.} =
+  asRaw(result) = initRawTensor()
 
-{.push inline.}
+proc initTensor*[T](a: Tensor[T]): Tensor[T] {.constructor.} =
+  asRaw(result) = initRawTensor(asRaw(a))
+
+#{.push inline.}
 
 # Strings & Debugging
 # -----------------------------------------------------------------------

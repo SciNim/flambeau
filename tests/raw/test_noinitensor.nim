@@ -101,6 +101,9 @@ proc main() =
       let b = [[1, 2], [3, 4]].toTensorAg()
       let c = [[1, 2], [3, 4]].toTensor()
       check: RawTensor(b) == RawTensor(c)
-
+      echo b
+      echo c
+      echo c.flip(@[0.int64])
+      echo c[_, 1]
 
 main()

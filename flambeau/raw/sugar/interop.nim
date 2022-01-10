@@ -149,8 +149,8 @@ macro getBaseType*(T: typedesc): untyped =
     else: # array
       result = result[2]
 
-  echo "------------------------------"
-  echo result.repr
+  # echo "------------------------------"
+  # echo result.repr
 
 iterator flatIter*[T](s: openarray[T]): auto {.noSideEffect.}=
   ## Inline iterator on any-depth seq or array
