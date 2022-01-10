@@ -11,24 +11,18 @@
 when not defined(cpp):
   {.error: "Flambeau requires C++ backend required to use Torch".}
 
-import ./raw/bindings/rawtensors
-  except # TODO, don't export associated proc either
-    # ArrayRef,
-    TensorOptions,
-    TorchSlice, IndexNone, IndexEllipsis, SomeSlicer, torchSlice
+import libtorch
+{.push cdecl.}
+{.push header: torchHeader.}
 
-export rawtensors # TODO, don't export low-level procs and types like C++ slices.
+type Torch* = object
 
-# C++ Standard Library
-# ----------------------------------------------------------------
-import ./raw/bindings/c10
-export c10
+type
+  RawTensor* {.importcpp: "torch::Tensor", cppNonPod, bycopy.} = object
+# -----------------------------------------------------------------------
 
-import ./raw/cpp/std_cpp
-export std_cpp
-
-# Convenience helpers
-# ----------------------------------------------------------------
-
-import ./raw/sugar/[indexing, interop]
-export indexing, interop
+func init*(T: type RawTensor): RawTensor {.constructor, importcpp: "torch::Tensor".}
+# Default empty constructor
+func initRawTensor*(): RawTensor {.constructor, importcpp: "torch::Tensor".}
+# Move / Copy constructor ?
+func initRawTensor*(t: RawTensor): RawTensor {.constructor, importcpp: "torch::Tensor(@)".}
