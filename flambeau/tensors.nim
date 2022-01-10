@@ -10,6 +10,9 @@ export SomeTorchType
 
 type
   Tensor*[T] = distinct RawTensor
+  ## If Tensor is used as a field of an object, it has to be used with {.noinit.} pragma
+  ## This is because torch::Tensor is a hidden intrusive_ptr<TensorImpl> and the zeroMem() done by Nim compiler resets the ref count fields,
+  ## which triggers a call to torch::Tensor::reset() 
 
 template asRaw*[T: SomeTorchType](t: Tensor[T]): RawTensor =
   RawTensor(t)
@@ -500,7 +503,7 @@ func luSolve*[T](t, data, pivots: Tensor[T]): Tensor[T] =
     rawtensors.luSolve(t, data, pivots)
   )
 
-func qr*[T](self: Tensor[T], some: bool = true): tuple[q: Tensor[T], r: Tensor[T]] =
+func qr*[T](self: Tensor[T], some: bool = true): tuple[q: Tensor[T], r: Tensor[T]] {.noinit.} =
   ## Returns a tuple:
   ## - Q of shape (∗,m,k)
   ## - R of shape (∗,k,n)

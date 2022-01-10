@@ -101,7 +101,7 @@ func min*[T](self: Tensor[T]): Tensor[T] =
     rawtensors.min(asRaw(self))
   )
 
-func min*[T](self: Tensor[T], axis: int64, keepdim: bool = false): tuple[values: Tensor[T], indices: Tensor[int]] =
+func min*[T](self: Tensor[T], axis: int64, keepdim: bool = false): tuple[values: Tensor[T], indices: Tensor[int]] {.noinit.} =
   ## Returns a tuple (values, indices) of type (TensorT, TensorInt64)
   ## of the minimum values and their index in the specified axis
   let cppMinTuple = rawtensors.min(asRaw(self), axis, keepdim)
@@ -113,7 +113,7 @@ func max*[T](self: Tensor[T]): Tensor[T] =
     rawtensors.max(asRaw(self))
   )
 
-func max*[T](self: Tensor[T], axis: int64, keepdim: bool = false): tuple[values: Tensor[T], indices: Tensor[int]] =
+func max*[T](self: Tensor[T], axis: int64, keepdim: bool = false): tuple[values: Tensor[T], indices: Tensor[int]] {.noinit.} =
   ## Returns a tuple (values, indices) of type (TensorT, TensorInt64)
   ## of the maximum values and their index in the specified axis
   let cppMaxTuple = rawtensors.max(asRaw(self), axis, keepdim)
