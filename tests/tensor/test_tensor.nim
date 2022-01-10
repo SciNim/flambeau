@@ -65,7 +65,7 @@ proc main() =
         s = sort(t)
         args = argsort(t)
       check s.values == [1, 2, 3, 4, 5, 6].toTensor()
-      check s.originalIndices == args
+      check s.indices == args
       check args == [3, 0, 1, 2, 4, 5].toTensor().to(int64)
 
     test "reshape":

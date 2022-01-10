@@ -8,15 +8,8 @@ export SomeTorchType
 
 {.experimental: "views".} # TODO
 
-# type
-#   Tensor*[T] {.requiresinit.} = object
-#     ## calling zeroMem on Tensor - which is called as default initialization - will set the refcount to 0 of the internal intrusive_ptr<TensorImpl> and destroy the RawTensor causin a segùentation fault
-#     ## It is imperative to either declare tensor object a ``noinit``, initialize specifically Tensor using ``initTensor``.
-#     ## In addition, all proc that return a Tensor object used as constructor must be declared as ``noinit``.
-#     raw: RawTensor
-
 type
-  Tensor*[T]  = distinct RawTensor
+  Tensor*[T] = distinct RawTensor
 
 template asRaw*[T: SomeTorchType](t: Tensor[T]): RawTensor =
   RawTensor(t)

@@ -8,19 +8,31 @@ import std/[complex, macros]
 
 let t_dont_use_this {.used.} = initRawTensor()
 
-{.push inline.}
+#{.push inline.}
 
 # # algorithms:
 # # -----------------------------------------------------------------------
-func sort*[T](self: Tensor[T], axis: int64 = -1, descending: bool = false): tuple[values: Tensor[T], originalIndices: Tensor[int64]] =
+func sort*[T](self: Tensor[T], axis: int64 = -1, descending: bool = false): tuple[values: Tensor[T], indices: Tensor[int64]] =
   ## Sorts the elements of the input tensor along a given dimension in ascending order by value.
   ## If dim is not given, the last dimension of the input is chosen (dim=-1).
-  ## Returns (values, originalIndices) or type (TensorT, TensorInt64)
+  ## Returns (values, indices) or type (Tensor[T], Tensor[int64])
   ## where originalIndices is the original index of each values (before sorting)
 
-  let cppSortTuple = rawtensors.sort(asRaw(self), axis, descending)
-  result.values = asTensor[T](cppSortTuple.get(0).clone())
-  result.originalIndices = asTensor[int64](cppSortTuple.get(1).clone())
+  let 
+    cppSortTuple = rawtensors.sort(asRaw(self), axis, descending)
+    tmp1 = asTensor[T](cppSortTuple.get(0))
+    tmp2 = asTensor[int64](cppSortTuple.get(1))
+  debugecho "<=========================>"
+  debugecho tmp1
+  debugecho tmp2
+  debugecho "<=========================>"
+  return (values: tmp1, indices: tmp2)
+  #result.values = clone(tmp1)
+  #result.indices = clone(tmp2)
+  #debugecho result
+
+  #result.values = 
+  #result.indices = asTensor[int64](cppSortTuple.get(1).clone())
 
 func argsort*[T](self: Tensor[T], axis: int64 = -1, descending: bool = false): Tensor[int64] =
   asTensor[int64](
