@@ -1,6 +1,8 @@
 #pragma once
 namespace torch {
-  struct Tensor {
-    int dummy;
+  class Tensor {
+    public:
+      int dummy;
+      Tensor() {dummy = 34;}
   };
 };
