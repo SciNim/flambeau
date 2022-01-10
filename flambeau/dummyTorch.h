@@ -1,4 +1,6 @@
 #pragma once
 namespace torch {
-  struct Tensor;
+  struct Tensor {
+    int dummy;
+  };
 };
