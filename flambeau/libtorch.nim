@@ -6,8 +6,8 @@
 # at your option. This file may not be copied, modified, or distributed except according to those terms.
 
 import
-  std/[strutils, os],
-  ./config
+    std/[strutils, os],
+    ./config
 
 {.used.}
 
@@ -28,34 +28,34 @@ const librariesPath* = libTorchPath / "lib"
 # The libraries won't be loaded at runtime
 
 when defined(windows): # Static linking
-  when defined(windows):
-    const libSuffix = ".lib"
-    const libPrefix = ""
-  elif defined(maxosx):
-    #
-    const libSuffix = ".a" # MacOS
-    const libPrefix = "lib"
-  else:
-    const libSuffix = ".a" # BSD / Linux
-    const libPrefix = "lib"
-  {.link: librariesPath / (libPrefix & "c10" & libSuffix).}
+    when defined(windows):
+        const libSuffix = ".lib"
+        const libPrefix = ""
+    elif defined(maxosx):
+        #
+        const libSuffix = ".a" # MacOS
+        const libPrefix = "lib"
+    else:
+        const libSuffix = ".a" # BSD / Linux
+        const libPrefix = "lib"
+    {.link: librariesPath / (libPrefix & "c10" & libSuffix).}
   {.link: librariesPath / (libPrefix & "torch_cpu" & libSuffix).}
 
   when UseCuda:
-    {.link: librariesPath / libPrefix & "torch_cuda" & libSuffix.}
+        {.link: librariesPath / libPrefix & "torch_cuda" & libSuffix.}
 else: # Dynamic linking
   # Standard GCC compatible linker
-  {.passL: "-L" & librariesPath & " -lc10 -ltorch_cpu ".}
+    {.passL: "-L" & librariesPath & " -lc10 -ltorch_cpu ".}
 
   when UseCuda:
-    {.passL: " -ltorch_cuda ".}
+        {.passL: " -ltorch_cuda ".}
 
   when not UseGlobalTorch:
-    # Link to library in vendor (not for deployment!)!
-    when defined(macosx):
-      {.passL:"-rpath " & librariesPath.}
+        # Link to library in vendor (not for deployment!)!
+        when defined(macosx):
+            {.passL: "-rpath " & librariesPath.}
     elif defined(posix):
-      {.passL:"-Wl,-rpath," & librariesPath.}
+            {.passL: "-Wl,-rpath," & librariesPath.}
 
     # Look next to the final binary
     # when defined(macosx):
@@ -78,4 +78,4 @@ const torchHeader* = torchHeadersPath / "torch" / "torch.h"
 {.push header: torchHeader.}
 
 when not defined(windows): # couldn't find an equivilent for vcc
-  {.passC: "-Wfatal-errors".} # The default "-fmax-errors=3" is unreadable
+    {.passC: "-Wfatal-errors".} # The default "-fmax-errors=3" is unreadable

@@ -123,7 +123,7 @@ type
     kBfloat16 = 15   # Brain float16
 
 
-  SomeTorchType* = uint8|byte or 
+  SomeTorchType* = uint8|byte or
                    SomeSignedInt or SomeUnsignedInt or
                    SomeFloat or Complex[float32] or Complex[float64]
   ## Torch Tensor type mapped to Nim type
@@ -165,7 +165,7 @@ type Scalar* = SomeNumber or bool or C10_Complex
 # -----------------------------------------------------------------------
 
 type
-  RawTensor* {.importcpp: "torch::Tensor", cppNonPod, bycopy.} = object
+  RawTensor* {.importcpp: "torch::Tensor", bycopy.} = object
 
 # Strings & Debugging
 # -----------------------------------------------------------------------
@@ -279,8 +279,8 @@ func empty*(size: IntArrayRef, device: DeviceKind): RawTensor {.importcpp: "torc
 func clone*(self: RawTensor): RawTensor {.importcpp: "#.clone()".}
 
 # TODO : Test this
-func view_as_real*(self: RawTensor) : RawTensor {.importcpp: "#.view_as_real()".}
-func view_as_complex*(self: RawTensor) : RawTensor {.importcpp: "#.view_as_complex()".}
+func view_as_real*(self: RawTensor): RawTensor {.importcpp: "#.view_as_real()".}
+func view_as_complex*(self: RawTensor): RawTensor {.importcpp: "#.view_as_complex()".}
 
 # Random sampling
 # -----------------------------------------------------------------------
@@ -387,11 +387,11 @@ type
     IndexTensor = 5
 
 # The None used in Torch isn't actually the enum but a c10::nullopt
-let None* {.importcpp: "torch::indexing::None".} : Nullopt_t
+let None* {.importcpp: "torch::indexing::None".}: Nullopt_t
 
 type EllipsisIndexType* {.importcpp: "torch::indexing::EllipsisIndexType".} = object
 
-let Ellipsis* {.importcpp: "torch::indexing::Ellipsis".} : EllipsisIndexType
+let Ellipsis* {.importcpp: "torch::indexing::Ellipsis".}: EllipsisIndexType
 
   # SomeSlicer* = TensorIndexType|SomeSignedInt
 
@@ -633,7 +633,7 @@ func squeeze*(self: RawTensor, axis: int64): RawTensor {.importcpp: "#.squeeze(@
 func unsqueeze*(self: RawTensor, axis: int64): RawTensor {.importcpp: "#.unsqueeze(@)".}
 func square*(self: RawTensor): RawTensor {.importcpp: "#.square()".}
 func sqrt*(self: RawTensor): RawTensor {.importcpp: "#.sqrt()".}
-func pow*(self: RawTensor, exponent: RawTensor): RawTensor  {.importcpp: "#.pow(@)".}
+func pow*(self: RawTensor, exponent: RawTensor): RawTensor {.importcpp: "#.pow(@)".}
 func pow*(self: RawTensor, exponent: Scalar): RawTensor {.importcpp: "#.pow(@)".}
 
 # FFT
@@ -801,3 +801,4 @@ func ihfft*(self: RawTensor): RawTensor {.importcpp: "torch::ihfft(@)".}
 
 {.pop.}
 {.pop.}
+let local_make_sure_name_is_not_used_t {.used.} = initRawTensor()

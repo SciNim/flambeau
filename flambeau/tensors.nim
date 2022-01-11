@@ -1,6 +1,6 @@
 import raw/bindings/[rawtensors, c10]
 import raw/cpp/[std_cpp]
-import raw/sugar/rawinterop 
+import raw/sugar/rawinterop
 import raw/sugar/indexing
 import std/[complex, macros]
 
@@ -12,7 +12,7 @@ type
   Tensor*[T] = distinct RawTensor
   ## If Tensor is used as a field of an object, it has to be used with {.noinit.} pragma
   ## This is because torch::Tensor is a hidden intrusive_ptr<TensorImpl> and the zeroMem() done by Nim compiler resets the ref count fields,
-  ## which triggers a call to torch::Tensor::reset() 
+  ## which triggers a call to torch::Tensor::reset()
 
 template asRaw*[T: SomeTorchType](t: Tensor[T]): RawTensor =
   RawTensor(t)
@@ -266,28 +266,28 @@ func clone*[T](self: Tensor[T]): Tensor[T] =
 func random_mut*[T](self: var Tensor[T], start, stopEx: int64) =
   random_mut(asRaw(self), start, stopEx)
 
-func randint*[T](start, stopEx: int64, args: varargs): Tensor[T]  =
+func randint*[T](start, stopEx: int64, args: varargs): Tensor[T] =
   asTensor[T](
     rawtensors.randint(start, stopEx, args)
   )
 
-func randint*[T](start, stopEx: int64, size: openArray[int64]): Tensor[T]  =
+func randint*[T](start, stopEx: int64, size: openArray[int64]): Tensor[T] =
   let dims = size.asTorchView()
   asTensor[T](
     rawtensors.randint(start, stopEx, dims)
   )
 
-func rand_like*[T](self: Tensor[T], options: TensorOptions|DeviceKind|Device): Tensor[T]  =
+func rand_like*[T](self: Tensor[T], options: TensorOptions|DeviceKind|Device): Tensor[T] =
   asTensor[T](
     rawtensors.rand_like(asRaw(self), options)
   )
 
-func rand_like*[T](self: Tensor[T]): Tensor[T]  =
+func rand_like*[T](self: Tensor[T]): Tensor[T] =
   asTensor[T](
     rawtensors.rand_like(asRaw(self), T)
   )
 
-func rand*[T](size: openArray[int64]): Tensor[T]  =
+func rand*[T](size: openArray[int64]): Tensor[T] =
   let dims = size.asTorchView()
   asTensor[T](
     rawtensors.rand(dims)
@@ -296,13 +296,13 @@ func rand*[T](size: openArray[int64]): Tensor[T]  =
 # Shapeshifting
 # -----------------------------------------------------------------------
 
-func reshape*[T](self: Tensor[T], size: openArray[int64]): Tensor[T]  =
+func reshape*[T](self: Tensor[T], size: openArray[int64]): Tensor[T] =
   let dims = size.asTorchView()
   asTensor[T](
     reshape(asRaw(self), dims)
   )
 
-func view*[T](self: Tensor[T], size: openArray[int64]): Tensor[T]  =
+func view*[T](self: Tensor[T], size: openArray[int64]): Tensor[T] =
   let dims = size.asTorchView()
   asTensor[T](
     reshape(asRaw(self), dims)

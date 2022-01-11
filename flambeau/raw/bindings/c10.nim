@@ -64,7 +64,7 @@ type
   Nullopt_t* {.bycopy, importcpp: "c10::nullopt_t".} = distinct cint
 
 # Nullopt is nullopt_t{0}
-const nullopt* : Nullopt_t = Nullopt_t(0)
+const nullopt*: Nullopt_t = Nullopt_t(0)
 
 func value*[T](o: Optional[T]): T {.importcpp: "#.value()".}
 

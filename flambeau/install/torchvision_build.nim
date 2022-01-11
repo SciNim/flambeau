@@ -41,9 +41,9 @@ const cppSrcPath = currentSourcePath.rsplit(DirSep, 1)[0].parentDir() / rel_path
 
 # TODO: for CUDA we need to fix Nim using gnu++14
 when UseCuda:
-  {.passC:"-D__CUDA_NO_HALF_OPERATORS__".}
-  {.passC:"-DWITH_CUDA".}
-  {.passC:"--expt-relaxed-constexpr".}
+  {.passC: "-D__CUDA_NO_HALF_OPERATORS__".}
+  {.passC: "-DWITH_CUDA".}
+  {.passC: "--expt-relaxed-constexpr".}
 
 # PyTorch devel 1.8 + torchvision devel
 # macro compileCppFiles(): untyped =
@@ -80,9 +80,9 @@ macro compileCppFiles(): untyped =
         not file.startsWith("cpu" & DirSep & "decoder") or
         not file.startsWith("cpu" & DirSep & "image") or
         not file.startsWith("cpu" & DirSep & "video")):
-        # Skipping vision_cpu.h which requires Python.h
-        # which requires Python dev headers
-      continue
+      # Skipping vision_cpu.h which requires Python.h
+      # which requires Python dev headers
+    continue
     if file == ("cpu" & DirSep & "video_reader" & DirSep & "VideoReader.cpp"):
       # Skipping Python.h
       continue
