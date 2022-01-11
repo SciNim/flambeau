@@ -10,51 +10,29 @@ macro `//`*(arg: string): untyped =
 
 type
   TensorAgreggate*[T] = distinct RawTensor
-    # raw*: RawTensor
+  CompositeTensor* = object
+    t : TensorAgreggate[int]
 
 proc newTensorAggregate[T](): TensorAgreggate[T] {.constructor.} =
-  # result = new(TensorAgreggate[T])
   RawTensor(result) = initRawTensor()
-  # result.raw = initRawTensor()
-  # {.emit: "/* */".}
 
 proc newTensorAggregate[T](a: RawTensor): TensorAgreggate[T] =
-  # result = new(TensorAgreggate[T])
   RawTensor(result) = a
-  # result = newTensorAggregate[T]()
-  # result.raw = a
 
 proc `$`*[T](tensorAg: TensorAgreggate[T]): string =
   $(RawTensor(tensorAg))
 
-# proc initTensorAggregate*[T](raw: RawTensor): TensorAgreggate[T] =
-#   assign(result.raw, raw)
-
-template toTensorAgImpl[T: SomeTorchType](a: untyped) : TensorAgreggate[T] = 
+template toTensorAgImpl[T: SomeTorchType](a: untyped) : TensorAgreggate[T] =
   TensorAgreggate[T](toRawTensor(a))
 
 func toTensorAg*[T: SomeTorchType](oa: openArray[T]): TensorAgreggate[T]  =
-  ## Interpret an openarray as a CPU Tensor
-  ##
-  ## Input:
-  ##      - An array or a seq
-  ## Result:
-  ##      - A view Tensor of the same shape
-  #RawTensor(result) = toRawTensorFromScalar[T](oa)
   return toTensorAgImpl[T](oa)
 
 func toTensorAg*[T: seq|array](oa: openArray[T]): auto  =
-  ## Interpret an openarray of openarray as a CPU Tensor
-  ##
-  ## Input:
-  ##      - A nested array or a seq
-  ## Result:
-  ##      - A view Tensor of the same shape
   type V = getBaseType(T)
   return toTensorAgImpl[V](oa)
 
-
-func `==`*[T](lhs, rhs: TensorAgreggate[T]) : bool = 
+func `==`*[T](lhs, rhs: TensorAgreggate[T]) : bool =
   RawTensor(lhs) == RawTensor(rhs)
 
 proc main() =
@@ -89,13 +67,18 @@ proc main() =
       echo b
       check: tensorAg == b
 
-    test "Tensor Aggregate native ":
+    test "Tensor Aggregate assignment":
       var tensorAg : TensorAgreggate[int]
       RawTensor(tensorAg) = a
       check: RawTensor(tensorAg) == a
       check: $(tensorAg) == $(a)
+      var comp {.noinit.} : CompositeTensor #= new(CompositeTensor)
+      # If CompsiteTensor is a ref, the next line segfault 
+      comp.t = tensorAg
+      echo comp.t
+      check: RawTensor(comp.t) == a
 
-    test "TensorAggregate & Tensor[T] ":
+    test "toTensorAg":
       let b = [[1, 2], [3, 4]].toTensorAg()
       check: RawTensor(b) == a
       echo b

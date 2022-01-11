@@ -11,6 +11,10 @@ include flambeau
 
 proc main() =
   suite "Operator precedence":
+    test "= and ==":
+      let a = [[1, 2], [3, 4]].toTensor
+      let b = a
+      check: a == b
     test "+ and *":
       let a = [[1, 2], [3, 4]].toTensor
       let b = -a
