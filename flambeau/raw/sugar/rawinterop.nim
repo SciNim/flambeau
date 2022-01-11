@@ -25,7 +25,7 @@ type Metadata* = DynamicStackArray[int64]
 # -----------------------------------------------------
 # libtorch/include/c10/util/ArrayRef.h
 
-{.experimental:"views".}
+{.experimental: "views".}
 
 template asNimView*[T](ar: ArrayRef[T]): openArray[T] =
   toOpenArray(ar.data.unsafeAddr, 0, ar.size.int - 1)
@@ -39,7 +39,7 @@ template asTorchView*(meta: Metadata): ArrayRef[int64] =
   ArrayRef[int64].init(meta.data[0].unsafeAddr, meta.len)
 
 # Make interop with ArrayRef easier
-proc `$`*[T](ar: ArrayRef[T]) : string =
+proc `$`*[T](ar: ArrayRef[T]): string =
   # Make echo-ing ArrayRef easy
   `$`(ar.asNimView())
 
@@ -47,14 +47,14 @@ func len*[T](ar: ArrayRef[T]): int =
   # Nim idiomatic proc for seq
   ar.size().int
 
-iterator items*[T](ar: ArrayRef[T]) : T =
+iterator items*[T](ar: ArrayRef[T]): T =
   # Iterate over ArrayRef
-  var i : int = 0
+  var i: int = 0
   while i < ar.len():
     yield ar.data()[i]
     inc i
 
-func `[]`*[T](ar: ArrayRef[T], idx: SomeInteger) : T =
+func `[]`*[T](ar: ArrayRef[T], idx: SomeInteger): T =
   when compileOption("boundChecks"):
     if idx < 0 or idx >= ar.len():
       raise newException(IndexDefect, &"ArrayRef `[]` access out-of-bounds. Index constrained by 0 <= {idx} <= ArrayRef.len() = {ar.len()}.")
@@ -79,7 +79,7 @@ func toTypedesc*(scalarKind: ScalarKind): typedesc =
     typedesc(int16)
   of kInt32:
     typedesc(int32)
-  of kInt64 :
+  of kInt64:
     typedesc(int64)
   of kFloat32:
     typedesc(float32)
@@ -119,7 +119,7 @@ func toScalarKind*(T: typedesc[SomeTorchType]): static ScalarKind =
   else:
     {.error: "Unsupported type in libtorch: " & $T.}
 
-converter convertTypeDef*(T: typedesc[SomeTorchType]) : static ScalarKind =
+converter convertTypeDef*(T: typedesc[SomeTorchType]): static ScalarKind =
   toScalarKind(T)
 
 # Nim openarrays -> Torch Tensors
@@ -152,7 +152,7 @@ macro getBaseType*(T: typedesc): untyped =
   # echo "------------------------------"
   # echo result.repr
 
-iterator flatIter*[T](s: openarray[T]): auto {.noSideEffect.}=
+iterator flatIter*[T](s: openarray[T]): auto {.noSideEffect.} =
   ## Inline iterator on any-depth seq or array
   ## Returns values in order
   for item in s:

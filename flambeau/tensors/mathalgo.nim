@@ -18,7 +18,7 @@ func sort*[T](self: Tensor[T], axis: int64 = -1, descending: bool = false): tupl
   ## Returns (values, indices) or type (Tensor[T], Tensor[int64])
   ## where originalIndices is the original index of each values (before sorting)
 
-  let 
+  let
     cppSortTuple = rawtensors.sort(asRaw(self), axis, descending)
   result.values = asTensor[T](cppSortTuple.get(0))
   result.indices = asTensor[int64](cppSortTuple.get(1))
@@ -232,22 +232,22 @@ func unsqueeze*[T](self: Tensor[T], axis: int64): Tensor[T] =
     rawtensors.unsqueeze(asRaw(self), axis)
   )
 
-func sqrt*[T](self: Tensor[T]) : Tensor[T] =
+func sqrt*[T](self: Tensor[T]): Tensor[T] =
   asTensor[T](
     rawtensors.sqrt(asRaw(self))
   )
 
-func square*[T](self: Tensor[T]) : Tensor[T] =
+func square*[T](self: Tensor[T]): Tensor[T] =
   asTensor[T](
     rawtensors.square(asRaw(self))
   )
 
-func pow*[T](self: Tensor[T], exponent: Tensor[T]) : Tensor[T] =
+func pow*[T](self: Tensor[T], exponent: Tensor[T]): Tensor[T] =
   asTensor[T](
     rawtensors.pow(asTensor[T](self), asTensor[T](exponent))
   )
 
-func pow*[T](self: Tensor[T], exponent: Scalar) : Tensor[T] =
+func pow*[T](self: Tensor[T], exponent: Scalar): Tensor[T] =
   asTensor[T](
     rawtensors.pow(asRaw(self), exponent)
   )
