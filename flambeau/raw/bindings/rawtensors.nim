@@ -801,3 +801,5 @@ func ihfft*(self: RawTensor): RawTensor {.importcpp: "torch::ihfft(@)".}
 
 {.pop.}
 {.pop.}
+
+let local_make_sure_name_is_not_used_t {.used.} = initRawTensor()
