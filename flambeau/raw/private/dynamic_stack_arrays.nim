@@ -12,11 +12,11 @@ const LASER_MAXRANK*{.intdefine.} = 6
   # tensor dimensions to 2 billions elements.
 
 type DynamicStackArray*[T] = object
-  ## Custom stack allocated array that behaves like seq.
-  ## We must avoid seq creation when modifying tensor shapes, strides or slicing in a tight loop.
-  ## Seq creation are also not possible within an OpenMP loop.
-  data*: array[LASER_MAXRANK, T]
-  len*: int
+    ## Custom stack allocated array that behaves like seq.
+    ## We must avoid seq creation when modifying tensor shapes, strides or slicing in a tight loop.
+    ## Seq creation are also not possible within an OpenMP loop.
+    data*: array[LASER_MAXRANK, T]
+    len*: int
 
 func copyFrom*(a: var DynamicStackArray, s: varargs[int]) =
   a.len = s.len
@@ -70,7 +70,7 @@ iterator mitems*[T](a: var DynamicStackArray[T]): var T =
 
 iterator pairs*[T](a: DynamicStackArray[T]): (int, T) =
   for i in 0 ..< a.len:
-    yield (i, a.data[i])
+    yield (i,a.data[i])
 
 iterator mpairs*[T](a: var DynamicStackArray[T]): (int, var T) =
   for i in 0 ..< a.len:
@@ -90,7 +90,7 @@ func `$`*(a: DynamicStackArray): string =
     firstElement = false
   result.add("]")
 
-func product*[T: SomeNumber](a: DynamicStackArray[T]): T =
+func product*[T:SomeNumber](a: DynamicStackArray[T]): T =
   result = 1
   for value in items(a):
     result *= value
@@ -173,6 +173,6 @@ func max*[T](a: DynamicStackArray[T]): T =
   for val in a:
     result = max(result, val)
 
-func toSeq*[T](a: DynamicStackArray[T]): seq[T] =
+func toSeq*[T](a: DynamicStackArray[T]) : seq[T] =
   for e in items(a):
     result.add e

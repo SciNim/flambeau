@@ -64,7 +64,7 @@ type Step = object
   b: int
   step: int
 
-func `|`*(s: Slice[int], step: int): TorchSlice {.inline.} =
+func `|`*(s: Slice[int], step: int): TorchSlice {.inline.}=
   ## Internal: A ``TorchSlice`` constructor
   ## Input:
   ##     - a slice
@@ -73,7 +73,7 @@ func `|`*(s: Slice[int], step: int): TorchSlice {.inline.} =
   ##     - a ``TorchSlice``
   return torchSlice(s.a, s.b, step)
 
-func `|`*(b, step: int): Step {.inline.} =
+func `|`*(b, step: int): Step {.inline.}=
   ## Internal: A ``Step`` constructor
   ##
   ## ``Step`` is a workaround due to operator precedence.
@@ -86,7 +86,7 @@ func `|`*(b, step: int): Step {.inline.} =
   ##     - a ``Step``
   return Step(b: b, step: step)
 
-func `|`*(ss: TorchSlice, step: int): TorchSlice {.inline.} =
+func `|`*(ss: TorchSlice, step: int): TorchSlice {.inline.}=
   ## Internal: Modifies the step of a ``TorchSlice``
   ## Input:
   ##     - a ``TorchSlice``
@@ -95,19 +95,19 @@ func `|`*(ss: TorchSlice, step: int): TorchSlice {.inline.} =
   ##     - a ``TorchSlice``
   return torchSlice(ss.start, ss.stop, step)
 
-func `|+`*(s: Slice[int], step: int): TorchSlice {.inline.} =
+func `|+`*(s: Slice[int], step: int): TorchSlice {.inline.}=
   ## Internal: Alias for ``|``
   return `|`(s, step)
 
-func `|+`*(b, step: int): Step {.inline.} =
+func `|+`*(b, step: int): Step {.inline.}=
   ## Internal: Alias for ``|``
   return `|`(b, step)
 
-func `|+`*(ss: TorchSlice, step: int): TorchSlice {.inline.} =
+func `|+`*(ss: TorchSlice, step: int): TorchSlice {.inline.}=
   ## Internal: Alias for ``|``
   return `|`(ss, step)
 
-func `|-`*(s: Slice[int], step: int): TorchSlice {.inline.} =
+func `|-`*(s: Slice[int], step: int): TorchSlice {.inline.}=
   ## Internal: A ``TorchSlice`` constructor
   ##
   ## Workaround to tensor[slice|-1] being interpreted as [slice `|-` 1]
@@ -115,7 +115,7 @@ func `|-`*(s: Slice[int], step: int): TorchSlice {.inline.} =
   ## Properly create ``TorchSlice`` with negative stepping
   return torchSlice(s.a, s.b, -step)
 
-func `|-`*(b, step: int): Step {.inline.} =
+func `|-`*(b, step: int): Step {.inline.}=
   ## Internal: A ``TorchSlice`` constructor
   ##
   ## Workaround to tensor[0..10|-1] being intepreted as [0 .. (10 `|-` 1)]
@@ -123,7 +123,7 @@ func `|-`*(b, step: int): Step {.inline.} =
   ## Properly create ``TorchSlice`` with negative stepping
   return Step(b: b, step: -step)
 
-func `|-`*(ss: TorchSlice, step: int): TorchSlice {.inline.} =
+func `|-`*(ss: TorchSlice, step: int): TorchSlice {.inline.}=
   ## Internal: Modifies the step of a ``TorchSlice``
   ##
   ## Workaround to tensor[slice|-1] being interpreted as [slice `|-` 1]
@@ -399,7 +399,7 @@ macro desugarSlices(args: untyped): void =
     elif nnk0_pre_hat:
       ## [^2, 3] into [^2..^2|1, 3]
       if nnk[1] == (newIntLitNode(0)):
-        error "Slicing does not support '^0' syntax."
+          error "Slicing does not support '^0' syntax."
       else:
         r.add(-nnk[1])
     else:
@@ -710,4 +710,4 @@ macro `[]=`*(t: var RawTensor, args: varargs[untyped]): untyped =
   let new_args = getAST(desugarSlices(tmp))
 
   result = quote do:
-    slice_typed_dispatch_mut(`t`, `new_args`, `val`)
+    slice_typed_dispatch_mut(`t`, `new_args`,`val`)

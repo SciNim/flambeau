@@ -54,7 +54,7 @@ func toTensorFromSeq*[T: seq|array, U](oa: openarray[T]): Tensor[U] =
     data[i] = val
 
 
-func toTensor*[T: SomeTorchType](oa: openArray[T]): Tensor[T] =
+func toTensor*[T: SomeTorchType](oa: openArray[T]): Tensor[T]  =
   ## Interpret an openarray as a CPU Tensor
   ##
   ## Input:
@@ -63,7 +63,7 @@ func toTensor*[T: SomeTorchType](oa: openArray[T]): Tensor[T] =
   ##      - A view Tensor of the same shape
   result = toTensorFromScalar(oa)
 
-func toTensor*[T: seq|array](oa: openArray[T]): auto =
+func toTensor*[T: seq|array](oa: openArray[T]): auto  =
   ## Interpret an openarray of openarray as a CPU Tensor
   ##
   ## Input:
@@ -72,6 +72,6 @@ func toTensor*[T: seq|array](oa: openArray[T]): auto =
   ##      - A view Tensor of the same shape
   type V = getBaseType(T)
   result = toTensorFromSeq[T, V](oa)
-
+  
 proc `$`*[T](t: Tensor[T]): string =
   "Tensor[" & $T & "]\n" & $(toCppString(asRaw(t)))

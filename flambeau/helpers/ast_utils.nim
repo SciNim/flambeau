@@ -16,24 +16,24 @@
 
 import std/macros
 
-proc hasType*(x: NimNode, t: static[string]): bool {.compileTime.} =
+proc hasType*(x: NimNode, t: static[string]): bool {. compileTime .} =
   ## Compile-time type checking
   sameType(x, bindSym(t))
 
-proc isInt*(x: NimNode): bool {.compileTime.} =
+proc isInt*(x: NimNode): bool {. compileTime .} =
   ## Compile-time type checking
   hasType(x, "int")
 
-proc isBool*(x: NimNode): bool {.compileTime.} =
+proc isBool*(x: NimNode): bool {. compileTime .} =
   ## Compile-time type checking
   hasType(x, "bool")
 
-proc isOpenarray*(x: NimNode): bool {.compileTime.} =
+proc isOpenarray*(x: NimNode): bool {. compileTime .} =
   ## Compile-time type checking
   doAssert false, "This is broken for generics https://github.com/nim-lang/Nim/issues/14021"
   hasType(x, "array") or hasType(x, "seq") or hasType(x, "openArray")
 
-proc isAllInt*(slice_args: NimNode): bool {.compileTime.} =
+proc isAllInt*(slice_args: NimNode): bool {. compileTime .} =
   ## Compile-time type checking
   result = true
   for child in slice_args:
@@ -41,7 +41,7 @@ proc isAllInt*(slice_args: NimNode): bool {.compileTime.} =
     # has no run-time impact and there are very few slice_args
     result = result and isInt(child)
 
-proc pop*(tree: var NimNode): NimNode {.compileTime.} =
+proc pop*(tree: var NimNode): NimNode {. compileTime .}=
   ## varargs[untyped] consumes all arguments so the actual value should be popped
   ## https://github.com/nim-lang/Nim/issues/5855
   result = tree[tree.len-1]

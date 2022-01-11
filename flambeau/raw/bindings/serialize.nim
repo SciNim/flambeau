@@ -33,4 +33,4 @@ import
 # #######################################################################
 # libtorch/include/torch/csrc/api/include/torch/optim/optimizer.h
 
-proc save*[T](module: CppSharedPtr[T], path: cstring){.sideeffect, importcpp: "torch::save(@)".}
+proc save*[T](module: CppSharedPtr[T], path: cstring){.sideeffect, importcpp:"torch::save(@)".}

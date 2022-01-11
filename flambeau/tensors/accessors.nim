@@ -4,7 +4,7 @@ import cppstl/std_complex
 import ../raw/bindings/[rawtensors]
 import ../raw/cpp/[std_cpp]
 import ../tensors
-import ../raw/sugar/rawinterop
+import ../raw/sugar/rawinterop 
 
 let t_dont_use_this {.used.} = initRawTensor()
 
@@ -194,7 +194,7 @@ func masked_fill_mut*[T](self: var Tensor[T], mask: Tensor[T], value: T or Tenso
 
 
 # TODO for Arraymancer compatibility
-proc atContiguousIndex*[T](t: var Tensor[T], idx: int|int64): var T {.noSideEffect, inline.} =
+proc atContiguousIndex*[T](t: var Tensor[T], idx: int|int64): var T {.noSideEffect,inline.} =
   ## Return value of tensor at contiguous index (mutable)
   ## i.e. as treat the tensor as flattened
   data_ptr(t)[idx]

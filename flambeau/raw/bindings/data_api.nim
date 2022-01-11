@@ -53,7 +53,7 @@ type
   # TODO: https://github.com/nim-lang/Nim/issues/16653
   #   generics + {.inheritable.} doesn't work
   Sampler* # [BatchRequest]
-    {.bycopy, pure, inheritable,
+      {.bycopy, pure, inheritable,
       importcpp: "torch::data::samplers::Sampler".}
     = object
 
@@ -97,12 +97,12 @@ type
   # TODO: https://github.com/nim-lang/Nim/issues/16653
   #   generics + {.inheritable.} doesn't work
   BatchTransform* # [BatchRequest]
-    {.bycopy, pure, inheritable,
+      {.bycopy, pure, inheritable,
       importcpp: "torch::data::transforms::BatchTransform".}
     = object
 
   Transform*[Input, Output]
-    {.bycopy, pure,
+      {.bycopy, pure,
       importcpp: "torch::data::transforms::Transform".}
     = object of BatchTransform # [CppVector[Input], CppVector[Output]]
 
@@ -110,16 +110,16 @@ type
   # ----------------------------------------------------------------------
 
   BatchLambda*[Input, Output]
-    {.bycopy, pure,
+      {.bycopy, pure,
       importcpp: "torch::data::transforms::BatchLambda".}
     = object of BatchTransform
-  ## A `BatchTransform` that applies a user-provided functor to a batch.
+    ## A `BatchTransform` that applies a user-provided functor to a batch.
 
   Lambda*[Input, Output]
-    {.bycopy, pure,
+      {.bycopy, pure,
       importcpp: "torch::data::transforms::Lambda".}
     = object
-  ## A `Transform` that applies a user-provided functor to individual examples.
+    ## A `Transform` that applies a user-provided functor to individual examples.
 
   # libtorch/include/torch/csrc/api/include/torch/data/transforms/collate.h
   # -----------------------------------------------------------------------
@@ -127,17 +127,17 @@ type
   # TODO: https://github.com/nim-lang/Nim/issues/16653
   #   generics + {.inheritable.} doesn't work
   Collation*[BatchType, T]
-    {.importcpp: "torch::data::transforms::Collation".}
+    {.importcpp:"torch::data::transforms::Collation".}
     = BatchTransform # [BatchType, T]
 
   Collate*[BatchType, T]
-    {.importcpp: "torch::data::transforms::Collate".}
+    {.importcpp:"torch::data::transforms::Collate".}
     = BatchLambda[BatchType, T]
 
   # libtorch/include/torch/csrc/api/include/torch/data/transforms/stack.h
   # ---------------------------------------------------------------------
   Stack*[E]
-    {.importcpp: "torch::data::transforms::Stack".}
+    {.importcpp:"torch::data::transforms::Stack".}
     = object of Collate[CppVector[E], E]
     ## A `Collation` for `Example<Tensor, Tensor>` types that stacks all data
     ## tensors into one tensor, and all target (label) tensors into one tensor.
@@ -153,20 +153,20 @@ type
   # libtorch/include/torch/csrc/api/include/torch/data/transforms/tensor.h
   # ----------------------------------------------------------------------
   TensorTransform*[Target]
-    {.bycopy, pure,
+      {.bycopy, pure,
       importcpp: "torch::data::transforms::TensorTransform".}
     = object of Transform[Example[RawTensor, Target], Example[RawTensor, Target]]
 
   TensorLambda*[Target]
-    {.bycopy, pure,
+      {.bycopy, pure,
       importcpp: "torch::data::transforms::TensorLambda".}
     = object of TensorTransform[Target]
 
   Normalize*[Target]
-    {.bycopy, pure,
+      {.bycopy, pure,
       importcpp: "torch::data::transforms::Normalize".}
     = object of TensorTransform[Target]
-  ## Normalized input tensors
+    ## Normalized input tensors
     ## by substracting the supplied mean
     ## and dividing by the given standard deviation
 
@@ -221,24 +221,24 @@ type
     ## The MNIST dataset
     ## http://yann.lecun.com/exdb/mnist
 
-  MnistMode* {.size: sizeof(cint),
-      importcpp: "torch::data::datasets::MNIST::Mode".} = enum
+  MnistMode* {.size:sizeof(cint),
+      importcpp:"torch::data::datasets::MNIST::Mode".} = enum
     ## Select the train or test mode of the Mnist data
     kTrain = 0
     kTest = 1
 
 func is_stateful*(D: type BatchDataset): bool {.importcpp: "'1::is_stateful".}
-func size*(dataset: BatchDataset): Optional[int] {.importcpp: "#.size()".}
+func size*(dataset: BatchDataset): Optional[int] {.importcpp:"#.size()".}
   ## Returns the size in an optional.
   ## If the dataset has no size (stream?)
   ## the optional is "None"
 
-func mnist*(rootPath: cstring, mode = kTrain): Mnist {.constructor, importcpp: "torch::data::datasets::MNIST(@)".}
+func mnist*(rootPath: cstring, mode = kTrain): Mnist {.constructor, importcpp:"torch::data::datasets::MNIST(@)".}
   ## Loads the MNIST dataset from the `root` path
   ## The supplied `rootpath` should contain the *content* of the unzipped
   ## MNIST dataset, available from http://yann.lecun.com/exdb/mnist.
-func get*(dataset: Mnist, index: int): Example[RawTensor, RawTensor] {.importcpp: "#.get(#)".}
-func is_train*(): bool {.importcpp: "#.is_train()".}
+func get*(dataset: Mnist, index: int): Example[RawTensor, RawTensor] {.importcpp:"#.get(#)".}
+func is_train*(): bool {.importcpp:"#.is_train()".}
 func images*(dataset: Mnist): lent RawTensor {.importcpp: "#.images()".}
   ## Returns all images stacked into a single tensor
 func targets*(dataset: Mnist): lent RawTensor {.importcpp: "#.targets()".}
@@ -248,7 +248,7 @@ func targets*(dataset: Mnist): lent RawTensor {.importcpp: "#.targets()".}
 # ----------------------------------------------------------------------
 # The inner details are in map.h but the public view is in base.h
 type
-  MapDataset*[SourceDataset, AppliedTransform]
+  MapDataset* [SourceDataset, AppliedTransform]
     {.bycopy, pure, importcpp: "torch::data::datasets::MapDataset".}
     = object of BatchDataset
 
@@ -260,7 +260,7 @@ func map*[DatasetType; TransformType: not type](
 func map*[DatasetType](
        dataset: sink DatasetType,
        transformType: typedesc
-  ): MapDataset[DatasetType, transformType] {.inline, nimcall.} =
+  ): MapDataset[DatasetType, transformType] {.inline, nimcall.}=
   # TODO: bad C++ codegen, the typedesc arg disappears
   map(dataset, init(transformType))
 
@@ -283,12 +283,12 @@ type
       = object
 
   StatelessDataLoader*[D, S] # Dataset, Sampler
-    {.byref, pure,
+        {.byref, pure,
         importcpp: "torch::data::StatelessDataLoader".}
       = object of DataLoaderBase
 
   StatefulDataLoader*[D] # Dataset
-    {.byref, pure,
+        {.byref, pure,
         importcpp: "torch::data::StatefulDataLoader".}
       = object of DataLoaderBase
 
@@ -297,10 +297,10 @@ type
         importcpp: "torch::data::DataLoaderOptions".} = object
     # TODO: multithreaded batch support
 
-  # TODO: because of https://github.com/nim-lang/Nim/issues/16653
-  #       and https://github.com/nim-lang/Nim/issues/16655
-  #       BatchDataset and Dataset have no generics attached
-  #       and so we can't infer their Iterator type :/
+# TODO: because of https://github.com/nim-lang/Nim/issues/16653
+#       and https://github.com/nim-lang/Nim/issues/16655
+#       BatchDataset and Dataset have no generics attached
+#       and so we can't infer their Iterator type :/
 func start*(dl: StatelessDataLoader
        ): TorchDataIterator[Example[RawTensor, RawTensor]]
   {.importcpp: "#.begin()".}
