@@ -117,6 +117,9 @@ func max_pool2d*(input: RawTensor, kernel_size: IntArrayRef): RawTensor {.import
 func relu*(input: RawTensor): RawTensor {.importcpp: "torch::relu(@)".}
 func relu_mut*(input: var RawTensor) {.importcpp: "torch::relu_(@)".}
 
+func tanh*(input: RawTensor): RawTensor {.importcpp: "torch::tanh(@)".}
+func tanh_mut*(input: var RawTensor) {.importcpp: "torch::tanh_(@)".}
+
 func log_softmax*(input: RawTensor, axis: int64): RawTensor {.importcpp: "torch::log_softmax(@)".}
 func log_softmax*(input: RawTensor, axis: int64, dtype: ScalarKind): RawTensor {.importcpp: "torch::log_softmax(@)".}
 
