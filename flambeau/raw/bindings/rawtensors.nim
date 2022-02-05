@@ -54,6 +54,7 @@ proc manual_seed*(_: type Torch, seed: uint64) {.sideeffect, importcpp: "torch::
 # Backends
 # -----------------------------------------------------------------------
 
+# `hasCuda` is defined in `Context.h`, but not available here?
 proc hasCuda*(_: type Torch): bool{.sideeffect, importcpp: "torch::hasCuda()".}
   ## Returns true if libtorch was compiled with CUDA support
 proc deviceCount*(_: type Torch): csize_t {.sideeffect, importcpp: "torch::cuda::device_count()".}
