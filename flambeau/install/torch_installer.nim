@@ -21,6 +21,7 @@ type
     Cuda102 = "cu102"
     Cuda110 = "cu110"
     Cuda111 = "cu111"
+    Cuda113 = "cu113"
 
   ABI* = enum
     Cpp = "shared-with-deps"
@@ -41,7 +42,7 @@ proc downloadTo(url, targetDir, filename: string) =
   echo "Storing temporary into: \"", targetDir, '\"'
   client.downloadFile(url, targetDir / filename)
 
-proc getUrlAndFilename(version = "1.8.1", accel = Cuda111, abi = Cpp11): tuple[url, filename: string] =
+proc getUrlAndFilename(version = "1.10.2", accel = Cuda113, abi = Cpp11): tuple[url, filename: string] =
   result.filename = "libtorch-"
 
   when defined(linux):
