@@ -37,6 +37,31 @@ Torchvision can now be built if desired:
 
 ``nimble build_torchvision``
 
+## Caveats
+
+As this library is still in heavy developments, some constructs are a
+bit brittle.
+
+If you wish to return a `RawTensor` (the wrapped Torch `Tensor` type)
+from a procedure, you need to annotate the procedure with the
+`{.noInit.}` pragma, like so:
+
+```nim
+proc foo(x: float): RawTensor {.noInit.} =
+  ...
+```
+
+Otherwise, you will get a segmentation fault due to the implicit
+initialization of the `RawTensor` object.
+
+*Note*: you can use the `{.push.}` and `{.pop.}` pragmas at top level in
+your code, if you wish to write multiple procedures returning
+`RawTensor` without having to add this pragma to each procedure.
+
+*Note 2*: In theory the `{.requiresInit.}` pragma should mean that the
+`RawTensor` type is *not* implicitly initialized. However, this pragma
+does *not* solve the issue at this time.
+
 ## CUDA support
 
 By default the Torch installation downloaded by this package contains
