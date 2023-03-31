@@ -20,7 +20,8 @@ jobs:
         id: install_nim
         uses: iffy/install-nim@v4
         with:
-          version: devel
+          version: 1.6.12
+      - run: choosenim update "#version-2-0"
       - run: git submodule update --recursive --init
       - run: nimble install -y
       - run: nimble test
