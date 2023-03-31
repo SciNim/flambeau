@@ -16,14 +16,11 @@ jobs:
     runs-on: ${{ matrix.os }}
     steps:
       - uses: actions/checkout@v2
-      - uses: jiro4989/setup-nim-action@v1
+      - name: "install_nim"
+        id: install_nim
+        uses: iffy/install-nim@v4
         with:
-          nim-version: 'devel'
-      # - name: "install_nim"
-      #   id: install_nim
-      #   uses: iffy/install-nim@v4
-      #   with:
-      #     version: devel
+          version: 1.9.3
       - run: git submodule update --recursive --init
       - run: nimble install -y
       - run: nimble test
