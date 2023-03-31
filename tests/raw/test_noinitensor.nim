@@ -10,6 +10,7 @@ macro `//`*(arg: string): untyped =
 
 type
   TensorAgreggate*[T] = distinct RawTensor
+
   CompositeTensor* = object
     t : TensorAgreggate[int]
 
@@ -36,7 +37,7 @@ func `==`*[T](lhs, rhs: TensorAgreggate[T]) : bool =
   RawTensor(lhs) == RawTensor(rhs)
 
 proc main() =
-  suite "RawTensor Initialization and {.noInit.} constraint":
+  suite "RawTensor Initialization and constraint":
     let a = [[1, 2], [3, 4]].toRawTensor()
     test "Assignment":
       var b = a
@@ -70,10 +71,12 @@ proc main() =
     test "Tensor Aggregate assignment":
       var tensorAg : TensorAgreggate[int]
       RawTensor(tensorAg) = a
+
       check: RawTensor(tensorAg) == a
       check: $(tensorAg) == $(a)
-      var comp {.noinit.} : CompositeTensor #= new(CompositeTensor)
-      # If CompsiteTensor is a ref, the next line segfault 
+
+      var comp : CompositeTensor #= new(CompositeTensor)
+      # If CompsiteTensor is a ref, the next line segfault
       comp.t = tensorAg
       echo comp.t
       check: RawTensor(comp.t) == a

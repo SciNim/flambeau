@@ -24,5 +24,3 @@ import ./flambeau/raw/bindings/c10
 
 import ./flambeau/raw/sugar/rawinterop
 
-# I don't know why but if you remove this it doesn't work
-let local_make_sure_name_is_not_used_t {.used.} = toRawTensor(@[0])

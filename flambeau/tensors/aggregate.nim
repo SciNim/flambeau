@@ -8,7 +8,6 @@ let t_dont_use_this {.used.} = initRawTensor()
 
 ## Aggregate
 ## -----------------------------------------------------------------------
-# {.push noinit.}
 # sum needs wrapper procs/templates to allow for using nim arrays and single axis.
 func sum*[T](self: Tensor[T]): Tensor[T] =
   asTensor[T](
@@ -101,7 +100,7 @@ func min*[T](self: Tensor[T]): Tensor[T] =
     rawtensors.min(asRaw(self))
   )
 
-func min*[T](self: Tensor[T], axis: int64, keepdim: bool = false): tuple[values: Tensor[T], indices: Tensor[int]] {.noinit.} =
+func min*[T](self: Tensor[T], axis: int64, keepdim: bool = false): tuple[values: Tensor[T], indices: Tensor[int]] =
   ## Returns a tuple (values, indices) of type (TensorT, TensorInt64)
   ## of the minimum values and their index in the specified axis
   let cppMinTuple = rawtensors.min(asRaw(self), axis, keepdim)
@@ -113,7 +112,7 @@ func max*[T](self: Tensor[T]): Tensor[T] =
     rawtensors.max(asRaw(self))
   )
 
-func max*[T](self: Tensor[T], axis: int64, keepdim: bool = false): tuple[values: Tensor[T], indices: Tensor[int]] {.noinit.} =
+func max*[T](self: Tensor[T], axis: int64, keepdim: bool = false): tuple[values: Tensor[T], indices: Tensor[int]] =
   ## Returns a tuple (values, indices) of type (TensorT, TensorInt64)
   ## of the maximum values and their index in the specified axis
   let cppMaxTuple = rawtensors.max(asRaw(self), axis, keepdim)
