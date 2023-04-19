@@ -1,12 +1,14 @@
 import ../raw/bindings/[rawtensors, c10]
-import ../raw/sugar/[interop, indexing]
+import ../raw/sugar/[rawinterop, indexing]
 import ../tensors
 import std/[complex, macros]
+
+let t_dont_use_this {.used.} = initRawTensor()
 
 # Operators
 # -----------------------------------------------------------------------
 {.push inline.}
-{.push noinit.}
+# {.push noinit.}
 func `not`*[T](self: Tensor[T]): Tensor[T] =
   asTensor[T](not asRaw(self))
 

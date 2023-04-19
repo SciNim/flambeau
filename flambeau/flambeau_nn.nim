@@ -45,8 +45,8 @@ export std_smartptrs
 # Convenience helpers
 # ----------------------------------------------------------------
 
-import ./raw/sugar/[indexing, interop, moduleSugar]
-export indexing, interop, moduleSugar
+import ./raw/sugar/[indexing, rawinterop, moduleSugar]
+export indexing, rawinterop, moduleSugar
 
 import ./raw/bindings/c10
 export c10

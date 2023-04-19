@@ -6,14 +6,14 @@
 # at your option. This file may not be copied, modified, or distributed except according to those terms.
 
 packageName   = "flambeau"
-version       = "0.0.1"
+version       = "0.0.2"
 author        = "Mamy André-Ratsimbazafy"
 description   = "A state-of-the-art tensor and deep learning backend on CPU, Nvidia Cuda, AMD HIP, OpenCL, Vulkan, OpenGL"
 license       = "MIT or Apache License 2.0"
 installDirs   = @["vendor"]
 
 ### Dependencies
-requires "nim >= 1.4.2"
+requires "nim >= 1.9.3"
 requires "zip"
 requires "cppstl >= 0.3.0"
 requires "fusion"

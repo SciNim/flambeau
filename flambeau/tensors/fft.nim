@@ -1,13 +1,14 @@
 import ../tensors
 import ../raw/bindings/[rawtensors]
-import ../raw/sugar/[interop, indexing]
+import ../raw/sugar/[rawinterop, indexing]
 import cppstl/std_string
 import std/[complex, macros]
 
+let t_dont_use_this {.used.} = initRawTensor()
 type
   SomeComplex = Complex32|Complex64
 
-{.push inline, noinit.}
+{.push inline.}
 
 # FFTSHIFT
 # -----------------------------------------------------------------------

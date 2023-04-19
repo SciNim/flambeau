@@ -1,12 +1,13 @@
 import ../tensors
 import ../raw/bindings/[rawtensors]
 import ../raw/cpp/[std_cpp]
-import ../raw/sugar/[interop, indexing]
+import ../raw/sugar/[rawinterop, indexing]
 import std/[macros]
+
+let t_dont_use_this {.used.} = initRawTensor()
 
 ## Aggregate
 ## -----------------------------------------------------------------------
-{.push noinit.}
 # sum needs wrapper procs/templates to allow for using nim arrays and single axis.
 func sum*[T](self: Tensor[T]): Tensor[T] =
   asTensor[T](

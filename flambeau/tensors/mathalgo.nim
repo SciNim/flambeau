@@ -1,30 +1,32 @@
 import ../raw/bindings/[rawtensors, c10]
 import ../raw/cpp/[std_cpp]
-import ../raw/sugar/[interop, indexing]
+import ../raw/sugar/[rawinterop, indexing]
 import ../tensors
 import std/[complex, macros]
 
 {.experimental: "views".}
-{.push inline, noinit.}
+
+let t_dont_use_this {.used.} = initRawTensor()
+
+#{.push inline.}
 
 # # algorithms:
 # # -----------------------------------------------------------------------
-func sort*[T](self: Tensor[T], axis: int64 = -1, descending: bool = false): tuple[values: Tensor[T], originalIndices: Tensor[int64]] =
+func sort*[T](self: Tensor[T], axis: int64 = -1, descending: bool = false): tuple[values: Tensor[T], indices: Tensor[int64]] {.noinit.} =
   ## Sorts the elements of the input tensor along a given dimension in ascending order by value.
   ## If dim is not given, the last dimension of the input is chosen (dim=-1).
-  ## Returns (values, originalIndices) or type (TensorT, TensorInt64)
+  ## Returns (values, indices) or type (Tensor[T], Tensor[int64])
   ## where originalIndices is the original index of each values (before sorting)
-  let cppSortTuple = rawtensors.sort(asRaw(self), axis, descending)
+
+  let
+    cppSortTuple = rawtensors.sort(asRaw(self), axis, descending)
   result.values = asTensor[T](cppSortTuple.get(0))
-  result.originalIndices = asTensor[int64](cppSortTuple.get(1))
+  result.indices = asTensor[int64](cppSortTuple.get(1))
 
 func argsort*[T](self: Tensor[T], axis: int64 = -1, descending: bool = false): Tensor[int64] =
   asTensor[int64](
     rawtensors.argsort(asRaw(self), axis, descending)
   )
-{.pop.}
-
-{.push inline, noinit.}
 
 proc concat*[T](tensorargs: varargs[Tensor[T]], axis: int64): Tensor[T] =
   var rawVec = initCppVector[RawTensor]()
@@ -50,36 +52,30 @@ func flip*[T](self: Tensor[T], dims: openArray[int64]): Tensor[T] =
 #
 # # math
 # # -----------------------------------------------------------------------
-func abs*[T](self: Tensor[T]): Tensor[T] =
-  asTensor[T](
-    rawtensors.abs(asRaw(self))
-  )
-
 func absolute*[T](self: Tensor[T]): Tensor[T] =
   asTensor[T](
     rawtensors.absolute(asRaw(self))
   )
 
-## Absolute value of Complex type is a float
-func abs*(self: Tensor[Complex32]): Tensor[float32] =
-  asTensor[float32](
-    rawtensors.abs(asRaw(self))
-  )
+func abs*[T](self: Tensor[T]): Tensor[T] =
+  absolute(self)
 
+## Absolute value of Complex type is a float
 func absolute*(self: Tensor[Complex32]): Tensor[float32] =
   asTensor[float32](
     rawtensors.absolute(asRaw(self))
   )
 
-func abs*(self: Tensor[Complex64]): Tensor[float64] =
-  asTensor[float64](
-    rawtensors.abs(asRaw(self))
-  )
+func abs*(self: Tensor[Complex32]): Tensor[float32] =
+  absolute(self)
 
 func absolute*(self: Tensor[Complex64]): Tensor[float64] =
   asTensor[float64](
     rawtensors.absolute(asRaw(self))
   )
+
+func abs*(self: Tensor[Complex64]): Tensor[float64] =
+  absolute(self)
 
 func angle*[T](self: Tensor[T]): Tensor[T] =
   asTensor[T](
@@ -236,22 +232,22 @@ func unsqueeze*[T](self: Tensor[T], axis: int64): Tensor[T] =
     rawtensors.unsqueeze(asRaw(self), axis)
   )
 
-func sqrt*[T](self: Tensor[T]) : Tensor[T] =
+func sqrt*[T](self: Tensor[T]): Tensor[T] =
   asTensor[T](
     rawtensors.sqrt(asRaw(self))
   )
 
-func square*[T](self: Tensor[T]) : Tensor[T] =
+func square*[T](self: Tensor[T]): Tensor[T] =
   asTensor[T](
     rawtensors.square(asRaw(self))
   )
 
-func pow*[T](self: Tensor[T], exponent: Tensor[T]) : Tensor[T] =
+func pow*[T](self: Tensor[T], exponent: Tensor[T]): Tensor[T] =
   asTensor[T](
     rawtensors.pow(asTensor[T](self), asTensor[T](exponent))
   )
 
-func pow*[T](self: Tensor[T], exponent: Scalar) : Tensor[T] =
+func pow*[T](self: Tensor[T], exponent: Scalar): Tensor[T] =
   asTensor[T](
     rawtensors.pow(asRaw(self), exponent)
   )

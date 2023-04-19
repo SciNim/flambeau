@@ -11,6 +11,9 @@
 when not defined(cpp):
   {.error: "Flambeau requires C++ backend required to use Torch".}
 
+when NimMajor <= 1 and NimMinor < 9:
+  {.error: "Flambeau requires Nim 2.0-RC or above (1.9.X)"}
+
 import ./raw/bindings/rawtensors
   except # TODO, don't export associated proc either
     # ArrayRef,
@@ -30,5 +33,5 @@ export std_cpp
 # Convenience helpers
 # ----------------------------------------------------------------
 
-import ./raw/sugar/[indexing, interop]
-export indexing, interop
+import ./raw/sugar/[indexing, rawinterop]
+export indexing, rawinterop

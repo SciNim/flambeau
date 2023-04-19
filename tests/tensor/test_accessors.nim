@@ -1,8 +1,8 @@
-# Copyright 2021 the Flambeaucontributors
-#
-import flambeau
+# Copyright 2021 the Flambeau contributors
+
 import std/unittest
 import std/complex
+include flambeau
 
 {.experimental: "views".} # TODO
 
@@ -26,7 +26,7 @@ proc main() =
       var c = @[
         @[complex_init, complex_init, complex_init, complex_init],
         @[complex_init, complex_init, complex_init, complex_init],
-        @[complex_init, complex_init, complex_init, complex_init]].toTensor
+        @[complex_init, complex_init, complex_init, complex_init]].toTensor()
 
       c[0, 2] = complex64(1.2, 6.6)
       check: c[0, 2].item() == Complex64(re: 1.2, im: 6.6)

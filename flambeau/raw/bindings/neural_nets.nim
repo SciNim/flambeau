@@ -104,12 +104,12 @@ func linear*(input, weight, bias: RawTensor): RawTensor {.importcpp: "torch::nn:
 # Pooling functions
 # -------------------------------------------------------------------------
 
-func max_pool2d*(input: RawTensor): RawTensor {.varargs, importcpp:"torch::max_pool2d(#, {@})".}
+func max_pool2d*(input: RawTensor): RawTensor {.varargs, importcpp: "torch::max_pool2d(#, {@})".}
   ## MaxPool 2D function
   ## - `input`: a Tensor
   ## - `kernel_size`: the kernel shape
 
-func max_pool2d*(input: RawTensor, kernel_size: IntArrayRef): RawTensor {.importcpp:"torch::max_pool2d(@)".}
+func max_pool2d*(input: RawTensor, kernel_size: IntArrayRef): RawTensor {.importcpp: "torch::max_pool2d(@)".}
 
 # Activation functions
 # -------------------------------------------------------------------------
@@ -123,14 +123,14 @@ func log_softmax*(input: RawTensor, axis: int64, dtype: ScalarKind): RawTensor {
 # Dropout functions
 # -------------------------------------------------------------------------
 
-func dropout*(input: RawTensor, p = 0.5, training=true): RawTensor {.importcpp: "torch::dropout(@)".}
-func dropout_mut*(input: var RawTensor, p = 0.5, training=true) {.importcpp: "torch::dropout_(@)".}
+func dropout*(input: RawTensor, p = 0.5, training = true): RawTensor {.importcpp: "torch::dropout(@)".}
+func dropout_mut*(input: var RawTensor, p = 0.5, training = true) {.importcpp: "torch::dropout_(@)".}
 
 # Loss functions
 # -------------------------------------------------------------------------
 
 type
-  Reduction* {.size: sizeof(cint), importcpp:"torch::Reduction::Reduction".} = enum
+  Reduction* {.size: sizeof(cint), importcpp: "torch::Reduction::Reduction".} = enum
     None = 0 # Do not reduce
     Mean = 1 # (Possibly weighted) mean of losses
     Sum = 2  # Sum losses
@@ -246,8 +246,8 @@ type
 func init*(T: type LinearOptions, in_features, out_features: int64): T {.constructor, importcpp: "torch::nn::LinearOptions(@)".}
 func bias*(options: LinearOptions, bias: bool): LinearOptions {.importcpp: "#.bias(@)".}
 
-func init*(T: type Linear, in_features, out_features: int64): T {.constructor, importcpp:"torch::nn::Linear(@)".}
-func init*(T: type Linear, options: LinearOptions): T {.constructor, importcpp:"torch::nn::Linear(@)".}
+func init*(T: type Linear, in_features, out_features: int64): T {.constructor, importcpp: "torch::nn::Linear(@)".}
+func init*(T: type Linear, options: LinearOptions): T {.constructor, importcpp: "torch::nn::Linear(@)".}
 
 func reset*(linear: Linear){.importcpp: "#.reset()".}
   ## reset() must perform initialization of all members with reference semantics,
@@ -277,7 +277,7 @@ type
     weight*{.importc.}: RawTensor
     bias*{.importc.}: RawTensor
 
-func init*(T: type Conv2dOptions, in_channels, out_channels, kernel_size: int64 or array[2, int64]): T {.constructor, importcpp:"torch::nn::Conv2dOptions(@)".}
+func init*(T: type Conv2dOptions, in_channels, out_channels, kernel_size: int64 or array[2, int64]): T {.constructor, importcpp: "torch::nn::Conv2dOptions(@)".}
 func bias*(options: Conv2dOptions, bias: bool): Conv2dOptions {.importcpp: "#.bias(@)".}
 func stride*(options: Conv2dOptions, stride: int64): Conv2dOptions {.importcpp: "#.stride(@)".}
 func stride*(options: Conv2dOptions, stride: array[2, int64]): Conv2dOptions {.importcpp: "#.stride(@)".}
@@ -289,10 +289,10 @@ func stride*(options: Conv2dOptions): IntArrayRef {.importcpp: "at::ArrayRef<int
 
 
 
-func init*(T: type Conv2d, in_channels, out_channels, kernel_size: int64): T {.constructor, importcpp:"torch::nn::Conv2d(@)".}
+func init*(T: type Conv2d, in_channels, out_channels, kernel_size: int64): T {.constructor, importcpp: "torch::nn::Conv2d(@)".}
 func init*(T: type Conv2d, in_channels, out_channels,
-           kernel_size: array[2, int64]): T {.constructor, importcpp:"torch::nn::Conv2d(@)".}
-func init*(T: type Conv2d, options: Conv2dOptions): T {.constructor, importcpp:"torch::nn::Conv2d(@)".}
+           kernel_size: array[2, int64]): T {.constructor, importcpp: "torch::nn::Conv2d(@)".}
+func init*(T: type Conv2d, options: Conv2dOptions): T {.constructor, importcpp: "torch::nn::Conv2d(@)".}
 
 func reset*(conv2d: Conv2d){.importcpp: "#.reset()".}
   ## reset() must perform initialization of all members with reference semantics,
@@ -324,8 +324,8 @@ type
 
   SomeDropout* = Dropout or Dropout2d or Dropout3d
 
-func init*(T: type Dropout, proba = 0.5): T {.constructor, importcpp:"torch::nn::Dropout(@)".}
-func init*(T: type Dropout2d, proba = 0.5): T {.constructor, importcpp:"torch::nn::Dropout2d(@)".}
-func init*(T: type Dropout3d, proba = 0.5): T {.constructor, importcpp:"torch::nn::Dropout3d(@)".}
+func init*(T: type Dropout, proba = 0.5): T {.constructor, importcpp: "torch::nn::Dropout(@)".}
+func init*(T: type Dropout2d, proba = 0.5): T {.constructor, importcpp: "torch::nn::Dropout2d(@)".}
+func init*(T: type Dropout3d, proba = 0.5): T {.constructor, importcpp: "torch::nn::Dropout3d(@)".}
 
 func forward*(dropout: SomeDropout, input: RawTensor): RawTensor {.importcpp: "#->forward(#)".}
