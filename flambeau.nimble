@@ -13,7 +13,7 @@ license       = "MIT or Apache License 2.0"
 installDirs   = @["vendor"]
 
 ### Dependencies
-requires "nim >= 1.4.2"
+requires "nim >= 1.9.3"
 requires "zip"
 requires "cppstl >= 0.3.0"
 requires "fusion"
