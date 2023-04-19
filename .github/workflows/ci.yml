@@ -23,6 +23,7 @@ jobs:
           version: devel
       - run: git submodule update --recursive --init
       - run: nimble install -y
+      - run: nimble develop -y
       - run: nimble test
       # TODO : make examples works
       # - run: nimble runexample
