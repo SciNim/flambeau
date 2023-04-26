@@ -2,7 +2,7 @@
 
 import ../tensors
 # Reuse same desugar syntax as RawTensor
-include ../raw/sugar/indexing
+include ../raw/sugar/indexing_macros
 
 macro `[]`*[T](t: Tensor[T], args: varargs[untyped]): untyped =
   let new_args = getAST(desugarSlices(args))
