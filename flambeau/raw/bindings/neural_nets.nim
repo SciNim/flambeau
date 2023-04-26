@@ -114,8 +114,27 @@ func max_pool2d*(input: RawTensor, kernel_size: IntArrayRef): RawTensor {.import
 # Activation functions
 # -------------------------------------------------------------------------
 
+func sigmoid*(input: RawTensor): RawTensor {.importcpp: "torch::sigmoid(@)".}
+func sigmoid_mut*(input: var RawTensor) {.importcpp: "torch::sigmoid_(@)".}
+
 func relu*(input: RawTensor): RawTensor {.importcpp: "torch::relu(@)".}
 func relu_mut*(input: var RawTensor) {.importcpp: "torch::relu_(@)".}
+
+func leakyRelu*(input: RawTensor): RawTensor {.importcpp: "torch::leaky_relu(@)".}
+func leakyRelu_mut*(input: var RawTensor) {.importcpp: "torch::leaky_relu_(@)".}
+
+func gelu*(input: RawTensor): RawTensor {.importcpp: "torch::gelu(@)".}
+func gelu_mut*(input: var RawTensor) {.importcpp: "torch::gelu_(@)".}
+
+func elu*(input: RawTensor): RawTensor {.importcpp: "torch::elu(@)".}
+func elu_mut*(input: var RawTensor) {.importcpp: "torch::elu_(@)".}
+
+func pRelu*(input: RawTensor): RawTensor {.importcpp: "torch::prelu(@)".}
+func pRelu_mut*(input: var RawTensor) {.importcpp: "torch::prelu_(@)".}
+
+func selu*(input: RawTensor): RawTensor {.importcpp: "torch::selu(@)".}
+func selu_mut*(input: var RawTensor) {.importcpp: "torch::selu_(@)".}
+
 
 func tanh*(input: RawTensor): RawTensor {.importcpp: "torch::tanh(@)".}
 func tanh_mut*(input: var RawTensor) {.importcpp: "torch::tanh_(@)".}
