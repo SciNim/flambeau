@@ -42,12 +42,12 @@ proc downloadTo(url, targetDir, filename: string) =
   echo "Storing temporary into: \"", targetDir, '\"'
   client.downloadFile(url, targetDir / filename)
 
-proc getUrlAndFilename(version = "1.10.2", accel = Cuda113, abi = Cpp11): tuple[url, filename: string] =
+proc getUrlAndFilename(version = "latest", accel = Cuda113, abi = Cpp11): tuple[url, filename: string] =
   result.filename = "libtorch-"
 
   when defined(linux):
     result.filename &= &"{abi}-{version}"
-    if accel != Cuda102:
+    if accel != Cuda102 and version != "latest":
       result.filename &= &"%2B{accel}"
     result.filename &= ".zip"
   elif defined(windows):
@@ -60,7 +60,10 @@ proc getUrlAndFilename(version = "1.10.2", accel = Cuda113, abi = Cpp11): tuple[
     doAssert accel == Cpu, "LibTorch for MacOS does not support GPU acceleration"
     result.filename &= &"macos-{version}.zip"
 
-  result.url = &"https://download.pytorch.org/libtorch/{accel}/{result.filename}"
+  if version != "latest":
+    result.url = &"https://download.pytorch.org/libtorch/{accel}/{result.filename}"
+  else:
+    result.url = &"https://download.pytorch.org/libtorch/nightly/{accel}/{result.filename}"
 
 proc downloadLibTorch(url, targetDir, filename: string) =
   if not fileExists(targetDir / filename):
