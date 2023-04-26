@@ -169,6 +169,12 @@ func sigmoid_cross_entropy*(input, target: RawTensor): RawTensor {.importcpp: "t
   ## Sigmoid + Log + Negative loglikelihood
   ## Arraymancer or Tensorflow naming
 
+func mse_loss*(input, target: RawTensor): RawTensor {.importcpp: "torch::mse_loss(@)".}
+  ## target must be int (Long)!
+
+func l1_loss*(input, target: RawTensor): RawTensor {.importcpp: "torch::l1_loss(@)".}
+  ## target must be int (Long)!
+
 # #######################################################################
 #
 #                       LibTorch Module API
