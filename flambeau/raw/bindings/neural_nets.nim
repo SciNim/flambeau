@@ -322,6 +322,8 @@ func init*(T: type Conv2d, in_channels, out_channels,
            kernel_size: array[2, int64]): T {.constructor, importcpp: "torch::nn::Conv2d(@)".}
 func init*(T: type Conv2d, options: Conv2dOptions): T {.constructor, importcpp: "torch::nn::Conv2d(@)".}
 
+func `weight=`*(x: Conv2d, w: RawTensor) {.importcpp: "#->weight = #".}
+
 func reset*(conv2d: Conv2d){.importcpp: "#.reset()".}
   ## reset() must perform initialization of all members with reference semantics,
   ## most importantly parameters, buffers and submodules.
