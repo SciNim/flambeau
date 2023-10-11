@@ -305,7 +305,6 @@ type
     # Conv2d is a shared_ptr underneath.
     # The ptr is bycopy which results in the actual data being byref.
     options*{.importc.}: Conv2DOptions
-    weight*{.importc.}: RawTensor
     bias*{.importc.}: RawTensor
 
 func init*(T: type Conv2dOptions, in_channels, out_channels, kernel_size: int64 or array[2, int64]): T {.constructor, importcpp: "torch::nn::Conv2dOptions(@)".}
