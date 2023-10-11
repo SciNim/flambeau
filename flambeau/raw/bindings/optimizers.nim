@@ -34,30 +34,35 @@ import
 
 type
   OptimizerOptions*
-    {.pure, inheritable, bycopy,
-    importcpp: "torch::optim::OptimizerOptions".}
+    {.pure, inheritable, bycopy, cppNonPod, importcpp: "torch::optim::OptimizerOptions".}
     = object
 
   Optimizer*
-    {.pure, inheritable, bycopy,
-    importcpp: "torch::optim::Optimizer".}
+    {.pure, inheritable, bycopy, cppNonPod, importcpp: "torch::optim::Optimizer".}
     = object
 
   SGD*
-    {.pure, bycopy, importcpp: "torch::optim::SGD".}
+    {.pure, bycopy, cppNonPod, importcpp: "torch::optim::SGD".}
     = object of Optimizer
 
   Adam*
-    {.pure, bycopy, importcpp: "torch::optim::Adam".}
+    {.pure, bycopy, cppNonPod, importcpp: "torch::optim::Adam".}
     = object of Optimizer
 
   AdamW*
-    {.pure, bycopy, importcpp: "torch::optim::AdamW".}
+    {.pure, bycopy, cppNonPod, requiresInit,  importcpp: "torch::optim::AdamW".}
     = object of Optimizer
 
 
 func step*(optim: var Optimizer){.importcpp: "#.step()".}
 func zero_grad*(optim: var Optimizer){.importcpp: "#.zero_grad()".}
+
+func initSGD*(): SGD =
+  SGD()
+func initAdam*(): Adam =
+  Adam()
+func initAdamw*(): Adamw =
+  Adamw()
 
 func init*(
        Optim: type SGD,

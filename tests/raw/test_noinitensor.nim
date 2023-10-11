@@ -14,7 +14,7 @@ type
   CompositeTensor* = object
     t : TensorAgreggate[int]
 
-proc newTensorAggregate[T](): TensorAgreggate[T] {.constructor.} =
+proc newTensorAggregate[T](): TensorAgreggate[T] =
   RawTensor(result) = initRawTensor()
 
 proc newTensorAggregate[T](a: RawTensor): TensorAgreggate[T] =
