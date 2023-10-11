@@ -5,6 +5,9 @@ import raw/sugar/indexing
 import std/[complex, macros]
 
 export SomeTorchType
+export Torch
+# export hasCuda
+export cuda_is_available
 
 {.experimental: "views".} # TODO
 
