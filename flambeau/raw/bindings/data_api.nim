@@ -212,6 +212,12 @@ type
     ## Batch is by default the type CppVector[T]
     ##   with T being Example[Data, Target]
 
+  TensorDataset*
+    {.bycopy, pure,
+    importcpp: "torch::data::datasets::TensorDataset".}
+    # [Self, Batch]
+      = object of Dataset # [Self, Batch, ArrayRef[csize_t]]
+
   # TODO: https://github.com/nim-lang/Nim/issues/16655
   # CRTP + importcpp don't work
   Mnist*
@@ -441,3 +447,7 @@ func make_data_loader*[D: BatchDataset; S: Sampler](
        batch_size: csize_t
   ): CppUniquePtr[StatelessDataLoader[D, SamplerType]] {.
   importcpp: "torch::data::make_data_loader<'*1>(@)".}
+
+func toDataset*[D: RawTensor](
+       data: D): TensorDataset {.
+  importcpp: "torch::TensorDataset<'*1>(@)".}

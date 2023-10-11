@@ -15,15 +15,15 @@ when NimMajor <= 1 and NimMinor < 9:
   {.error: "Flambeau requires Nim 2.0-RC or above (1.9.X)"}
 
 import ./flambeau/tensors
-#export tensors
+export tensors
 
 # C++ Standard Library
 # ----------------------------------------------------------------
 import ./flambeau/raw/cpp/std_cpp
-#export std_cpp
+export std_cpp
 
 import ./flambeau/raw/bindings/c10
-#export c10
+export c10
 
 import ./flambeau/raw/sugar/rawinterop
 

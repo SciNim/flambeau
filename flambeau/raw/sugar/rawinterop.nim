@@ -30,7 +30,7 @@ type Metadata* = DynamicStackArray[int64]
 template asNimView*[T](ar: ArrayRef[T]): openArray[T] =
   toOpenArray(ar.data.unsafeAddr, 0, ar.size.int - 1)
 
-template asTorchView*[T](oa: openarray[T]): ArrayRef[T] =
+template asTorchView*[T](oa: openArray[T]): ArrayRef[T] =
   # Don't remove. This makes @[1, 2, 3].asTorchView works
   let a = @oa
   ArrayRef[T].init(a[0].unsafeAddr, a.len)

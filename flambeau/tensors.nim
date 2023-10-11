@@ -5,6 +5,9 @@ import raw/sugar/indexing
 import std/[complex, macros]
 
 export SomeTorchType
+export Torch
+# export hasCuda
+export cuda_is_available
 
 {.experimental: "views".} # TODO
 
@@ -30,10 +33,10 @@ template asTensor*[T: SomeTorchType](t: RawTensor): Tensor[T] =
   tensor.raw = to(t, typedesc[T])
   tensor
 
-proc initTensor*[T](): Tensor[T] {.constructor.} =
+proc initTensor*[T](): Tensor[T] =
   asRaw(result) = initRawTensor()
 
-proc initTensor*[T](a: Tensor[T]): Tensor[T] {.constructor.} =
+proc initTensor*[T](a: Tensor[T]): Tensor[T] =
   asRaw(result) = initRawTensor(asRaw(a))
 
 #{.push inline.}

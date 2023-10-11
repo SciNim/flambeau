@@ -35,6 +35,9 @@ import
 type
   AutoGradMode* {.bycopy, pure, inheritable, importcpp: "torch::AutoGradMode".} = object
 
+type
+  NoGradGuard* {.bycopy, pure, inheritable, importcpp: "torch::NoGradGuard".} = object
+
 func autogradMode(enabled: bool): AutoGradMode {.constructor, importcpp: "torch::AutoGradMode(#)".}
 
 template with*(T: type AutoGradMode, enabled: bool, body: untyped): untyped =
@@ -114,8 +117,30 @@ func max_pool2d*(input: RawTensor, kernel_size: IntArrayRef): RawTensor {.import
 # Activation functions
 # -------------------------------------------------------------------------
 
+func sigmoid*(input: RawTensor): RawTensor {.importcpp: "torch::sigmoid(@)".}
+func sigmoid_mut*(input: var RawTensor) {.importcpp: "torch::sigmoid_(@)".}
+
 func relu*(input: RawTensor): RawTensor {.importcpp: "torch::relu(@)".}
 func relu_mut*(input: var RawTensor) {.importcpp: "torch::relu_(@)".}
+
+func leakyRelu*(input: RawTensor): RawTensor {.importcpp: "torch::leaky_relu(@)".}
+func leakyRelu_mut*(input: var RawTensor) {.importcpp: "torch::leaky_relu_(@)".}
+
+func gelu*(input: RawTensor): RawTensor {.importcpp: "torch::gelu(@)".}
+func gelu_mut*(input: var RawTensor) {.importcpp: "torch::gelu_(@)".}
+
+func elu*(input: RawTensor): RawTensor {.importcpp: "torch::elu(@)".}
+func elu_mut*(input: var RawTensor) {.importcpp: "torch::elu_(@)".}
+
+func pRelu*(input: RawTensor): RawTensor {.importcpp: "torch::prelu(@)".}
+func pRelu_mut*(input: var RawTensor) {.importcpp: "torch::prelu_(@)".}
+
+func selu*(input: RawTensor): RawTensor {.importcpp: "torch::selu(@)".}
+func selu_mut*(input: var RawTensor) {.importcpp: "torch::selu_(@)".}
+
+
+func tanh*(input: RawTensor): RawTensor {.importcpp: "torch::tanh(@)".}
+func tanh_mut*(input: var RawTensor) {.importcpp: "torch::tanh_(@)".}
 
 func log_softmax*(input: RawTensor, axis: int64): RawTensor {.importcpp: "torch::log_softmax(@)".}
 func log_softmax*(input: RawTensor, axis: int64, dtype: ScalarKind): RawTensor {.importcpp: "torch::log_softmax(@)".}
@@ -146,6 +171,12 @@ func binary_cross_entropy_with_logits*(input, target: RawTensor): RawTensor {.im
 func sigmoid_cross_entropy*(input, target: RawTensor): RawTensor {.importcpp: "torch::binary_cross_entropy_with_logits(@)".}
   ## Sigmoid + Log + Negative loglikelihood
   ## Arraymancer or Tensorflow naming
+
+func mse_loss*(input, target: RawTensor): RawTensor {.importcpp: "torch::mse_loss(@)".}
+  ## target must be int (Long)!
+
+func l1_loss*(input, target: RawTensor): RawTensor {.importcpp: "torch::l1_loss(@)".}
+  ## target must be int (Long)!
 
 # #######################################################################
 #
@@ -274,7 +305,6 @@ type
     # Conv2d is a shared_ptr underneath.
     # The ptr is bycopy which results in the actual data being byref.
     options*{.importc.}: Conv2DOptions
-    weight*{.importc.}: RawTensor
     bias*{.importc.}: RawTensor
 
 func init*(T: type Conv2dOptions, in_channels, out_channels, kernel_size: int64 or array[2, int64]): T {.constructor, importcpp: "torch::nn::Conv2dOptions(@)".}
@@ -293,6 +323,8 @@ func init*(T: type Conv2d, in_channels, out_channels, kernel_size: int64): T {.c
 func init*(T: type Conv2d, in_channels, out_channels,
            kernel_size: array[2, int64]): T {.constructor, importcpp: "torch::nn::Conv2d(@)".}
 func init*(T: type Conv2d, options: Conv2dOptions): T {.constructor, importcpp: "torch::nn::Conv2d(@)".}
+
+func `weight=`*(x: Conv2d, w: RawTensor) {.importcpp: "#->weight = #".}
 
 func reset*(conv2d: Conv2d){.importcpp: "#.reset()".}
   ## reset() must perform initialization of all members with reference semantics,

@@ -10,6 +10,7 @@ include flambeau
 {.experimental: "views".} # TODO
 
 proc main() =
+  echo Torch.cuda_is_available()
   suite "Operator precedence":
     test "= and ==":
       let a = [[1, 2], [3, 4]].toTensor
