@@ -6,7 +6,7 @@
 # at your option. This file may not be copied, modified, or distributed except according to those terms.
 
 packageName   = "flambeau"
-version       = "0.0.2"
+version       = "0.0.3"
 author        = "Mamy André-Ratsimbazafy"
 description   = "A state-of-the-art tensor and deep learning backend on CPU, Nvidia Cuda, AMD HIP, OpenCL, Vulkan, OpenGL"
 license       = "MIT or Apache License 2.0"
