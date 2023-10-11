@@ -35,6 +35,9 @@ import
 type
   AutoGradMode* {.bycopy, pure, inheritable, importcpp: "torch::AutoGradMode".} = object
 
+type
+  NoGradGuard* {.bycopy, pure, inheritable, importcpp: "torch::NoGradGuard".} = object
+
 func autogradMode(enabled: bool): AutoGradMode {.constructor, importcpp: "torch::AutoGradMode(#)".}
 
 template with*(T: type AutoGradMode, enabled: bool, body: untyped): untyped =
