@@ -91,6 +91,11 @@ proc main() =
       let test = @[@[1], @[16], @[81], @[256], @[625]]
       check: t_van[_.._, 3] == test.toTensor().squeeze()
 
+    test "Span slices - foo[_, 3] in assignment":
+      let test = @[@[1], @[16], @[81], @[256], @[625]]
+      var tmp = t_van[_, 3]
+      check tmp == test.toTensor().squeeze()
+
     test "Stepping - foo[1..3|2, 3]":
       let test = @[@[16], @[256]]
       check: t_van[1..3|2, 3] == test.toTensor().squeeze()

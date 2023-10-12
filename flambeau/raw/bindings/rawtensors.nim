@@ -461,6 +461,7 @@ template `==`*(a, b: RawTensor): bool =
 # Functions.h
 # -----------------------------------------------------------------------
 
+func contiguous*(self: RawTensor): RawTensor {.importcpp: "#.contiguous(@)".}
 func toType*(self: RawTensor, dtype: ScalarKind): RawTensor {.importcpp: "#.toType(@)".}
 func toSparse*(self: RawTensor): RawTensor {.importcpp: "#.to_sparse()".}
 func toSparse*(self: RawTensor, sparseDim: int64): RawTensor {.importcpp: "#.to_sparse(@)".}
