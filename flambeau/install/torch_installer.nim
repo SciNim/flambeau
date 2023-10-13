@@ -6,7 +6,7 @@
 # at your option. This file may not be copied, modified, or distributed except according to those terms.
 
 import
-  std/[asyncdispatch, httpclient,
+  std/[httpclient,
      strformat, strutils, os],
   #zippy/ziparchives,
   zip/zipfiles

@@ -325,6 +325,11 @@ func backward*[T](self: var Tensor[T]) =
 
 # # Functions.h
 # # -----------------------------------------------------------------------
+func contiguous*[T](self: Tensor[T]) : Tensor[T] =
+  asTensor[T](
+    rawtensors.contiguous(asRaw(self))
+  )
+
 func toType*[T](self: Tensor[T], dtype: ScalarKind): Tensor[T] =
   asTensor[T](
     rawtensors.toType(asRaw(self), dtype)
