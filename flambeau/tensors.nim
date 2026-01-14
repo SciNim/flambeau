@@ -272,6 +272,21 @@ func view*[T](self: Tensor[T], size: openArray[int64]): Tensor[T] =
   let dims = size.asTorchView()
   asTensor[T](reshape(asRaw(self), dims))
 
+func transpose*[T](self: Tensor[T], dim0, dim1: int64): Tensor[T] =
+  ## Swaps two dimensions. Returns a tensor that is a transposed version of input.
+  ## The given dimensions dim0 and dim1 are swapped.
+  asTensor[T](rawtensors.transpose(asRaw(self), dim0, dim1))
+
+func t*[T](self: Tensor[T]): Tensor[T] =
+  ## Transposes a 2D tensor. Equivalent to transpose(0, 1).
+  ## This function is only supported for 2D tensors.
+  asTensor[T](rawtensors.t(asRaw(self)))
+
+func permute*[T](self: Tensor[T], dims: openArray[int64]): Tensor[T] =
+  ## Returns a view of the original tensor with its dimensions permuted.
+  let dimsList = dims.asTorchView()
+  asTensor[T](rawtensors.permute(asRaw(self), dimsList))
+
 # Automatic Differentiation
 # -----------------------------------------------------------------------
 

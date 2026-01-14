@@ -401,6 +401,17 @@ func masked_fill_mut*(
 func reshape*(self: RawTensor, sizes: IntArrayRef): RawTensor {.importcpp: "#.reshape({@})".}
 func view*(self: RawTensor, size: IntArrayRef): RawTensor {.importcpp: "#.reshape({@})".}
 
+func transpose*(self: RawTensor, dim0, dim1: int64): RawTensor {.importcpp: "#.transpose(@)".}
+  ## Swaps two dimensions. Returns a tensor that is a transposed version of input.
+  ## The given dimensions dim0 and dim1 are swapped.
+
+func t*(self: RawTensor): RawTensor {.importcpp: "#.t()".}
+  ## Transposes a 2D tensor. Equivalent to transpose(0, 1).
+  ## This function is only supported for 2D tensors.
+
+func permute*(self: RawTensor, dims: IntArrayRef): RawTensor {.importcpp: "#.permute(@)".}
+  ## Returns a view of the original tensor with its dimensions permuted.
+
 # Automatic Differentiation
 # -----------------------------------------------------------------------
 
