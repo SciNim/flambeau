@@ -10,3 +10,7 @@ when defined(windows):
   switch("passC", "/DNOMINMAX")
   switch("cc", "vcc")
   switch("passC", "/W0") # The console is flooded with NOTES and WARNINGS from vcc, this disables them.
+# begin Nimble config (version 2)
+when withDir(thisDir(), system.fileExists("nimble.paths")):
+  include "nimble.paths"
+# end Nimble config
