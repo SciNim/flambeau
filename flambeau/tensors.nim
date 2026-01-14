@@ -14,6 +14,7 @@ export cuda_is_available
 type
   Tensor*[T] = object
     raw: RawTensor
+
   ## If Tensor is used as a field of an object, it has to be used with {.noinit.} pragma
   ## This is because torch::Tensor is a hidden intrusive_ptr<TensorImpl> and the zeroMem() done by Nim compiler resets the ref count fields,
   ## which triggers a call to torch::Tensor::reset()
@@ -29,7 +30,7 @@ template asRaw*[T: SomeTorchType](t: var Tensor[T]): var RawTensor =
 template asTensor*[T: SomeTorchType](t: RawTensor): Tensor[T] =
   # if T is complex then T = Complex32 gets convertes to kComplexF32 by converter
   # Tensor[T](to(t, typedesc[T]))
-  var tensor : Tensor[T]
+  var tensor: Tensor[T]
   tensor.raw = to(t, typedesc[T])
   tensor
 
@@ -79,14 +80,14 @@ func shape*[T](self: Tensor[T]): seq[int64] =
   let tmpshape = sizes(self)
   let r = self.ndimension()
   result = newSeq[int64](r)
-  for i in 0..<r:
+  for i in 0 ..< r:
     result[i] = tmpshape[i]
 
 func strides*[T](self: Tensor[T]): seq[int64] =
   let tmp = strides(asRaw(self))
   let r = self.ndimension()
   result = newSeq[int64](r)
-  for i in 0..<r:
+  for i in 0 ..< r:
     result[i] = tmp[i]
 
 func nbytes*[T](self: Tensor[T]): uint =
@@ -118,7 +119,7 @@ func data_ptr*[T](self: Tensor[T]): ptr UncheckedArray[T] =
   ## It is recommended to use this only on contiguous tensors
   ## (freshly created or freshly cloned) and to avoid
   ## sliced tensors.
-  when T is byte|uint8|SomeSignedInt|SomeFloat:
+  when T is byte | uint8 | SomeSignedInt | SomeFloat:
     data_ptr(asRaw(self), T)
   elif T is Complex32:
     cast[ptr UncheckedArray[Complex32]](data_ptr(asRaw(self), C10_Complex[float32]))
@@ -156,42 +157,28 @@ func is_meta*[T](self: Tensor[T]): bool =
   is_meta(asRaw(self))
 
 func cpu*[T](self: Tensor[T]): Tensor[T] =
-  asTensor[T](
-    cpu(asRaw(self))
-  )
+  asTensor[T](cpu(asRaw(self)))
 
 func cuda*[T](self: Tensor[T]): Tensor[T] =
-  asTensor[T](
-    cuda(asRaw(self))
-  )
+  asTensor[T](cuda(asRaw(self)))
 
 func hip*[T](self: Tensor[T]): Tensor[T] =
-  asTensor[T](
-    hip(asRaw(self))
-  )
+  asTensor[T](hip(asRaw(self)))
 
 func vulkan*[T](self: Tensor[T]): Tensor[T] =
-  asTensor[T](
-  vulkan(asRaw(self))
-  )
+  asTensor[T](vulkan(asRaw(self)))
 
 func to*[T](self: Tensor[T], device: DeviceKind): Tensor[T] =
-  asTensor[T](
-    to(asRaw(self), device)
-  )
+  asTensor[T](to(asRaw(self), device))
 
 func to*[T](self: Tensor[T], device: Device): Tensor[T] =
-  asTensor[T](
-    to(asRaw(self), device)
-  )
+  asTensor[T](to(asRaw(self), device))
 
 # dtype
 # -----------------------------------------------------------------------
 func to*[T](self: Tensor[T], dtype: typedesc[SomeTorchType]): Tensor[dtype] =
   # Use typedesc -> ScalarKind converter here : for T = Complex32 T is converted to kComplexF32
-  asTensor[dtype](
-    rawtensors.to(asRaw(self), dtype)
-  )
+  asTensor[dtype](rawtensors.to(asRaw(self), dtype))
 
 func scalarType*[T](self: Tensor[T]): typedesc =
   toTypedesc(rawtensors.scalarType(asRaw(self)))
@@ -200,64 +187,46 @@ func scalarType*[T](self: Tensor[T]): typedesc =
 # -----------------------------------------------------------------------
 # DeviceType and ScalarType are auto-convertible to TensorOptions
 
-func from_blob*[T](data: pointer, sizes: openArray[int64], options: TensorOptions|DeviceKind): Tensor[T] =
+func from_blob*[T](data: pointer, sizes: openArray[int64], options: TensorOptions | DeviceKind): Tensor[T] =
   let dims = sizes.asTorchView
-  asTensor[T](
-    rawtensors.from_blob(data, dims, options)
-  )
+  asTensor[T](rawtensors.from_blob(data, dims, options))
 
 func from_blob*[T](data: pointer, sizes: openArray[int64]): Tensor[T] =
   let dims = sizes.asTorchView
-  asTensor[T](
-    rawtensors.from_blob(data, dims, T)
-  )
+  asTensor[T](rawtensors.from_blob(data, dims, T))
 
-func from_blob*[T](data: pointer, sizes: int64, options: TensorOptions|DeviceKind): Tensor[T] =
-  asTensor[T](
-    rawtensors.from_blob(data, sizes, options)
-  )
+func from_blob*[T](data: pointer, sizes: int64, options: TensorOptions | DeviceKind): Tensor[T] =
+  asTensor[T](rawtensors.from_blob(data, sizes, options))
 
 func from_blob*[T](data: pointer, sizes: int64): Tensor[T] =
-  asTensor[T](
-    rawtensors.from_blob(data, sizes, T)
-  )
+  asTensor[T](rawtensors.from_blob(data, sizes, T))
 
-func from_blob*[T](data: pointer, sizes, strides: openArray[int64], options: TensorOptions|DeviceKind): Tensor[T] =
+func from_blob*[T](data: pointer, sizes, strides: openArray[int64], options: TensorOptions | DeviceKind): Tensor[T] =
   let
     dims = sizes.asTorchView
     stridest = strides.asTorchView
-  asTensor[T](
-    rawtensors.from_blob(data, dims, stridest, options)
-  )
+  asTensor[T](rawtensors.from_blob(data, dims, stridest, options))
 
 func from_blob*[T](data: pointer, sizes, strides: openArray[int64]): Tensor[T] =
   let
     dims = sizes.asTorchView
     stridest = strides.asTorchView
-  asTensor[T](
-    rawtensors.from_blob(data, dims, stridest, T)
-  )
+  asTensor[T](rawtensors.from_blob(data, dims, stridest, T))
 
-func empty*[T](size: openArray[int64], options: TensorOptions|DeviceKind): Tensor[T] =
+func empty*[T](size: openArray[int64], options: TensorOptions | DeviceKind): Tensor[T] =
   ## Create an uninitialized tensor of shape `size`
   ## The tensor data must be filled manually
   ##
   ## The output tensor will be row major (C contiguous)
   let dims = size.asTorchView()
-  asTensor[T](
-    rawtensors.empty(dims, options)
-  )
+  asTensor[T](rawtensors.empty(dims, options))
 
 func empty*[T](size: openArray[int64]): Tensor[T] =
   let dims = size.asTorchView()
-  asTensor[T](
-    rawtensors.empty(dims, T)
-  )
+  asTensor[T](rawtensors.empty(dims, T))
 
 func clone*[T](self: Tensor[T]): Tensor[T] =
-  asTensor[T](
-    rawtensors.clone(asRaw(self))
-  )
+  asTensor[T](rawtensors.clone(asRaw(self)))
 
 # TODO : make these works for complex helper
 # func view_as_real*[T: SomeFloat](self: Tensor[Complex[T]]) : Tensor[T] =
@@ -276,46 +245,32 @@ func random_mut*[T](self: var Tensor[T], start, stopEx: int64) =
   random_mut(asRaw(self), start, stopEx)
 
 func randint*[T](start, stopEx: int64, args: varargs): Tensor[T] =
-  asTensor[T](
-    rawtensors.randint(start, stopEx, args)
-  )
+  asTensor[T](rawtensors.randint(start, stopEx, args))
 
 func randint*[T](start, stopEx: int64, size: openArray[int64]): Tensor[T] =
   let dims = size.asTorchView()
-  asTensor[T](
-    rawtensors.randint(start, stopEx, dims)
-  )
+  asTensor[T](rawtensors.randint(start, stopEx, dims))
 
-func rand_like*[T](self: Tensor[T], options: TensorOptions|DeviceKind|Device): Tensor[T] =
-  asTensor[T](
-    rawtensors.rand_like(asRaw(self), options)
-  )
+func rand_like*[T](self: Tensor[T], options: TensorOptions | DeviceKind | Device): Tensor[T] =
+  asTensor[T](rawtensors.rand_like(asRaw(self), options))
 
 func rand_like*[T](self: Tensor[T]): Tensor[T] =
-  asTensor[T](
-    rawtensors.rand_like(asRaw(self), T)
-  )
+  asTensor[T](rawtensors.rand_like(asRaw(self), T))
 
 func rand*[T](size: openArray[int64]): Tensor[T] =
   let dims = size.asTorchView()
-  asTensor[T](
-    rawtensors.rand(dims)
-  )
+  asTensor[T](rawtensors.rand(dims))
 
 # Shapeshifting
 # -----------------------------------------------------------------------
 
 func reshape*[T](self: Tensor[T], size: openArray[int64]): Tensor[T] =
   let dims = size.asTorchView()
-  asTensor[T](
-    reshape(asRaw(self), dims)
-  )
+  asTensor[T](reshape(asRaw(self), dims))
 
 func view*[T](self: Tensor[T], size: openArray[int64]): Tensor[T] =
   let dims = size.asTorchView()
-  asTensor[T](
-    reshape(asRaw(self), dims)
-  )
+  asTensor[T](reshape(asRaw(self), dims))
 
 # Automatic Differentiation
 # -----------------------------------------------------------------------
@@ -325,197 +280,119 @@ func backward*[T](self: var Tensor[T]) =
 
 # # Functions.h
 # # -----------------------------------------------------------------------
-func contiguous*[T](self: Tensor[T]) : Tensor[T] =
-  asTensor[T](
-    rawtensors.contiguous(asRaw(self))
-  )
+func contiguous*[T](self: Tensor[T]): Tensor[T] =
+  asTensor[T](rawtensors.contiguous(asRaw(self)))
 
 func toType*[T](self: Tensor[T], dtype: ScalarKind): Tensor[T] =
-  asTensor[T](
-    rawtensors.toType(asRaw(self), dtype)
-  )
+  asTensor[T](rawtensors.toType(asRaw(self), dtype))
 
 func toSparse*[T](self: Tensor[T]): Tensor[T] =
-  asTensor[T](
-    rawtensors.toSparse(asRaw(self))
-  )
+  asTensor[T](rawtensors.toSparse(asRaw(self)))
 
 func toSparse*[T](self: Tensor[T], sparseDim: int64): Tensor[T] =
-  asTensor[T](
-    rawtensors.toSparse(asRaw(self), sparseDim)
-  )
+  asTensor[T](rawtensors.toSparse(asRaw(self), sparseDim))
 
 func eye*[T](n: int64): Tensor[T] =
-  asTensor[T](
-    rawtensors.eye(n, T)
-  )
+  asTensor[T](rawtensors.eye(n, T))
 
-func eye*[T](n: int64, options: DeviceKind|TensorOptions): Tensor[T] =
-  asTensor[T](
-    rawtensors.eye(n, options)
-  )
+func eye*[T](n: int64, options: DeviceKind | TensorOptions): Tensor[T] =
+  asTensor[T](rawtensors.eye(n, options))
 
 func zeros*[T](dim: int64): Tensor[T] =
-  asTensor[T](
-    rawtensors.zeros(dim)
-  )
+  asTensor[T](rawtensors.zeros(dim))
 
 func zeros*[T](dim: openArray[int64]): Tensor[T] =
   let dims = dim.asTorchView()
-  asTensor[T](
-    rawtensors.zeros(dims, T)
-  )
+  asTensor[T](rawtensors.zeros(dims, T))
 
-func zeros*[T](dim: openArray[int64], options: DeviceKind|TensorOptions): Tensor[T] =
+func zeros*[T](dim: openArray[int64], options: DeviceKind | TensorOptions): Tensor[T] =
   let dims = dim.asTorchView()
-  asTensor[T](
-    rawtensors.zeros(dims, options)
-  )
+  asTensor[T](rawtensors.zeros(dims, options))
 
 func linspace*[T](start, stop: T, steps: int64, options: TensorOptions): Tensor[T] =
-  asTensor[T](
-    rawtensors.linspace(start, stop, steps, options)
-  )
+  asTensor[T](rawtensors.linspace(start, stop, steps, options))
 
 func linspace*[T](start, stop: T, steps: int64, options: DeviceKind): Tensor[T] =
-  asTensor[T](
-    rawtensors.linspace(start, stop, steps, options)
-  )
+  asTensor[T](rawtensors.linspace(start, stop, steps, options))
 
 func linspace*[T](start, stop: T, steps: int64, options: Device): Tensor[T] =
-  asTensor[T](
-    rawtensors.linspace(start, stop, steps, options)
-  )
+  asTensor[T](rawtensors.linspace(start, stop, steps, options))
 
 func linspace*[T](start, stop: T, steps: int64): Tensor[T] =
-  asTensor[T](
-    rawtensors.linspace(start, stop, steps, T)
-  )
+  asTensor[T](rawtensors.linspace(start, stop, steps, T))
 
 func linspace*[T](start, stop: T): Tensor[T] =
-  asTensor[T](
-    rawtensors.linspace(start, stop)
-  )
+  asTensor[T](rawtensors.linspace(start, stop))
 
 func logspace*[T](start, stop: T, steps: int64, options: TensorOptions): Tensor[T] =
-  asTensor[T](
-    rawtensors.logspace(start, stop, steps, options)
-  )
+  asTensor[T](rawtensors.logspace(start, stop, steps, options))
 
 func logspace*[T](start, stop: T, steps: int64, options: DeviceKind): Tensor[T] =
-  asTensor[T](
-    rawtensors.logspace(start, stop, steps, options)
-  )
+  asTensor[T](rawtensors.logspace(start, stop, steps, options))
 
 func logspace*[T](start, stop: T, steps: int64, options: Device): Tensor[T] =
-  asTensor[T](
-    rawtensors.logspace(start, stop, steps, options)
-  )
+  asTensor[T](rawtensors.logspace(start, stop, steps, options))
 
 func logspace*[T](start, stop: T, steps: int64): Tensor[T] =
-  asTensor[T](
-    rawtensors.logspace(start, stop, steps, T)
-  )
+  asTensor[T](rawtensors.logspace(start, stop, steps, T))
 
 func logspace*[T](start, stop: T): Tensor[T] =
-  asTensor[T](
-    rawtensors.logspace(start, stop)
-  )
+  asTensor[T](rawtensors.logspace(start, stop))
 
 func arange*[T](stop: T, options: TensorOptions): Tensor[T] =
-  asTensor[T](
-    rawtensors.arange(stop, options)
-  )
+  asTensor[T](rawtensors.arange(stop, options))
 
 func arange*[T](stop: T, options: DeviceKind): Tensor[T] =
-  asTensor[T](
-    rawtensors.arange(stop, options)
-  )
+  asTensor[T](rawtensors.arange(stop, options))
 
 func arange*[T](stop: T, options: Device): Tensor[T] =
-  asTensor[T](
-    rawtensors.arange(stop, options)
-  )
+  asTensor[T](rawtensors.arange(stop, options))
 
 func arange*[T](stop: T): Tensor[T] =
-  asTensor[T](
-    rawtensors.arange(stop, T)
-  )
+  asTensor[T](rawtensors.arange(stop, T))
 
 func arange*[T](start, stop: T, options: TensorOptions): Tensor[T] =
-  asTensor[T](
-    rawtensors.arange(start, stop, options)
-  )
+  asTensor[T](rawtensors.arange(start, stop, options))
 func arange*[T](start, stop: T, options: DeviceKind): Tensor[T] =
-  asTensor[T](
-    rawtensors.arange(start, stop, options)
-  )
+  asTensor[T](rawtensors.arange(start, stop, options))
 func arange*[T](start, stop: T, options: Device): Tensor[T] =
-  asTensor[T](
-    rawtensors.arange(start, stop, options)
-  )
+  asTensor[T](rawtensors.arange(start, stop, options))
 func arange*[T](start, stop: T): Tensor[T] =
-  asTensor[T](
-    rawtensors.arange(start, stop, T)
-  )
+  asTensor[T](rawtensors.arange(start, stop, T))
 
 func arange*[T](start, stop, step: T, options: TensorOptions): Tensor[T] =
-  asTensor[T](
-    rawtensors.arange(start, stop, step, options)
-  )
+  asTensor[T](rawtensors.arange(start, stop, step, options))
 func arange*[T](start, stop, step: T, options: DeviceKind): Tensor[T] =
-  asTensor[T](
-    rawtensors.arange(start, stop, step, options)
-  )
+  asTensor[T](rawtensors.arange(start, stop, step, options))
 func arange*[T](start, stop, step: T, options: Device): Tensor[T] =
-  asTensor[T](
-    rawtensors.arange(start, stop, step, options)
-  )
+  asTensor[T](rawtensors.arange(start, stop, step, options))
 func arange*[T](start, stop, step: T): Tensor[T] =
-  asTensor[T](
-    rawtensors.arange(start, stop, step, T)
-  )
+  asTensor[T](rawtensors.arange(start, stop, step, T))
 
 # Operations
 # -----------------------------------------------------------------------
 func add*[T](self: Tensor[T], other: Tensor[T], alpha: Scalar = 1): Tensor[T] =
-  asTensor[T](
-    rawtensors.add(self, other, alpha)
-  )
+  asTensor[T](rawtensors.add(self, other, alpha))
 func add*[T](self: Tensor[T], other: Scalar, alpha: Scalar = 1): Tensor[T] =
-  asTensor[T](
-    rawtensors.add(self, other, alpha)
-  )
+  asTensor[T](rawtensors.add(self, other, alpha))
 
 func addmv*[T](self: Tensor[T], mat: Tensor[T], vec: Tensor[T], beta: Scalar = 1, alpha: Scalar = 1): Tensor[T] =
-  asTensor[T](
-    rawtensors.addmv(self, mat, vec, beta, alpha)
-  )
+  asTensor[T](rawtensors.addmv(self, mat, vec, beta, alpha))
 
 func addmm*[T](t, mat1, mat2: Tensor[T], beta: Scalar = 1, alpha: Scalar = 1): Tensor[T] =
-  asTensor[T](
-    rawtensors.addmm(t, mat1, mat2, beta, alpha)
-  )
+  asTensor[T](rawtensors.addmm(t, mat1, mat2, beta, alpha))
 
 func mm*[T](t, other: Tensor[T]): Tensor[T] =
-  asTensor[T](
-    rawtensors.mm(t, other)
-  )
+  asTensor[T](rawtensors.mm(asRaw(t), asRaw(other)))
 
 func matmul*[T](t, other: Tensor[T]): Tensor[T] =
-  asTensor[T](
-    rawtensors.matmul(t, other)
-  )
+  asTensor[T](rawtensors.matmul(asRaw(t), asRaw(other)))
 
 func bmm*[T](t, other: Tensor[T]): Tensor[T] =
-  asTensor[T](
-    rawtensors.bmm(t, other)
-  )
+  asTensor[T](rawtensors.bmm(asRaw(t), asRaw(other)))
 
 func luSolve*[T](t, data, pivots: Tensor[T]): Tensor[T] =
-  asTensor[T](
-    rawtensors.luSolve(t, data, pivots)
-  )
+  asTensor[T](rawtensors.luSolve(asRaw(t), asRaw(data), asRaw(pivots)))
 
 func qr*[T](self: Tensor[T], some: bool = true): tuple[q: Tensor[T], r: Tensor[T]] =
   ## Returns a tuple:
@@ -525,46 +402,30 @@ func qr*[T](self: Tensor[T], some: bool = true): tuple[q: Tensor[T], r: Tensor[T
   ##
   ## The QR decomposition is batched over dimension(s) *[T]
   ## t = QR
-  let cppTupRes = rawtensors.qr(self, some)
+  let cppTupRes = rawtensors.qr(asRaw(self), some)
   result.q = asTensor[T](cppTupRes.get(0))
   result.r = asTensor[T](cppTupRes.get(1))
 
 # addr?
 func all*[T](self: Tensor[T], axis: int64): Tensor[T] =
-  asTensor[T](
-    rawtensors.all(asRaw(self), axis)
-  )
+  asTensor[T](rawtensors.all(asRaw(self), axis))
 func all*[T](self: Tensor[T], axis: int64, keepdim: bool): Tensor[T] =
-  asTensor[T](
-  rawtensors.all(asRaw(self), axis, keepdim)
-  )
+  asTensor[T](rawtensors.all(asRaw(self), axis, keepdim))
 
 func any*[T](self: Tensor[T], axis: int64): Tensor[T] =
-  asTensor[T](
-    rawtensors.any(asRaw(self), axis)
-  )
+  asTensor[T](rawtensors.any(asRaw(self), axis))
 func any*[T](self: Tensor[T], axis: int64, keepdim: bool): Tensor[T] =
-  asTensor[T](
-    rawtensors.any(asRaw(self), axis, keepdim)
-  )
+  asTensor[T](rawtensors.any(asRaw(self), axis, keepdim))
 
 func argmax*[T](self: Tensor[T]): Tensor[int] =
-  asTensor[int](
-    rawtensors.argmax(asRaw(self))
-  )
+  asTensor[int](rawtensors.argmax(asRaw(self)))
 func argmax*[T](self: Tensor[T], axis: int64, keepdim: bool = false): Tensor[int] =
-  asTensor[int](
-    rawtensors.argmax(asRaw(self), axis, keepdim)
-  )
+  asTensor[int](rawtensors.argmax(asRaw(self), axis, keepdim))
 
 func argmin*[T](self: Tensor[T]): Tensor[int] =
-  asTensor[int](
-    rawtensors.argmin(asRaw(self))
-  )
+  asTensor[int](rawtensors.argmin(asRaw(self)))
 func argmin*[T](self: Tensor[T], axis: int64, keepdim: bool = false): Tensor[int] =
-  asTensor[int](
-    rawtensors.argmin(asRaw(self), axis, keepdim)
-  )
+  asTensor[int](rawtensors.argmin(asRaw(self), axis, keepdim))
 
 func allClose*[T](t, other: Tensor[T], rtol: float64 = 1e-5, abstol: float64 = 1e-8, equalNan: bool = false): bool =
   allClose(asRaw(t), asRaw(other), rtol, abstol, equalNan)
