@@ -57,14 +57,21 @@ iterator items*[T](ar: ArrayRef[T]): T =
 func `[]`*[T](ar: ArrayRef[T], idx: SomeInteger): T =
   when compileOption("boundChecks"):
     if idx < 0 or idx >= ar.len():
-      raise newException(IndexDefect, &"ArrayRef `[]` access out-of-bounds. Index constrained by 0 <= {idx} <= ArrayRef.len() = {ar.len()}.")
-  result = ar.data()[idx]
+      raise newException(
+        IndexDefect,
+        &"ArrayRef `[]` access out-of-bounds. Index constrained by 0 <= {idx} <= ArrayRef.len() = {ar.len()}.",
+      )
+  result = getAt(ar, idx)
 
 func `[]=`*[T](ar: var ArrayRef[T], idx: SomeInteger, val: T) =
   when compileOption("boundChecks"):
     if idx < 0 or idx >= ar.len():
-      raise newException(IndexDefect, &"ArrayRef `[]` access out-of-bounds. Index constrained by 0 <= {idx} <= ArrayRef.len() = {ar.len()}.")
-  ar.data()[idx] = val
+      raise newException(
+        IndexDefect,
+        &"ArrayRef `[]` access out-of-bounds. Index constrained by 0 <= {idx} <= ArrayRef.len() = {ar.len()}.",
+      )
+  let p = ar.data()
+  p[idx] = val
 
 # Type map
 # -----------------------------------------------------
@@ -96,7 +103,7 @@ func toTypedesc*(scalarKind: ScalarKind): typedesc =
 
 func toScalarKind*(T: typedesc[SomeTorchType]): static ScalarKind =
   ## Maps a Nim type to Torch scalar kind
-  when T is uint8|byte:
+  when T is uint8 | byte:
     kUint8
   elif T is int8:
     kInt8
@@ -135,14 +142,13 @@ func getShape*[T](s: openarray[T], parent_shape = Metadata()): Metadata =
   result = parent_shape
   result.add(s.len)
 
-  when (T is seq|array):
+  when (T is seq | array):
     result = getShape(s[0], result)
 
 macro getBaseType*(T: typedesc): untyped =
   # Get the base T of a seq[T] input
   result = T.getTypeInst()[1]
-  while result.kind == nnkBracketExpr and (
-          result[0].eqIdent"seq" or result[0].eqIdent"array"):
+  while result.kind == nnkBracketExpr and (result[0].eqIdent"seq" or result[0].eqIdent"array"):
     # We can also have nnkBracketExpr(Complex, float32)
     if result[0].eqIdent"seq":
       result = result[1]
@@ -156,7 +162,7 @@ iterator flatIter*[T](s: openarray[T]): auto {.noSideEffect.} =
   ## Inline iterator on any-depth seq or array
   ## Returns values in order
   for item in s:
-    when item is array|seq:
+    when item is array | seq:
       for subitem in flatIter(item):
         yield subitem
     else:
@@ -173,11 +179,7 @@ func toRawTensorView*[T: SomeTorchType](oa: openarray[T]): lent RawTensor =
   ##      - An array or a seq (can be nested)
   ## Result:
   ##      - A view Tensor of the same shape
-  return from_blob(
-    oa[0].unsafeAddr,
-    oa.len.int64,
-    toScalarKind(T)
-  )
+  return from_blob(oa[0].unsafeAddr, oa.len.int64, toScalarKind(T))
 
 func toRawTensorFromScalar*[T: SomeTorchType](oa: openarray[T]): RawTensor =
   ## Interpret an openarray as a CPU Tensor
@@ -189,13 +191,9 @@ func toRawTensorFromScalar*[T: SomeTorchType](oa: openarray[T]): RawTensor =
   let shape = getShape(oa)
   result = empty(shape.asTorchView(), T.toScalarKind())
 
-  return from_blob(
-    oa[0].unsafeAddr,
-    oa.len.int64,
-    toScalarKind(T)
-  ).clone()
+  return from_blob(oa[0].unsafeAddr, oa.len.int64, toScalarKind(T)).clone()
 
-func toRawTensorFromSeq*[T: seq|array](oa: openarray[T]): RawTensor =
+func toRawTensorFromSeq*[T: seq | array](oa: openarray[T]): RawTensor =
   ## Interpret an openarray of openarray as a CPU Tensor
   ##
   ## Input:
@@ -205,10 +203,7 @@ func toRawTensorFromSeq*[T: seq|array](oa: openarray[T]): RawTensor =
   let shape = getShape(oa)
   type BaseType = getBaseType(T)
 
-  result = empty(
-    shape.asTorchView(),
-    BaseType.toScalarKind()
-  )
+  result = empty(shape.asTorchView(), BaseType.toScalarKind())
 
   let data = result.data_ptr(BaseType)
   for i, val in enumerate(flatIter(oa)):
@@ -218,18 +213,21 @@ func toRawTensorFromSeq*[T: seq|array](oa: openarray[T]): RawTensor =
 func toRawTensor*[T: SomeTorchType](oa: openarray[T]): RawTensor =
   toRawTensorFromScalar[T](oa)
 
-func toRawTensor*[T: seq|array](oa: openarray[T]): RawTensor =
+func toRawTensor*[T: seq | array](oa: openarray[T]): RawTensor =
   toRawTensorFromSeq[T](oa)
 
 # CppString -> Nim string
 func toCppString*(t: RawTensor): CppString =
   ## Tensors don't have a `$` equivilent so we have to put it into
   ## a ostringstream and convert it to a CppString.
-  {.emit: """
+  {.
+    emit:
+      """
   std::ostringstream stream;
   stream << `t`;
   result = stream.str();
-  """.}
+  """
+  .}
 
 proc `$`*(t: RawTensor): string =
   "RawTensor\n" & $(toCppString(t))
