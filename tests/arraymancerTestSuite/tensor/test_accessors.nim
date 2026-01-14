@@ -21,18 +21,22 @@ import complex except Complex64, Complex32
 proc main() =
   suite "Accessing and setting tensor values":
     test "Accessing and setting a single value":
-      let tmpSeq1 = @[2'i64,3,4]
+      let tmpSeq1 = @[2'i64, 3, 4]
       var a = zeros(tmpSeq1.asTorchView)
-      a[1,2,2] = 122
-      check: a[1,2,2].item(int) == 122
-      let tmpSeq2 = @[3'i64,4]
+      a[1, 2, 2] = 122
+      check:
+        a[1, 2, 2].item(int) == 122
+      let tmpSeq2 = @[3'i64, 4]
       var b = zeros(tmpSeq2.asTorchView)
-      b[1,2] = 12
-      check: b[1,2].item(int) == 12
-      b[0,0] = 999
-      check: b[0,0].item(int) == 999
-      b[2,3] = 111
-      check: b[2,3].item(int) == 111
+      b[1, 2] = 12
+      check:
+        b[1, 2].item(int) == 12
+      b[0, 0] = 999
+      check:
+        b[0, 0].item(int) == 999
+      b[2, 3] = 111
+      check:
+        b[2, 3].item(int) == 111
 
       #var c = zeros[Complex[float64]](@[3,4])
       #c[1,2] = complex64(12.0, 0.0)
@@ -41,20 +45,33 @@ proc main() =
     when compileOption("boundChecks") and not defined(openmp):
       test "Out of bounds checking":
         # Fails because there is no out of bounds error raised
-        let tmpSeq1 = @[2'i64,3,4]
+        let tmpSeq1 = @[2'i64, 3, 4]
         var a = zeros(tmpSeq1.asTorchView)
         expect(IndexDefect):
-          a[2,0,0] = 200
-        let tmpSeq2 = @[3'i64,4]
+          a[2, 0, 0] = 200
+        let tmpSeq2 = @[3'i64, 4]
         var b = zeros(tmpSeq2.asTorchView)
         expect(IndexDefect):
-          b[3,4] = 999
+          b[3, 4] = 999
         expect(IndexDefect):
-          echo b[-1,0] # We don't use discard here because with the C++ backend it is optimized away.
+          echo b[-1, 0] # We don't use discard here because with the C++ backend it is optimized away.
         expect(IndexDefect):
-          echo b[0,-2]
+          echo b[0, -2]
     else:
       echo "Bound-checking is disabled or OpenMP is used. The out-of-bounds checking test has been skipped."
+
+    test "indexing + in-place operator":
+      # Now works with indexedMutate macro
+      let tempArr = [3'i64, 3]
+      var a = zeros(tempArr.asTorchView)
+
+      indexedMutate:
+        a[1, 1] += 10
+        a[1, 1] *= 20
+
+      check:
+        a[1, 1].item(int) == 200
+
 #[ not implemented yet
     test "Iterators":
       const
@@ -95,18 +112,6 @@ proc main() =
 
       check: seq_transpose[0] == (@[0,0], 1)
       check: seq_transpose[8] == (@[1,3], 16)
-]#
-#[
-    test "indexing + in-place operator":
-      # Fails because a[1, 1] returns an immutable Tensor
-      let tempArr = [3'i64,3]
-      var a = zeros(tempArr.asTorchView)
-
-      a[1,1] += 10
-
-      a[1,1] *= 20
-
-      check: a == [[0,0,0],[0,200,0],[0,0,0]].toTensor
 ]#
 #[ Not implemented yet
     test "Zipping two tensors":

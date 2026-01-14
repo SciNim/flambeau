@@ -38,6 +38,17 @@ proc main() =
         @[complex_constant, complex_constant, complex_constant],
         @[complex_constant, complex_constant, complex_constant]].toTensor()
 
+    test "indexing + in-place operator":
+      # Now works with indexedMutate macro
+      let tempArr = [3'i64, 3]
+      var a = zeros[int64](tempArr)
+
+      indexedMutate:
+        a[1, 1] += 10
+        a[1, 1] *= 20
+
+      check: a[1, 1].item() == 200
+
     # when compileOption("boundChecks") and not defined(openmp):
     #   test "Out of bounds checking":
     #     # Fails because there is no out of bounds error raised
@@ -93,22 +104,10 @@ proc main() =
         for i,j in t_nda:
           seq_transpose.add((i,j))
 
-        check: seq_transpose[0] == (@[0,0], 1)
-        check: seq_transpose[8] == (@[1,3], 16)
+      check: seq_transpose[0] == (@[0,0], 1)
+      check: seq_transpose[8] == (@[1,3], 16)
       ]#
-      #[
-        test "indexing + in-place operator":
-          # Fails because a[1, 1] returns an immutable Tensor
-          let tempArr = [3'i64,3]
-          var a = zeros(tempArr.asTorchView)
-
-          a[1,1] += 10
-
-          a[1,1] *= 20
-
-          check: a == [[0,0,0],[0,200,0],[0,0,0]].toTensor
-        ]#
-        #[ Not implemented yet
+      #[ Not implemented yet
           test "Zipping two tensors":
             let a = [[1,2],[3,4]].toTensor()
             let b = [[5,6],[7,8]].toTensor()
