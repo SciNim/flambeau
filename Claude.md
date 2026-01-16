@@ -239,7 +239,7 @@ Error: internal error: expr(skType); unknown symbol
 
 **Fix Applied**: Added non-generic wrapper functions in `neural_nets.nim`:
 - `newLinear(options)` instead of `Linear.init(options)`
-- `newConv2d(options)` instead of `Conv2d.init(options)`  
+- `newConv2d(options)` instead of `Conv2d.init(options)`
 - `newDropout(proba)` instead of `Dropout.init(proba)`
 
 These wrappers use direct `importcpp` without type parameters, avoiding the inference bug. All Module API tests now pass.
@@ -269,7 +269,7 @@ Nim's `^1` (BackwardsIndex) doesn't map directly to PyTorch's negative indexing.
    - Use `indexedMutate` for in-place operations in tests
 
 3. **Neural Network Modules**:
-   - Use `newLinear(options)` not `Linear.init(options)` 
+   - Use `newLinear(options)` not `Linear.init(options)`
    - Use `newConv2d(options)` not `Conv2d.init(options)`
    - Use `newDropout(proba)` not `Dropout.init(proba)`
    - The `new*` functions avoid Nim type inference bugs
