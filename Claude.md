@@ -227,17 +227,22 @@ May require custom macro handling in `fancy_index.nim`.
 
 ## Known Issues & Gotchas
 
-### 1. Nim Compiler Internal Error
-**File**: `tests/raw/test_nn.nim:76`
+### 1. Nim Compiler Type Inference Bug (FIXED ✅)
+**File**: `tests/raw/test_nn.nim:76` (previously)
 
-Some neural network tests trigger:
+The generic `init*(T: type Module, options: Options)` signature caused:
 ```
 Error: internal error: expr(skType); unknown symbol
 ```
 
-This is a Nim compiler bug, not a Flambeau issue. 
+**Root Cause**: Nim's type inference fails when combining generic type parameters with constructor pragma and object arguments.
 
-**Fix Applied**: Module API tests are wrapped in `when false:` to skip them until the Nim compiler bug is resolved. The neural network modules (Linear, Conv2d, Dropout) are proven working via the XOR example and other tests.
+**Fix Applied**: Added non-generic wrapper functions in `neural_nets.nim`:
+- `newLinear(options)` instead of `Linear.init(options)`
+- `newConv2d(options)` instead of `Conv2d.init(options)`  
+- `newDropout(proba)` instead of `Dropout.init(proba)`
+
+These wrappers use direct `importcpp` without type parameters, avoiding the inference bug. All Module API tests now pass.
 
 ### 2. Bounds Checking Not Uniform
 **File**: `flambeau/raw/bindings/rawtensors.nim:384`
@@ -262,6 +267,12 @@ Nim's `^1` (BackwardsIndex) doesn't map directly to PyTorch's negative indexing.
    - Run tests: `nimble test`
    - Run single test: `nim cpp -r --hints:off tests/tensor/test_name.nim`
    - Use `indexedMutate` for in-place operations in tests
+
+3. **Neural Network Modules**:
+   - Use `newLinear(options)` not `Linear.init(options)` 
+   - Use `newConv2d(options)` not `Conv2d.init(options)`
+   - Use `newDropout(proba)` not `Dropout.init(proba)`
+   - The `new*` functions avoid Nim type inference bugs
 
 3. **Git Commits**:
    - Author: `clonkk <rf.clonk@linuxmail.org>`
