@@ -280,6 +280,11 @@ func bias*(options: LinearOptions, bias: bool): LinearOptions {.importcpp: "#.bi
 func init*(T: type Linear, in_features, out_features: int64): T {.constructor, importcpp: "torch::nn::Linear(@)".}
 func init*(T: type Linear, options: LinearOptions): T {.constructor, importcpp: "torch::nn::Linear(@)".}
 
+# Non-generic wrappers to avoid Nim compiler type inference bug
+proc newLinear*(in_features, out_features: int64): Linear {.importcpp: "torch::nn::Linear(@)", constructor.}
+
+proc newLinear*(options: LinearOptions): Linear {.importcpp: "torch::nn::Linear(@)", constructor.}
+
 func reset*(linear: Linear){.importcpp: "#.reset()".}
   ## reset() must perform initialization of all members with reference semantics,
   ## most importantly parameters, buffers and submodules.
@@ -324,6 +329,11 @@ func init*(T: type Conv2d, in_channels, out_channels,
            kernel_size: array[2, int64]): T {.constructor, importcpp: "torch::nn::Conv2d(@)".}
 func init*(T: type Conv2d, options: Conv2dOptions): T {.constructor, importcpp: "torch::nn::Conv2d(@)".}
 
+# Non-generic wrappers to avoid Nim compiler type inference bug
+proc newConv2d*(in_channels, out_channels, kernel_size: int64): Conv2d {.importcpp: "torch::nn::Conv2d(@)", constructor.}
+
+proc newConv2d*(options: Conv2dOptions): Conv2d {.importcpp: "torch::nn::Conv2d(@)", constructor.}
+
 func `weight=`*(x: Conv2d, w: RawTensor) {.importcpp: "#->weight = #".}
 
 func reset*(conv2d: Conv2d){.importcpp: "#.reset()".}
@@ -359,5 +369,12 @@ type
 func init*(T: type Dropout, proba = 0.5): T {.constructor, importcpp: "torch::nn::Dropout(@)".}
 func init*(T: type Dropout2d, proba = 0.5): T {.constructor, importcpp: "torch::nn::Dropout2d(@)".}
 func init*(T: type Dropout3d, proba = 0.5): T {.constructor, importcpp: "torch::nn::Dropout3d(@)".}
+
+# Non-generic wrappers to avoid Nim compiler type inference bug
+proc newDropout*(proba = 0.5): Dropout {.importcpp: "torch::nn::Dropout(@)", constructor.}
+
+proc newDropout2d*(proba = 0.5): Dropout2d {.importcpp: "torch::nn::Dropout2d(@)", constructor.}
+
+proc newDropout3d*(proba = 0.5): Dropout3d {.importcpp: "torch::nn::Dropout3d(@)", constructor.}
 
 func forward*(dropout: SomeDropout, input: RawTensor): RawTensor {.importcpp: "#->forward(#)".}
