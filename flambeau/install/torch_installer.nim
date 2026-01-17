@@ -6,8 +6,7 @@
 # at your option. This file may not be copied, modified, or distributed except according to those terms.
 
 import
-  std/[httpclient,
-     strformat, strutils, os],
+  std/[httpclient, strformat, strutils, os],
   #zippy/ziparchives,
   zip/zipfiles
 
@@ -22,6 +21,11 @@ type
     Cuda110 = "cu110"
     Cuda111 = "cu111"
     Cuda113 = "cu113"
+    Cuda118 = "cu118"
+    Cuda121 = "cu121"
+    Cuda124 = "cu124"
+    Cuda126 = "cu126"
+    Cuda128 = "cu128"
 
   ABI* = enum
     Cpp = "shared-with-deps"
@@ -36,13 +40,14 @@ proc onProgressChanged(total, progress, speed: BiggestInt) =
 
 proc downloadTo(url, targetDir, filename: string) =
   var client = newHttpClient()
-  defer: client.close()
+  defer:
+    client.close()
   client.onProgressChanged = onProgressChanged
   echo "Starting download of \"", url, '\"'
   echo "Storing temporary into: \"", targetDir, '\"'
   client.downloadFile(url, targetDir / filename)
 
-proc getUrlAndFilename(version = "latest", accel = Cuda113, abi = Cpp11): tuple[url, filename: string] =
+proc getUrlAndFilename(version = "latest", accel = Cuda128, abi = Cpp11): tuple[url, filename: string] =
   result.filename = "libtorch-"
 
   when defined(linux):
@@ -103,16 +108,11 @@ proc uncompress(targetDir, filename: string, delete = false) =
   var z: ZipArchive
   let tmp = targetDir / filename
   echo "Decompressing \"", tmp, "\" and storing into \"", targetDir, "\""
-  when not defined(windows):
-    if not z.open(tmp):
-      raise newException(IOError, &"Could not open zip file: \"{tmp}\"")
-    defer: z.close()
-    z.extractAll(targetDir)
-  else:
-    let cmd = &"tar -xf {tmp} -C {targetDir}"
-    let errCode = execShellCmd(cmd)
-    if errCode != 0:
-      raise newException(IOError, &"Could not unzip zip file: \"{tmp}\"")
+  if not z.open(tmp):
+    raise newException(IOError, &"Could not open zip file: \"{tmp}\"")
+  defer:
+    z.close()
+  z.extractAll(targetDir)
   echo "Done."
   if delete:
     echo "Deleting \"", tmp, "\""
@@ -124,7 +124,12 @@ proc uncompress(targetDir, filename: string, delete = false) =
   # echo "[Important]: Make sure that '" & insPath & DirSep & "lib" & "' is in your LIBRARY_PATH."
 
 when isMainModule:
-  let (url, filename) = getUrlAndFilename()
+  when defined(osx) or defined(macosx):
+    # macOS only supports CPU acceleration
+    let (url, filename) = getUrlAndFilename(accel = Cpu)
+  else:
+    # Linux and Windows can use CUDA
+    let (url, filename) = getUrlAndFilename()
   let target = getProjectDir().parentDir().parentDir() / "vendor"
   downloadLibTorch(url, target, filename)
   uncompress(target, filename, true)

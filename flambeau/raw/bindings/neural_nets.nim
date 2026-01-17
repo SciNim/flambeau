@@ -5,11 +5,7 @@
 #   * Apache v2 license (license terms in the root directory or at http://www.apache.org/licenses/LICENSE-2.0).
 # at your option. This file may not be copied, modified, or distributed except according to those terms.
 
-import
-  ../cpp/std_cpp,
-  ../../libtorch,
-  ./rawtensors,
-  ./c10
+import ../cpp/std_cpp, ../../libtorch, ./rawtensors, ./c10
 
 # (Almost) raw bindings to PyTorch Neural Networks
 # -----------------------------------------------------------------------
@@ -32,11 +28,9 @@ import
 #
 # #######################################################################
 
-type
-  AutoGradMode* {.bycopy, pure, inheritable, importcpp: "torch::AutoGradMode".} = object
+type AutoGradMode* {.bycopy, pure, inheritable, importcpp: "torch::AutoGradMode".} = object
 
-type
-  NoGradGuard* {.bycopy, pure, inheritable, importcpp: "torch::NoGradGuard".} = object
+type NoGradGuard* {.bycopy, pure, inheritable, importcpp: "torch::NoGradGuard".} = object
 
 func autogradMode(enabled: bool): AutoGradMode {.constructor, importcpp: "torch::AutoGradMode(#)".}
 
@@ -138,7 +132,6 @@ func pRelu_mut*(input: var RawTensor) {.importcpp: "torch::prelu_(@)".}
 func selu*(input: RawTensor): RawTensor {.importcpp: "torch::selu(@)".}
 func selu_mut*(input: var RawTensor) {.importcpp: "torch::selu_(@)".}
 
-
 func tanh*(input: RawTensor): RawTensor {.importcpp: "torch::tanh(@)".}
 func tanh_mut*(input: var RawTensor) {.importcpp: "torch::tanh_(@)".}
 
@@ -154,29 +147,30 @@ func dropout_mut*(input: var RawTensor, p = 0.5, training = true) {.importcpp: "
 # Loss functions
 # -------------------------------------------------------------------------
 
-type
-  Reduction* {.size: sizeof(cint), importcpp: "torch::Reduction::Reduction".} = enum
-    None = 0 # Do not reduce
-    Mean = 1 # (Possibly weighted) mean of losses
-    Sum = 2  # Sum losses
+type Reduction* {.size: sizeof(cint), importcpp: "torch::Reduction::Reduction".} = enum
+  None = 0 # Do not reduce
+  Mean = 1 # (Possibly weighted) mean of losses
+  Sum = 2 # Sum losses
 
-func nll_loss*(input, target: RawTensor): RawTensor {.importcpp: "torch::nll_loss(@)".}
-  ## target must be int (Long)!
-func nll_loss*(input, target: RawTensor, red: Reduction): RawTensor {.importcpp: "torch::nll_loss(#, #, /*weight=*/{}, #)".}
-  ## target must be int (Long)!
+func nll_loss*(input, target: RawTensor): RawTensor {.importcpp: "torch::nll_loss(@)".} ## target must be int (Long)!
+func nll_loss*(
+  input, target: RawTensor, red: Reduction
+): RawTensor {.importcpp: "torch::nll_loss(#, #, /*weight=*/{}, #)".} ## target must be int (Long)!
 
-func binary_cross_entropy_with_logits*(input, target: RawTensor): RawTensor {.importcpp: "torch::binary_cross_entropy_with_logits(@)".}
+func binary_cross_entropy_with_logits*(
+  input, target: RawTensor
+): RawTensor {.importcpp: "torch::binary_cross_entropy_with_logits(@)".}
   ## Sigmoid + Log + Negative loglikelihood
   ## PyTorch naming
-func sigmoid_cross_entropy*(input, target: RawTensor): RawTensor {.importcpp: "torch::binary_cross_entropy_with_logits(@)".}
+func sigmoid_cross_entropy*(
+  input, target: RawTensor
+): RawTensor {.importcpp: "torch::binary_cross_entropy_with_logits(@)".}
   ## Sigmoid + Log + Negative loglikelihood
   ## Arraymancer or Tensorflow naming
 
-func mse_loss*(input, target: RawTensor): RawTensor {.importcpp: "torch::mse_loss(@)".}
-  ## target must be int (Long)!
+func mse_loss*(input, target: RawTensor): RawTensor {.importcpp: "torch::mse_loss(@)".} ## target must be int (Long)!
 
-func l1_loss*(input, target: RawTensor): RawTensor {.importcpp: "torch::l1_loss(@)".}
-  ## target must be int (Long)!
+func l1_loss*(input, target: RawTensor): RawTensor {.importcpp: "torch::l1_loss(@)".} ## target must be int (Long)!
 
 # #######################################################################
 #
@@ -208,57 +202,49 @@ type
     #   Nim inheritable objects have runtime type information pointer
     #   as a hidden first field.
     #   {.pure, inheritable.} removes that to make the object C++ compatible.
+
   ModuleHolder* {.bycopy, pure, inheritable, importcpp: "torch::nn::ModuleHolder".} = object
 
   SharedModule*[T: Module] = CppSharedPtr[T]
 
 proc register_module*[ParMod: ModuleHolder, ChildMod: ModuleHolder](
-       parent: var ParMod, name: cstring, child: var ChildMod)
-       {.importcpp: "#.register_module(@)".}
-  ## Register a submodule to a parent module.
+  parent: var ParMod, name: cstring, child: var ChildMod
+) {.importcpp: "#.register_module(@)".} ## Register a submodule to a parent module.
 
 proc register_module*[ParMod: ModuleHolder, ChildMod: ModuleHolder](
-       parent: var ParMod, name: cstring, child: sink ChildMod): ChildMod
-       {.importcpp: "#.register_module(@)".}
-  ## Register a submodule to a parent module.
+  parent: var ParMod, name: cstring, child: sink ChildMod
+): ChildMod {.importcpp: "#.register_module(@)".} ## Register a submodule to a parent module.
 
 proc register_module*[ParMod: Module, ChildMod: ModuleHolder](
-       parent: var SharedModule[ParMod], name: cstring, child: var ChildMod)
-       {.importcpp: "#->register_module(@)".}
-  ## Register a submodule to a parent module.
+  parent: var SharedModule[ParMod], name: cstring, child: var ChildMod
+) {.importcpp: "#->register_module(@)".} ## Register a submodule to a parent module.
 
 proc register_module*[ParMod: Module, ChildMod: ModuleHolder](
-       parent: var SharedModule[ParMod], name: cstring, child: sink ChildMod): ChildMod
-       {.importcpp: "#->register_module(@)".}
-  ## Register a submodule to a parent module.
+  parent: var SharedModule[ParMod], name: cstring, child: sink ChildMod
+): ChildMod {.importcpp: "#->register_module(@)".} ## Register a submodule to a parent module.
 
 proc register_module*[ParMod: Module, ChildMod: Module](
-       parent: var SharedModule[ParMod], name: cstring, child: var SharedModule[ChildMod])
-       {.importcpp: "#->register_module(@)".}
-  ## Register a submodule to a parent module.
+  parent: var SharedModule[ParMod], name: cstring, child: var SharedModule[ChildMod]
+) {.importcpp: "#->register_module(@)".} ## Register a submodule to a parent module.
 
 proc register_module*[ParMod: Module, ChildMod: Module](
-       parent: var SharedModule[ParMod], name: cstring, child: sink SharedModule[ChildMod]): SharedModule[ChildMod]
-       {.importcpp: "#->register_module(@)".}
-  ## Register a submodule to a parent module.
+  parent: var SharedModule[ParMod], name: cstring, child: sink SharedModule[ChildMod]
+): SharedModule[ChildMod] {.importcpp: "#->register_module(@)".} ## Register a submodule to a parent module.
 
 proc register_parameter*[ParMod: Module](
-       parent: var SharedModule[ParMod], name: cstring, child: sink RawTensor): RawTensor
-       {.importcpp: "#->register_parameter(@)".}
-  ## Register a submodule to a parent module.
+  parent: var SharedModule[ParMod], name: cstring, child: sink RawTensor
+): RawTensor {.importcpp: "#->register_parameter(@)".} ## Register a submodule to a parent module.
 
-func parameters*(module: Module, recurse = true): CppVector[RawTensor]{.importcpp: "#.parameters(#)".}
+func parameters*(module: Module, recurse = true): CppVector[RawTensor] {.importcpp: "#.parameters(#)".}
 
 func is_training*(module: Module): bool {.importcpp: "#.is_training()".}
 
 proc to*(module: ModuleHolder or SharedModule, device: DeviceKind) {.importcpp: "#->to(#)".}
 proc to*(module: ModuleHolder or SharedModule, device: Device) {.importcpp: "#->to(#)".}
 
-func train*(module: var ModuleHolder or SharedModule, on = true) {.importcpp: "#->train(#)".}
-  ## Enable training mode
+func train*(module: var ModuleHolder or SharedModule, on = true) {.importcpp: "#->train(#)".} ## Enable training mode
 
-func eval*(module: var ModuleHolder or SharedModule) {.importcpp: "#->eval()".}
-  ## Enable evaluation mode
+func eval*(module: var ModuleHolder or SharedModule) {.importcpp: "#->eval()".} ## Enable evaluation mode
 
 # Linear layer
 # --------------------------------
@@ -270,21 +256,28 @@ type
   Linear* {.pure, bycopy, importcpp: "torch::nn::Linear".} = object of ModuleHolder
     # Linear is a shared_ptr underneath.
     # The ptr is bycopy which results in the actual data being byref.
-    options*{.importc.}: LinearOptions
-    weight*{.importc.}: RawTensor
-    bias*{.importc.}: RawTensor
+    options* {.importc.}: LinearOptions
+    weight* {.importc.}: RawTensor
+    bias* {.importc.}: RawTensor
 
-func init*(T: type LinearOptions, in_features, out_features: int64): T {.constructor, importcpp: "torch::nn::LinearOptions(@)".}
+func init*(
+  T: type LinearOptions, in_features, out_features: int64
+): T {.constructor, importcpp: "torch::nn::LinearOptions(@)".}
 func bias*(options: LinearOptions, bias: bool): LinearOptions {.importcpp: "#.bias(@)".}
 
 func init*(T: type Linear, in_features, out_features: int64): T {.constructor, importcpp: "torch::nn::Linear(@)".}
 func init*(T: type Linear, options: LinearOptions): T {.constructor, importcpp: "torch::nn::Linear(@)".}
 
-func reset*(linear: Linear){.importcpp: "#.reset()".}
+# Non-generic wrappers to avoid Nim compiler type inference bug
+proc newLinear*(in_features, out_features: int64): Linear {.importcpp: "torch::nn::Linear(@)", constructor.}
+
+proc newLinear*(options: LinearOptions): Linear {.importcpp: "torch::nn::Linear(@)", constructor.}
+
+func reset*(linear: Linear) {.importcpp: "#.reset()".}
   ## reset() must perform initialization of all members with reference semantics,
   ## most importantly parameters, buffers and submodules.
 
-func reset_parameters*(linear: Linear){.importcpp: "#.reset_parameters()".}
+func reset_parameters*(linear: Linear) {.importcpp: "#.reset_parameters()".}
 
 # pretty_print
 
@@ -304,10 +297,12 @@ type
   Conv2d* {.pure, bycopy, importcpp: "torch::nn::Conv2d".} = object of ModuleHolder
     # Conv2d is a shared_ptr underneath.
     # The ptr is bycopy which results in the actual data being byref.
-    options*{.importc.}: Conv2DOptions
-    bias*{.importc.}: RawTensor
+    options* {.importc.}: Conv2DOptions
+    bias* {.importc.}: RawTensor
 
-func init*(T: type Conv2dOptions, in_channels, out_channels, kernel_size: int64 or array[2, int64]): T {.constructor, importcpp: "torch::nn::Conv2dOptions(@)".}
+func init*(
+  T: type Conv2dOptions, in_channels, out_channels, kernel_size: int64 or array[2, int64]
+): T {.constructor, importcpp: "torch::nn::Conv2dOptions(@)".}
 func bias*(options: Conv2dOptions, bias: bool): Conv2dOptions {.importcpp: "#.bias(@)".}
 func stride*(options: Conv2dOptions, stride: int64): Conv2dOptions {.importcpp: "#.stride(@)".}
 func stride*(options: Conv2dOptions, stride: array[2, int64]): Conv2dOptions {.importcpp: "#.stride(@)".}
@@ -317,20 +312,28 @@ func groups*(options: Conv2dOptions, groups: int64): Conv2dOptions {.importcpp: 
 
 func stride*(options: Conv2dOptions): IntArrayRef {.importcpp: "at::ArrayRef<int64_t>(#.stride())".}
 
-
-
-func init*(T: type Conv2d, in_channels, out_channels, kernel_size: int64): T {.constructor, importcpp: "torch::nn::Conv2d(@)".}
-func init*(T: type Conv2d, in_channels, out_channels,
-           kernel_size: array[2, int64]): T {.constructor, importcpp: "torch::nn::Conv2d(@)".}
+func init*(
+  T: type Conv2d, in_channels, out_channels, kernel_size: int64
+): T {.constructor, importcpp: "torch::nn::Conv2d(@)".}
+func init*(
+  T: type Conv2d, in_channels, out_channels, kernel_size: array[2, int64]
+): T {.constructor, importcpp: "torch::nn::Conv2d(@)".}
 func init*(T: type Conv2d, options: Conv2dOptions): T {.constructor, importcpp: "torch::nn::Conv2d(@)".}
+
+# Non-generic wrappers to avoid Nim compiler type inference bug
+proc newConv2d*(
+  in_channels, out_channels, kernel_size: int64
+): Conv2d {.importcpp: "torch::nn::Conv2d(@)", constructor.}
+
+proc newConv2d*(options: Conv2dOptions): Conv2d {.importcpp: "torch::nn::Conv2d(@)", constructor.}
 
 func `weight=`*(x: Conv2d, w: RawTensor) {.importcpp: "#->weight = #".}
 
-func reset*(conv2d: Conv2d){.importcpp: "#.reset()".}
+func reset*(conv2d: Conv2d) {.importcpp: "#.reset()".}
   ## reset() must perform initialization of all members with reference semantics,
   ## most importantly parameters, buffers and submodules.
 
-func reset_parameters*(conv2d: Conv2d){.importcpp: "#.reset_parameters()".}
+func reset_parameters*(conv2d: Conv2d) {.importcpp: "#.reset_parameters()".}
 
 # pretty_print
 
@@ -348,16 +351,25 @@ type
   DropoutOptions* {.bycopy, importcpp: "torch::nn::DropoutOptions".} = object
 
   Dropout* {.pure, bycopy, importcpp: "torch::nn::Dropout".} = object of ModuleHolder
-    options*{.importc.}: DropoutOptions
+    options* {.importc.}: DropoutOptions
+
   Dropout2d* {.pure, bycopy, importcpp: "torch::nn::Dropout2d".} = object of ModuleHolder
-    options*{.importc.}: DropoutOptions
+    options* {.importc.}: DropoutOptions
+
   Dropout3d* {.pure, bycopy, importcpp: "torch::nn::Dropout3d".} = object of ModuleHolder
-    options*{.importc.}: DropoutOptions
+    options* {.importc.}: DropoutOptions
 
   SomeDropout* = Dropout or Dropout2d or Dropout3d
 
 func init*(T: type Dropout, proba = 0.5): T {.constructor, importcpp: "torch::nn::Dropout(@)".}
 func init*(T: type Dropout2d, proba = 0.5): T {.constructor, importcpp: "torch::nn::Dropout2d(@)".}
 func init*(T: type Dropout3d, proba = 0.5): T {.constructor, importcpp: "torch::nn::Dropout3d(@)".}
+
+# Non-generic wrappers to avoid Nim compiler type inference bug
+proc newDropout*(proba = 0.5): Dropout {.importcpp: "torch::nn::Dropout(@)", constructor.}
+
+proc newDropout2d*(proba = 0.5): Dropout2d {.importcpp: "torch::nn::Dropout2d(@)", constructor.}
+
+proc newDropout3d*(proba = 0.5): Dropout3d {.importcpp: "torch::nn::Dropout3d(@)", constructor.}
 
 func forward*(dropout: SomeDropout, input: RawTensor): RawTensor {.importcpp: "#->forward(#)".}

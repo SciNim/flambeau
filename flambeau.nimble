@@ -5,12 +5,12 @@
 #   * Apache v2 license (license terms in the root directory or at http://www.apache.org/licenses/LICENSE-2.0).
 # at your option. This file may not be copied, modified, or distributed except according to those terms.
 
-packageName   = "flambeau"
-version       = "0.0.3"
-author        = "Mamy André-Ratsimbazafy"
-description   = "A state-of-the-art tensor and deep learning backend on CPU, Nvidia Cuda, AMD HIP, OpenCL, Vulkan, OpenGL"
-license       = "MIT or Apache License 2.0"
-installDirs   = @["vendor"]
+packageName = "flambeau"
+version = "0.0.3"
+author = "Mamy André-Ratsimbazafy"
+description = "A state-of-the-art tensor and deep learning backend on CPU, Nvidia Cuda, AMD HIP, OpenCL, Vulkan, OpenGL"
+license = "MIT or Apache License 2.0"
+installDirs = @["vendor"]
 
 ### Dependencies
 requires "nim >= 1.9.3"
@@ -27,6 +27,7 @@ when defined(nimdistros):
   foreignDep "libpng"
   foreignDep "ffmpeg"
   foreignDep "gtest" # TODO remove this dependency (due to io/decoder/sync_decoder_test.cpp)
+  foreignDep "libzip"
 
 ### Build
 task build_torchvision, "Build the dependency torchvision":
@@ -45,9 +46,8 @@ task build_torchvision, "Build the dependency torchvision":
   switch("gc", "none")
   setCommand "cpp", libBuilder
 
-
 task test_raw, "Execute RawTensor tests ":
-  let skipGcArc= @["./test_nn.nim"]
+  let skipGcArc = @["./test_nn.nim"]
   withDir "tests" / "raw":
     for fstr in listFiles("."):
       if fstr.endsWith(".nim") and fstr.startsWith("." / "test_"):
@@ -81,8 +81,8 @@ task runExamples, "Run all examples":
 
 task install_libtorch, "Download and install libtorch":
   const libInstaller = "flambeau" / "install" / "torch_installer.nim"
-  # Using -b:cpp r avoir creating a local binary
-  selfExec("-b:cpp r --skipParentCfg:on " & libInstaller)
+  # Using cpp -r to avoid creating a local binary
+  selfExec("cpp -r --skipParentCfg:on " & libInstaller)
 
 task setup, "Setup repo":
   if not dirExists "vendor" / "vision" / "torchvision" / "csrc":

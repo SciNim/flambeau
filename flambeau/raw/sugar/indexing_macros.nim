@@ -1,6 +1,4 @@
-import
-  ../../helpers/ast_utils,
-  ../bindings/rawtensors
+import ../../helpers/ast_utils, ../bindings/rawtensors
 
 # #######################################################################
 #
@@ -131,7 +129,7 @@ func `..`*(a: int, s: Step): TorchSlice {.inline.} =
   ##     - a ``Step`` workaround object
   ## Returns:
   ##     - a ``TorchSlice``, end of range will be inclusive
-  return torchSlice(a, s.b+1, s.step)
+  return torchSlice(a, s.b + 1, s.step)
 
 func `..<`*(a: int, s: Step): TorchSlice {.inline.} =
   ## Internal: Build a TorchSlice from [a ..< (b|step)] (workaround to operator precedence)
@@ -199,82 +197,44 @@ macro desugarSlices(args: untyped): void =
   var r = newNimNode(nnkArglist)
 
   for nnk in children(args):
-
     ###### Traverse top tree nodes and one-hot-encode the different conditions
 
     # Node is "_"
     let nnk_joker = eqIdent(nnk, "_")
 
     # Node is of the form "* .. *"
-    let nnk0_inf_dotdot = (
-      nnk.kind == nnkInfix and
-      eqIdent(nnk[0], "..")
-    )
+    let nnk0_inf_dotdot = (nnk.kind == nnkInfix and eqIdent(nnk[0], ".."))
 
     # Node is of the form "* ..< *" or "* ..^ *"
-    let nnk0_inf_dotdot_alt = (
-      nnk.kind == nnkInfix and (
-        eqIdent(nnk[0], "..<") or
-        eqident(nnk[0], "..^")
-      )
-    )
+    let nnk0_inf_dotdot_alt = (nnk.kind == nnkInfix and (eqIdent(nnk[0], "..<") or eqident(nnk[0], "..^")))
 
     # Node is of the form "* .. *", "* ..< *" or "* ..^ *"
-    let nnk0_inf_dotdot_all = (
-      nnk0_inf_dotdot or
-      nnk0_inf_dotdot_alt
-    )
+    let nnk0_inf_dotdot_all = (nnk0_inf_dotdot or nnk0_inf_dotdot_alt)
 
     # Node is of the form "^ *"
-    let nnk0_pre_hat = (
-      nnk.kind == nnkPrefix and
-      eqIdent(nnk[0], "^")
-    )
+    let nnk0_pre_hat = (nnk.kind == nnkPrefix and eqIdent(nnk[0], "^"))
 
     # Node is of the form "_ `op` *"
-    let nnk1_joker = (
-      nnk.kind == nnkInfix and
-      eqIdent(nnk[1], "_")
-    )
+    let nnk1_joker = (nnk.kind == nnkInfix and eqIdent(nnk[1], "_"))
 
     # Node is of the form "_ `op` *"
-    let nnk10_hat = (
-      nnk.kind == nnkInfix and
-      nnk[1].kind == nnkPrefix and
-      eqident(nnk[1][0], "^")
-    )
+    let nnk10_hat = (nnk.kind == nnkInfix and nnk[1].kind == nnkPrefix and eqident(nnk[1][0], "^"))
 
     # Node is of the form "* `op` _"
-    let nnk2_joker = (
-      nnk.kind == nnkInfix and
-      eqident(nnk[2], "_")
-    )
+    let nnk2_joker = (nnk.kind == nnkInfix and eqident(nnk[2], "_"))
 
     # Node is of the form "* `op` * | *" or "* `op` * |+ *"
-    let nnk20_bar_pos = (
-      nnk.kind == nnkInfix and
-      nnk[2].kind == nnkInfix and (
-        eqident(nnk[2][0], "|") or
-        eqIdent(nnk[2][0], "|+")
-      )
-    )
+    let nnk20_bar_pos =
+      (nnk.kind == nnkInfix and nnk[2].kind == nnkInfix and (eqident(nnk[2][0], "|") or eqIdent(nnk[2][0], "|+")))
 
     # Node is of the form "* `op` * |- *"
-    let nnk20_bar_min = (
-      nnk.kind == nnkInfix and
-      nnk[2].kind == nnkInfix and
-      eqIdent(nnk[2][0], "|-")
-    )
+    let nnk20_bar_min = (nnk.kind == nnkInfix and nnk[2].kind == nnkInfix and eqIdent(nnk[2][0], "|-"))
 
     # Node is of the form "* `op` * | *" or "* `op` * |+ *" or "* `op` * |- *"
     let nnk20_bar_all = nnk20_bar_pos # or nnk20_bar_min
 
     # Node is of the form "* `op1` _ `op2` *"
-    let nnk21_joker = (
-      nnk.kind == nnkInfix and
-      nnk[2].kind == nnkInfix and
-      eqIdent(nnk[2][1], "_")
-    )
+    let nnk21_joker = (nnk.kind == nnkInfix and nnk[2].kind == nnkInfix and eqIdent(nnk[2][1], "_"))
 
     ###### Core desugaring logic
     if nnk_joker:
@@ -330,9 +290,9 @@ macro desugarSlices(args: untyped): void =
     elif nnk0_inf_dotdot and nnk20_bar_min and nnk21_joker:
       # TODO : Remove ? This is actually unreachable because nnk20_bar_min is disallowed
       ## Raise error on [5.._|-1, 3]
-      raise newException(IndexDefect, "Please use explicit end of range " &
-                       "instead of `_` " &
-                       "when the steps are negative")
+      raise newException(
+        IndexDefect, "Please use explicit end of range " & "instead of `_` " & "when the steps are negative"
+      )
     elif nnk0_inf_dotdot_all and nnk10_hat and nnk20_bar_all:
       # TODO disable negative step at CT
       ## [^1..2|-1, 3] into [{Slice(-1, 2, -1), 3}]
@@ -429,8 +389,7 @@ proc getFancySelector(ast: NimNode, axis: var int, selector: var NimNode): Fancy
 
   template checkNonSpan(): untyped {.dirty.} =
     doAssert not foundNonSpanOrEllipsis,
-        "Fancy indexing is only compatible with full spans `_` on non-indexed dimensions" &
-        " and/or ellipsis `...`"
+      "Fancy indexing is only compatible with full spans `_` on non-indexed dimensions" & " and/or ellipsis `...`"
 
   var i = 0
   while i < ast.len:
@@ -441,11 +400,13 @@ proc getFancySelector(ast: NimNode, axis: var int, selector: var NimNode): Fancy
       # Found a span
       discard
     elif (cur.kind == nnkCall and cur[0].eqIdent"torchSlice") or cur.isInt():
-      doAssert result == FancyNone, "Internal FancyIndexing Error: Expected FancyNone, but got " & $result & " for AST: " & cur.repr()
+      doAssert result == FancyNone,
+        "Internal FancyIndexing Error: Expected FancyNone, but got " & $result & " for AST: " & cur.repr()
       foundNonSpanOrEllipsis = true
     elif cur.eqIdent"IndexEllipsis":
       if i == ast.len - 1: # t[t.sum(axis = 1) >. 0.5, `...`]
-        doAssert not ellipsisAtStart, "Cannot deduce the indexed/sliced dimensions due to ellipsis at the start and end of indexing."
+        doAssert not ellipsisAtStart,
+          "Cannot deduce the indexed/sliced dimensions due to ellipsis at the start and end of indexing."
         ellipsisAtStart = false
       elif i == 0: # t[`...`, t.sum(axis = 0) >. 0.5]
         ellipsisAtStart = true
@@ -492,9 +453,12 @@ macro slice_typed_dispatch(t: typed, args: varargs[typed]): untyped =
   # Point indexing
   # -----------------------------------------------------------------
   if isAllInt(args):
-    result = newCall(bindSym"index", t)
+    # Point indexing: all indices are integers
+    # PyTorch's index() will handle bounds checking internally
+    let indexCall = newCall(bindSym"index", t)
     for slice in args:
-      result.add(slice)
+      indexCall.add(slice)
+    result = indexCall
     return
 
   # Fancy indexing
@@ -505,20 +469,11 @@ macro slice_typed_dispatch(t: typed, args: varargs[typed]): untyped =
   var axis: int
   let fancy = args.getFancySelector(axis, selector)
   if fancy == FancyIndex:
-    return newCall(
-        ident"index_select",
-        t, newLit axis, selector
-      )
+    return newCall(ident"index_select", t, newLit axis, selector)
   if fancy == FancyMaskFull:
-    return newCall(
-        ident"masked_select",
-        t, selector
-      )
+    return newCall(ident"masked_select", t, selector)
   elif fancy == FancyMaskAxis:
-    return newCall(
-        ident"masked_axis_select",
-        t, selector, newLit axis
-      )
+    return newCall(ident"masked_axis_select", t, selector, newLit axis)
 
   # Slice indexing
   # -----------------------------------------------------------------
@@ -538,7 +493,7 @@ macro slice_typed_dispatch(t: typed, args: varargs[typed]): untyped =
   let lateBind_masked_axis_select = ident"masked_axis_select"
   let lateBind_index_select = ident"index_select"
 
-  result = quote do:
+  result = quote:
     type FancyType = typeof(`selector`)
     when FancyType is (array or seq):
       type FancyTensorType = typeof(toTensor(`selector`))
@@ -554,17 +509,19 @@ macro slice_typed_dispatch(t: typed, args: varargs[typed]): untyped =
     else:
       `lateBind_index_select`(`t`, `axis`, `selector`)
 
-
 macro slice_typed_dispatch_mut(t: typed, args: varargs[typed], val: typed): untyped =
   ## Assign `val` to Tensor T at slice/position `args`
 
   # Point indexing
   # -----------------------------------------------------------------
   if isAllInt(args):
-    result = newCall(bindSym"index_put", t)
+    # Point indexing: all indices are integers
+    # PyTorch's index_put() will handle bounds checking internally
+    let putCall = newCall(bindSym"index_put", t)
     for slice in args:
-      result.add(slice)
-    result.add(val)
+      putCall.add(slice)
+    putCall.add(val)
+    result = putCall
     return
 
   # Fancy indexing
@@ -575,23 +532,11 @@ macro slice_typed_dispatch_mut(t: typed, args: varargs[typed], val: typed): unty
   var axis: int
   let fancy = args.getFancySelector(axis, selector)
   if fancy == FancyIndex:
-    return newCall(
-        ident"index_fill_mut",
-        t, newLit axis, selector,
-        val
-      )
+    return newCall(ident"index_fill_mut", t, newLit axis, selector, val)
   if fancy == FancyMaskFull:
-    return newCall(
-        ident"masked_fill_mut",
-        t, selector,
-        val
-      )
+    return newCall(ident"masked_fill_mut", t, selector, val)
   elif fancy == FancyMaskAxis:
-    return newCall(
-        ident"masked_axis_fill_mut",
-        t, selector, newLit axis,
-        val
-      )
+    return newCall(ident"masked_axis_fill_mut", t, selector, newLit axis, val)
 
   # Slice indexing
   # -----------------------------------------------------------------
@@ -612,7 +557,7 @@ macro slice_typed_dispatch_mut(t: typed, args: varargs[typed], val: typed): unty
   let lateBind_masked_axis_fill = ident"masked_axis_fill"
   let lateBind_index_fill = ident"index_fill"
 
-  result = quote do:
+  result = quote:
     type FancyType = typeof(`selector`)
     when FancyType is (array or seq):
       type FancyTensorType = typeof(toTensor(`selector`))

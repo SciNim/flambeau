@@ -7,3 +7,5 @@ nimcache
 testresults
 libtorch
 torch_installer
+nimble.develop
+nimble.paths

@@ -51,10 +51,14 @@ type
 func data*[T](ar: ArrayRef[T]): lent UncheckedArray[T] {.importcpp: "const_cast<'*1*>(#.data())".}
 func size*(ar: ArrayRef): csize_t {.importcpp: "#.size()".}
 
-func init*[T](AR: type ArrayRef[T], p: ptr T, len: SomeInteger): ArrayRef[T] {.constructor, importcpp: "c10::ArrayRef<'*0>(@)".}
+func init*[T](
+  AR: type ArrayRef[T], p: ptr T, len: SomeInteger
+): ArrayRef[T] {.constructor, importcpp: "c10::ArrayRef<'*0>(@)".}
 func init*[T](AR: type ArrayRef[T], vec: CppVector[T]): ArrayRef[T] {.constructor, importcpp: "c10::ArrayRef<'*0>(@)".}
 func init*[T](AR: type ArrayRef[T]): ArrayRef[T] {.constructor, varargs, importcpp: "c10::ArrayRef<'*0>({@})".}
 
+# Simple indexing for use in check_index (exported from rawinterop too, but different name to avoid conflicts)
+func getAt*[T](ar: ArrayRef[T], idx: SomeInteger): T {.importcpp: "#[#]".}
 func `==`*[T](ar1, ar2: ArrayRef[T]): bool {.importcpp: "(# == #)".}
 # Optional
 # -----------------------------------------------------------------------
@@ -70,8 +74,7 @@ func value*[T](o: Optional[T]): T {.importcpp: "#.value()".}
 
 # c10::complex
 # -----------------------------------------------------------------------
-type
-  C10_Complex*[T: SomeFloat] {.importcpp: "c10::complex".} = object
+type C10_Complex*[T: SomeFloat] {.importcpp: "c10::complex".} = object
 
 func initC10_Complex*[T: SomeFloat](re, im: T): C10_Complex[T] {.constructor, importcpp: "c10::complex<'*0>(@)".}
 func real*[T: SomeFloat](self: C10_Complex[T]): T {.importcpp: "#.real()".}

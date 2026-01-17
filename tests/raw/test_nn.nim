@@ -73,7 +73,7 @@ proc main() =
   suite "Module API":
     test "Linear":
       let linearOptions = LinearOptions.init(100, 10).bias(false)
-      var linear = Linear.init(linearOptions)
+      var linear = newLinear(linearOptions)
       let inputSize = [22'i64, 100] # 100 features in 22 batches
       let outputSize = [22'i64, 10] # 10 features in 22 batches
       let input = rand(inputSize.asTorchView, kFloat32)
@@ -81,14 +81,14 @@ proc main() =
       check output.sizes == outputSize.asTorchView
     test "Conv2d":
       var convOptions = Conv2dOptions.init(32, 64, 3).stride(1).padding(1)
-      var conv = Conv2d.init(convOptions) #(32, 64, 3) # Take in 32 channels and outputs 64 channel using a kernel with size 3x3
+      var conv = newConv2d(convOptions)
       let inputSize = [17'i64, 32, 128, 128] # 17 batches of 32 channel images with size 128x128
       let outputSize = [17'i64, 64, 128, 128]
       let input = rand(inputSize.asTorchView, kFloat32)
       let output = conv.forward(input)
       check output.sizes == outputSize.asTorchView
     test "Dropout":
-      var dropout = Dropout.init()
+      var dropout = newDropout()
       let inputSize = [18'i64, 100]
       let input = rand([18'i64, 100].asTorchView, kFloat32)
       let outputTraining = dropout.forward(input)
@@ -97,4 +97,5 @@ proc main() =
       dropout.eval()
       let outputEval = dropout.forward(input)
       check outputEval == input
+
 main()

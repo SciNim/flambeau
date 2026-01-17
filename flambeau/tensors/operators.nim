@@ -18,8 +18,34 @@ func `-`*[T](self: Tensor[T]): Tensor[T] =
 func `+`*[T](a: Tensor[T], b: Tensor[T]): Tensor[T] =
   asTensor[T](asRaw(a) + asRaw(b))
 
+func `+`*[T](a: Tensor[T], b: SomeNumber): Tensor[T] =
+  when T is SomeFloat:
+    asTensor[T](asRaw(a) + b.cdouble)
+  else:
+    asTensor[T](asRaw(a) + b.int64)
+
+func `+`*[T](a: SomeNumber, b: Tensor[T]): Tensor[T] =
+  when T is SomeFloat:
+    asTensor[T](a.cdouble + asRaw(b))
+  else:
+    asTensor[T](a.int64 + asRaw(b))
+
 func `-`*[T](a: Tensor[T], b: Tensor[T]): Tensor[T] =
   asTensor[T](asRaw(a) - asRaw(b))
+
+func `-`*[T](a: Tensor[T], b: SomeNumber): Tensor[T] =
+  # PyTorch doesn't have RawTensor - Scalar, so we use add with negative
+  when T is SomeFloat:
+    asTensor[T](rawtensors.add(asRaw(a), -b.cdouble))
+  else:
+    asTensor[T](rawtensors.add(asRaw(a), -b.int64))
+
+func `-`*[T](a: SomeNumber, b: Tensor[T]): Tensor[T] =
+  # Convert scalar to tensor and subtract
+  when T is SomeFloat:
+    asTensor[T](rawtensors.add(-asRaw(b), a.cdouble))
+  else:
+    asTensor[T](rawtensors.add(-asRaw(b), a.int64))
 
 func `*`*[T](a: Tensor[T], b: Tensor[T]): Tensor[T] =
   asTensor[T](asRaw(a) * asRaw(b))
@@ -29,6 +55,23 @@ func `*`*[T](a: SomeNumber, b: Tensor[T]): Tensor[T] =
 
 func `*`*[T](a: Tensor[T], b: SomeNumber): Tensor[T] =
   asTensor[T](asRaw(a) * b.cdouble)
+
+func `/`*[T](a: Tensor[T], b: Tensor[T]): Tensor[T] =
+  asTensor[T](asRaw(a) / asRaw(b))
+
+func `/`*[T](a: Tensor[T], b: SomeNumber): Tensor[T] =
+  # Multiply by reciprocal
+  when T is SomeFloat:
+    asTensor[T](asRaw(a) * (1.0 / b.cdouble))
+  else:
+    asTensor[T](asRaw(a) * (1.0 / b.float64))
+
+func `/`*[T](a: SomeNumber, b: Tensor[T]): Tensor[T] =
+  # Create reciprocal tensor and multiply by scalar
+  when T is SomeFloat:
+    asTensor[T](a.cdouble * rawtensors.reciprocal(asRaw(b)))
+  else:
+    asTensor[T](a.float64 * rawtensors.reciprocal(asRaw(b)))
 
 func `and`*[T](a: Tensor[T], b: Tensor[T]): Tensor[T] =
   ## bitwise `and`.
@@ -56,9 +99,7 @@ func bitxor_mut*[T](self: var Tensor[T], s: Tensor[T]) =
 
 func eq*[T](a, b: Tensor[T]): Tensor[T] =
   ## Equality of each tensor values
-  asTensor[T](
-    rawtensors.eq(asRaw(a), asRaw(b))
-  )
+  asTensor[T](rawtensors.eq(asRaw(a), asRaw(b)))
 {.pop.}
 
 func `+=`*[T](self: var Tensor[T], b: Tensor[T]) =
