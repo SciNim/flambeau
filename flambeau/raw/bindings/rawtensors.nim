@@ -417,7 +417,21 @@ func permute*(self: RawTensor, dims: IntArrayRef): RawTensor {.importcpp: "#.per
 
 func backward*(self: var RawTensor) {.importcpp: "#.backward()".}
 func detach*(self: RawTensor): RawTensor {.importcpp: "#.detach()".}
-  ## Returns a new tensor, detached from the current computation graph
+  ## Detach tensor from computation graph (stop gradient tracking).
+  ##
+  ## Returns a new tensor that shares the same storage but is completely
+  ## disconnected from the autograd history. The returned tensor will never
+  ## require gradients, even if the input tensor did.
+  ##
+  ## Use cases:
+  ## - Inference/evaluation: prevent gradient computation to save memory
+  ## - Break gradient flow: stop backpropagation at specific points
+  ## - Mix requires_grad tensors: safely use a trained tensor without gradients
+  ##
+  ## Example:
+  ##   var x = randn(@[3, 3])  # Training tensor with gradients
+  ##   let y = x.detach()       # Same data, no gradients tracked
+  ##   # Operations on y won't affect x's gradient computation
 
 # Low-level slicing API
 # -----------------------------------------------------------------------
@@ -517,20 +531,36 @@ func zeros*(dim: IntArrayRef, scalarKind: ScalarKind): RawTensor {.importcpp: "t
 func zeros*(dim: IntArrayRef, device: DeviceKind): RawTensor {.importcpp: "torch::zeros(@)".}
 
 func ones*(dim: int64): RawTensor {.importcpp: "torch::ones(@)".}
+  ## Create a tensor filled with ones (scalar value 1)
 func ones*(dim: IntArrayRef): RawTensor {.importcpp: "torch::ones(@)".}
+  ## Create a tensor filled with ones (scalar value 1)
 func ones*(dim: IntArrayRef, options: TensorOptions): RawTensor {.importcpp: "torch::ones(@)".}
+  ## Create a tensor filled with ones with specific dtype/device options
 func ones*(dim: IntArrayRef, scalarKind: ScalarKind): RawTensor {.importcpp: "torch::ones(@)".}
+  ## Create a tensor filled with ones with specific dtype
 func ones*(dim: IntArrayRef, device: DeviceKind): RawTensor {.importcpp: "torch::ones(@)".}
+  ## Create a tensor filled with ones on specific device (CPU/CUDA)
 
 func full*(size: IntArrayRef, fill_value: Scalar): RawTensor {.importcpp: "torch::full(@)".}
+  ## Create a tensor filled with a specific value.
+  ## Useful for creating constant tensors (e.g., all 3.14, all -1, etc.)
 func full*(size: IntArrayRef, fill_value: Scalar, options: TensorOptions): RawTensor {.importcpp: "torch::full(@)".}
+  ## Create a tensor filled with a specific value with dtype/device options
 func full*(size: IntArrayRef, fill_value: Scalar, scalarKind: ScalarKind): RawTensor {.importcpp: "torch::full(@)".}
+  ## Create a tensor filled with a specific value with specific dtype
 func full*(size: IntArrayRef, fill_value: Scalar, device: DeviceKind): RawTensor {.importcpp: "torch::full(@)".}
+  ## Create a tensor filled with a specific value on specific device
 
 func randn*(size: IntArrayRef): RawTensor {.importcpp: "torch::randn(@)".}
+  ## Create a tensor with values from standard normal distribution (mean=0, std=1).
+  ## Critical for neural network weight initialization (Xavier/He initialization).
+  ## Values are sampled from N(0,1) independently for each element.
 func randn*(size: IntArrayRef, options: TensorOptions): RawTensor {.importcpp: "torch::randn(@)".}
+  ## Create a normal random tensor with specific dtype/device options
 func randn*(size: IntArrayRef, scalarKind: ScalarKind): RawTensor {.importcpp: "torch::randn(@)".}
+  ## Create a normal random tensor with specific dtype
 func randn*(size: IntArrayRef, device: DeviceKind): RawTensor {.importcpp: "torch::randn(@)".}
+  ## Create a normal random tensor on specific device (CPU/CUDA)
 
 func linspace*(start, stop: Scalar, steps: int64, options: TensorOptions): RawTensor {.importcpp: "torch::linspace(@)".}
 func linspace*(start, stop: Scalar, steps: int64, options: ScalarKind): RawTensor {.importcpp: "torch::linspace(@)".}
@@ -679,6 +709,10 @@ func argsort*(self: RawTensor, axis: int64 = -1, descending: bool = false): RawT
 
 func cat*(tensors: ArrayRef[RawTensor], axis: int64 = 0): RawTensor {.importcpp: "torch::cat(@)".}
 func stack*(tensors: ArrayRef[RawTensor], dim: int64 = 0): RawTensor {.importcpp: "torch::stack(@)".}
+  ## Stack tensors along a NEW dimension (unlike cat which concatenates along existing dim).
+  ## All tensors must have the same shape.
+  ## Example: stack([2x3, 2x3, 2x3], dim=0) -> 3x2x3
+  ##          stack([2x3, 2x3], dim=1) -> 2x2x3
 func flip*(self: RawTensor, dims: IntArrayRef): RawTensor {.importcpp: "#.flip(@)".}
 
 # math
@@ -706,8 +740,12 @@ func tan*(self: RawTensor): RawTensor {.importcpp: "#.tan()".}
 func exp*(self: RawTensor): RawTensor {.importcpp: "#.exp()".}
 func exp2*(self: RawTensor): RawTensor {.importcpp: "#.exp2()".}
 func log*(self: RawTensor): RawTensor {.importcpp: "#.log()".}
+  ## Natural logarithm (base e). log(exp(x)) = x
+  ## Returns NaN for negative inputs, -Inf for 0
 func log2*(self: RawTensor): RawTensor {.importcpp: "#.log2()".}
+  ## Base-2 logarithm. Useful for information theory (entropy, bits)
 func log10*(self: RawTensor): RawTensor {.importcpp: "#.log10()".}
+  ## Base-10 logarithm. Useful for decibels and scientific notation
 func erf*(self: RawTensor): RawTensor {.importcpp: "#.erf()".}
 func erfc*(self: RawTensor): RawTensor {.importcpp: "#.erfc()".}
 func reciprocal*(self: RawTensor): RawTensor {.importcpp: "#.reciprocal()".}

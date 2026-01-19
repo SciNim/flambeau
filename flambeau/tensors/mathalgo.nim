@@ -50,7 +50,7 @@ proc stack*[T](tensorargs: varargs[Tensor[T]], dim: int64 = 0): Tensor[T] =
   for t in tensorargs:
     rawVec.pushBack(asRaw(t))
   let tensors = ArrayRef[RawTensor].init(rawVec)
-  
+
   result = asTensor[T](
     rawtensors.stack(tensors, dim)
   )

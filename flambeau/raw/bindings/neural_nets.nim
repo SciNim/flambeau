@@ -136,7 +136,12 @@ func tanh*(input: RawTensor): RawTensor {.importcpp: "torch::tanh(@)".}
 func tanh_mut*(input: var RawTensor) {.importcpp: "torch::tanh_(@)".}
 
 func softmax*(input: RawTensor, dim: int64): RawTensor {.importcpp: "torch::softmax(@)".}
+  ## Softmax activation function: softmax(x_i) = exp(x_i) / sum(exp(x_j))
+  ## Converts logits to probabilities (output sums to 1 along dim).
+  ## Critical for attention mechanisms in transformers and multi-class classification.
+  ## dim: dimension along which to apply softmax (usually last dim for classification)
 func softmax*(input: RawTensor, dim: int64, dtype: ScalarKind): RawTensor {.importcpp: "torch::softmax(@)".}
+  ## Softmax with explicit output dtype (useful for mixed precision)
 
 func log_softmax*(input: RawTensor, axis: int64): RawTensor {.importcpp: "torch::log_softmax(@)".}
 func log_softmax*(input: RawTensor, axis: int64, dtype: ScalarKind): RawTensor {.importcpp: "torch::log_softmax(@)".}
@@ -161,12 +166,19 @@ func nll_loss*(
 ): RawTensor {.importcpp: "torch::nll_loss(#, #, /*weight=*/{}, #)".} ## target must be int (Long)!
 
 func cross_entropy*(input, target: RawTensor): RawTensor {.importcpp: "torch::nn::functional::cross_entropy(@)".}
-  ## Combines log_softmax and nll_loss in a single function
-  ## Input: (*,C) where C is number of classes
-  ## Target: (*) where each value is 0 <= target[i] < C
+  ## Cross entropy loss: combines log_softmax and nll_loss in a single, numerically stable function.
+  ## Standard loss for multi-class classification and language modeling.
+  ##
+  ## Input: (N, C) where N=batch size, C=number of classes (logits, NOT probabilities)
+  ## Target: (N,) with class indices, where 0 <= target[i] < C (must be int64/Long)
+  ## Output: scalar loss value (mean reduction by default)
+  ##
+  ## Example for LLM: Input shape (batch=4, vocab=50000), Target shape (batch=4,)
+  ## Computes: -log(softmax(input)[i, target[i]]) for each i, then averages
 func cross_entropy*(
   input, target: RawTensor, reduction: Reduction
 ): RawTensor {.importcpp: "torch::nn::functional::cross_entropy(#, #, /*weight=*/{}, #)".}
+  ## Cross entropy with explicit reduction mode (Mean, Sum, or None)
 
 func binary_cross_entropy_with_logits*(
   input, target: RawTensor

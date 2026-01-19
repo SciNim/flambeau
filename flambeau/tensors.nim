@@ -294,8 +294,23 @@ func backward*[T](self: var Tensor[T]) =
   backward(asRaw(self))
 
 func detach*[T](self: Tensor[T]): Tensor[T] =
-  ## Returns a new tensor, detached from the current computation graph.
-  ## The result will never require gradient.
+  ## Detach tensor from computation graph (stop gradient tracking).
+  ##
+  ## Returns a new tensor that shares the same storage but is completely
+  ## disconnected from the autograd history. The returned tensor will never
+  ## require gradients, even if the input tensor did.
+  ##
+  ## Use cases:
+  ## - Inference/evaluation: prevent gradient computation to save memory
+  ## - Break gradient flow: stop backpropagation at specific points
+  ## - Mix requires_grad tensors: safely use a trained tensor without gradients
+  ##
+  ## Example:
+  ## ```nim
+  ## var x = randn[float32](@[3'i64, 3'i64])  # Training tensor with gradients
+  ## let y = x.detach()                        # Same data, no gradients tracked
+  ## # Operations on y won't affect x's gradient computation
+  ## ```
   asTensor[T](rawtensors.detach(asRaw(self)))
 
 # # Functions.h
