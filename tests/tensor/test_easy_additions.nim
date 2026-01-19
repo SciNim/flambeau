@@ -6,16 +6,15 @@ import ../../flambeau/raw/bindings/[neural_nets, rawtensors]
 import std/unittest
 
 suite "Easy PyTorch API Additions":
-
   test "torch.ones() - Create tensor of ones":
     let a = ones[float32](@[2'i64, 3'i64])
     check a.shape() == @[2'i64, 3'i64]
-    check a[0, 0].item() == 1.0'f32  # First element should be 1
+    check a[0, 0].item() == 1.0'f32 # First element should be 1
 
   test "torch.full() - Create tensor with value":
     let a = full[float32](@[2'i64, 3'i64], 3.14'f32)
     check a.shape() == @[2'i64, 3'i64]
-    check abs(a[0, 0].item() - 3.14'f32) < 1e-6  # All elements should be 3.14
+    check abs(a[0, 0].item() - 3.14'f32) < 1e-6 # All elements should be 3.14
 
   test "torch.randn() - Normal random tensor":
     let a = randn[float32](@[10'i64, 10'i64])
@@ -43,15 +42,15 @@ suite "Easy PyTorch API Additions":
     let b = a.detach()
     check b.shape() == @[2'i64, 2'i64]
     check b[0, 0].item() == 1.0'f32
-    
+
     # Test 2: Detached tensor shares storage (data is same)
     var c = full[float32](@[3'i64, 3'i64], 5.0'f32)
     let d = c.detach()
     check d[1, 1].item() == 5.0'f32
-    
+
     # Test 3: Can do inference without gradient tracking
     let weights = randn[float32](@[10'i64, 10'i64])
-    let detached_weights = weights.detach()  # For inference
+    let detached_weights = weights.detach() # For inference
     let result = matmul(detached_weights, weights)
     check result.shape() == @[10'i64, 10'i64]
 
@@ -66,7 +65,7 @@ suite "Easy PyTorch API Additions":
     check c[1, 0, 0].item() == 2.0'f32
 
   test "F.softmax() - Softmax activation":
-    let a = ones[float32](@[2'i64, 3'i64])  # All ones
+    let a = ones[float32](@[2'i64, 3'i64]) # All ones
     let b = softmax(asRaw(a), dim = 1)
     let bt = asTensor[float32](b)
     # Softmax of all equal values should be 1/n
@@ -77,12 +76,10 @@ suite "Easy PyTorch API Additions":
 
   test "F.cross_entropy() - Cross entropy loss":
     # Create simple logits (before softmax)
-    let logits = full[float32](@[2'i64, 3'i64], 0.0'f32)  # 2 samples, 3 classes
+    let logits = full[float32](@[2'i64, 3'i64], 0.0'f32) # 2 samples, 3 classes
     # Target classes (must be Long/int64)
-    let target = zeros[int64](@[2'i64])  # Both samples predict class 0
+    let target = zeros[int64](@[2'i64]) # Both samples predict class 0
     let loss_raw = cross_entropy(asRaw(logits), asRaw(target))
     let loss = asTensor[float32](loss_raw)
     # Loss should be positive
     check loss.item() > 0
-
-echo "\n✓ All easy additions tests passed!"

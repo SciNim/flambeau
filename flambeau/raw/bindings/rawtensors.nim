@@ -530,8 +530,7 @@ func zeros*(dim: IntArrayRef, options: TensorOptions): RawTensor {.importcpp: "t
 func zeros*(dim: IntArrayRef, scalarKind: ScalarKind): RawTensor {.importcpp: "torch::zeros(@)".}
 func zeros*(dim: IntArrayRef, device: DeviceKind): RawTensor {.importcpp: "torch::zeros(@)".}
 
-func ones*(dim: int64): RawTensor {.importcpp: "torch::ones(@)".}
-  ## Create a tensor filled with ones (scalar value 1)
+func ones*(dim: int64): RawTensor {.importcpp: "torch::ones(@)".} ## Create a tensor filled with ones (scalar value 1)
 func ones*(dim: IntArrayRef): RawTensor {.importcpp: "torch::ones(@)".}
   ## Create a tensor filled with ones (scalar value 1)
 func ones*(dim: IntArrayRef, options: TensorOptions): RawTensor {.importcpp: "torch::ones(@)".}
