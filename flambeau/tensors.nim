@@ -293,6 +293,11 @@ func permute*[T](self: Tensor[T], dims: openArray[int64]): Tensor[T] =
 func backward*[T](self: var Tensor[T]) =
   backward(asRaw(self))
 
+func detach*[T](self: Tensor[T]): Tensor[T] =
+  ## Returns a new tensor, detached from the current computation graph.
+  ## The result will never require gradient.
+  asTensor[T](rawtensors.detach(asRaw(self)))
+
 # # Functions.h
 # # -----------------------------------------------------------------------
 func contiguous*[T](self: Tensor[T]): Tensor[T] =
@@ -323,6 +328,33 @@ func zeros*[T](dim: openArray[int64]): Tensor[T] =
 func zeros*[T](dim: openArray[int64], options: DeviceKind | TensorOptions): Tensor[T] =
   let dims = dim.asTorchView()
   asTensor[T](rawtensors.zeros(dims, options))
+
+func ones*[T](dim: int64): Tensor[T] =
+  asTensor[T](rawtensors.ones(dim))
+
+func ones*[T](dim: openArray[int64]): Tensor[T] =
+  let dims = dim.asTorchView()
+  asTensor[T](rawtensors.ones(dims, T))
+
+func ones*[T](dim: openArray[int64], options: DeviceKind | TensorOptions): Tensor[T] =
+  let dims = dim.asTorchView()
+  asTensor[T](rawtensors.ones(dims, options))
+
+func full*[T](size: openArray[int64], fill_value: T): Tensor[T] =
+  let dims = size.asTorchView()
+  asTensor[T](rawtensors.full(dims, fill_value, T))
+
+func full*[T](size: openArray[int64], fill_value: T, options: DeviceKind | TensorOptions): Tensor[T] =
+  let dims = size.asTorchView()
+  asTensor[T](rawtensors.full(dims, fill_value, options))
+
+func randn*[T](size: openArray[int64]): Tensor[T] =
+  let dims = size.asTorchView()
+  asTensor[T](rawtensors.randn(dims, T))
+
+func randn*[T](size: openArray[int64], options: DeviceKind | TensorOptions): Tensor[T] =
+  let dims = size.asTorchView()
+  asTensor[T](rawtensors.randn(dims, options))
 
 func linspace*[T](start, stop: T, steps: int64, options: TensorOptions): Tensor[T] =
   asTensor[T](rawtensors.linspace(start, stop, steps, options))

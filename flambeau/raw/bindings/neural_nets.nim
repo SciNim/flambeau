@@ -135,6 +135,9 @@ func selu_mut*(input: var RawTensor) {.importcpp: "torch::selu_(@)".}
 func tanh*(input: RawTensor): RawTensor {.importcpp: "torch::tanh(@)".}
 func tanh_mut*(input: var RawTensor) {.importcpp: "torch::tanh_(@)".}
 
+func softmax*(input: RawTensor, dim: int64): RawTensor {.importcpp: "torch::softmax(@)".}
+func softmax*(input: RawTensor, dim: int64, dtype: ScalarKind): RawTensor {.importcpp: "torch::softmax(@)".}
+
 func log_softmax*(input: RawTensor, axis: int64): RawTensor {.importcpp: "torch::log_softmax(@)".}
 func log_softmax*(input: RawTensor, axis: int64, dtype: ScalarKind): RawTensor {.importcpp: "torch::log_softmax(@)".}
 
@@ -156,6 +159,14 @@ func nll_loss*(input, target: RawTensor): RawTensor {.importcpp: "torch::nll_los
 func nll_loss*(
   input, target: RawTensor, red: Reduction
 ): RawTensor {.importcpp: "torch::nll_loss(#, #, /*weight=*/{}, #)".} ## target must be int (Long)!
+
+func cross_entropy*(input, target: RawTensor): RawTensor {.importcpp: "torch::nn::functional::cross_entropy(@)".}
+  ## Combines log_softmax and nll_loss in a single function
+  ## Input: (*,C) where C is number of classes
+  ## Target: (*) where each value is 0 <= target[i] < C
+func cross_entropy*(
+  input, target: RawTensor, reduction: Reduction
+): RawTensor {.importcpp: "torch::nn::functional::cross_entropy(#, #, /*weight=*/{}, #)".}
 
 func binary_cross_entropy_with_logits*(
   input, target: RawTensor

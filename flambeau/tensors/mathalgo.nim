@@ -43,6 +43,18 @@ proc concat*[T](tensorargs: varargs[Tensor[T]]): Tensor[T] =
   # Overload because varargs + default argument don't mix well
   result = concat(tensorargs, 0.int64)
 
+proc stack*[T](tensorargs: varargs[Tensor[T]], dim: int64 = 0): Tensor[T] =
+  ## Concatenates a sequence of tensors along a new dimension.
+  ## All tensors need to be of the same size.
+  var rawVec = initCppVector[RawTensor]()
+  for t in tensorargs:
+    rawVec.pushBack(asRaw(t))
+  let tensors = ArrayRef[RawTensor].init(rawVec)
+  
+  result = asTensor[T](
+    rawtensors.stack(tensors, dim)
+  )
+
 func flip*[T](self: Tensor[T], dims: openArray[int64]): Tensor[T] =
   let rawdims = dims.asTorchView()
   result = asTensor[T](
@@ -175,6 +187,21 @@ func exp*[T](self: Tensor[T]): Tensor[T] =
 func exp2*[T](self: Tensor[T]): Tensor[T] =
   asTensor[T](
     rawtensors.exp2(asRaw(self))
+  )
+
+func log*[T](self: Tensor[T]): Tensor[T] =
+  asTensor[T](
+    rawtensors.log(asRaw(self))
+  )
+
+func log2*[T](self: Tensor[T]): Tensor[T] =
+  asTensor[T](
+    rawtensors.log2(asRaw(self))
+  )
+
+func log10*[T](self: Tensor[T]): Tensor[T] =
+  asTensor[T](
+    rawtensors.log10(asRaw(self))
   )
 
 func erf*[T](self: Tensor[T]): Tensor[T] =

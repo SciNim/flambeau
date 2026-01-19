@@ -416,6 +416,8 @@ func permute*(self: RawTensor, dims: IntArrayRef): RawTensor {.importcpp: "#.per
 # -----------------------------------------------------------------------
 
 func backward*(self: var RawTensor) {.importcpp: "#.backward()".}
+func detach*(self: RawTensor): RawTensor {.importcpp: "#.detach()".}
+  ## Returns a new tensor, detached from the current computation graph
 
 # Low-level slicing API
 # -----------------------------------------------------------------------
@@ -513,6 +515,22 @@ func zeros*(dim: IntArrayRef): RawTensor {.importcpp: "torch::zeros(@)".}
 func zeros*(dim: IntArrayRef, options: TensorOptions): RawTensor {.importcpp: "torch::zeros(@)".}
 func zeros*(dim: IntArrayRef, scalarKind: ScalarKind): RawTensor {.importcpp: "torch::zeros(@)".}
 func zeros*(dim: IntArrayRef, device: DeviceKind): RawTensor {.importcpp: "torch::zeros(@)".}
+
+func ones*(dim: int64): RawTensor {.importcpp: "torch::ones(@)".}
+func ones*(dim: IntArrayRef): RawTensor {.importcpp: "torch::ones(@)".}
+func ones*(dim: IntArrayRef, options: TensorOptions): RawTensor {.importcpp: "torch::ones(@)".}
+func ones*(dim: IntArrayRef, scalarKind: ScalarKind): RawTensor {.importcpp: "torch::ones(@)".}
+func ones*(dim: IntArrayRef, device: DeviceKind): RawTensor {.importcpp: "torch::ones(@)".}
+
+func full*(size: IntArrayRef, fill_value: Scalar): RawTensor {.importcpp: "torch::full(@)".}
+func full*(size: IntArrayRef, fill_value: Scalar, options: TensorOptions): RawTensor {.importcpp: "torch::full(@)".}
+func full*(size: IntArrayRef, fill_value: Scalar, scalarKind: ScalarKind): RawTensor {.importcpp: "torch::full(@)".}
+func full*(size: IntArrayRef, fill_value: Scalar, device: DeviceKind): RawTensor {.importcpp: "torch::full(@)".}
+
+func randn*(size: IntArrayRef): RawTensor {.importcpp: "torch::randn(@)".}
+func randn*(size: IntArrayRef, options: TensorOptions): RawTensor {.importcpp: "torch::randn(@)".}
+func randn*(size: IntArrayRef, scalarKind: ScalarKind): RawTensor {.importcpp: "torch::randn(@)".}
+func randn*(size: IntArrayRef, device: DeviceKind): RawTensor {.importcpp: "torch::randn(@)".}
 
 func linspace*(start, stop: Scalar, steps: int64, options: TensorOptions): RawTensor {.importcpp: "torch::linspace(@)".}
 func linspace*(start, stop: Scalar, steps: int64, options: ScalarKind): RawTensor {.importcpp: "torch::linspace(@)".}
@@ -660,6 +678,7 @@ func sort*(
 func argsort*(self: RawTensor, axis: int64 = -1, descending: bool = false): RawTensor {.importcpp: "#.argsort(@)".}
 
 func cat*(tensors: ArrayRef[RawTensor], axis: int64 = 0): RawTensor {.importcpp: "torch::cat(@)".}
+func stack*(tensors: ArrayRef[RawTensor], dim: int64 = 0): RawTensor {.importcpp: "torch::stack(@)".}
 func flip*(self: RawTensor, dims: IntArrayRef): RawTensor {.importcpp: "#.flip(@)".}
 
 # math
@@ -686,6 +705,9 @@ func sin*(self: RawTensor): RawTensor {.importcpp: "#.sin()".}
 func tan*(self: RawTensor): RawTensor {.importcpp: "#.tan()".}
 func exp*(self: RawTensor): RawTensor {.importcpp: "#.exp()".}
 func exp2*(self: RawTensor): RawTensor {.importcpp: "#.exp2()".}
+func log*(self: RawTensor): RawTensor {.importcpp: "#.log()".}
+func log2*(self: RawTensor): RawTensor {.importcpp: "#.log2()".}
+func log10*(self: RawTensor): RawTensor {.importcpp: "#.log10()".}
 func erf*(self: RawTensor): RawTensor {.importcpp: "#.erf()".}
 func erfc*(self: RawTensor): RawTensor {.importcpp: "#.erfc()".}
 func reciprocal*(self: RawTensor): RawTensor {.importcpp: "#.reciprocal()".}
