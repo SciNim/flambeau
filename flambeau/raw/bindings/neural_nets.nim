@@ -164,7 +164,7 @@ func nll_loss*(input, target: RawTensor): RawTensor {.importcpp: "torch::nll_los
   ## Negative log likelihood loss. Target must be int64 (Long)!
   ## Uses mean reduction by default.
 
-func nll_loss*(input, target: RawTensor, weight: RawTensor, red: Reduction): RawTensor 
+func nll_loss*(input, target: RawTensor, weight: RawTensor, red: Reduction): RawTensor
   {.importcpp: "torch::nll_loss(@)".}
   ## Negative log likelihood loss with class weights and explicit reduction.
   ## Target must be int64 (Long)!
@@ -181,12 +181,12 @@ func cross_entropy*(input, target: RawTensor): RawTensor {.importcpp: "torch::nn
   ## Example for LLM: Input shape (batch=4, vocab=50000), Target shape (batch=4,)
   ## Computes: -log(softmax(input)[i, target[i]]) for each i, then averages
 
-func cross_entropy*(input, target, weight: RawTensor): RawTensor 
+func cross_entropy*(input, target, weight: RawTensor): RawTensor
   {.importcpp: "torch::nn::functional::cross_entropy(@)".}
   ## Cross entropy with class weights. Uses mean reduction.
   ## Weight: 1D tensor of size C (num classes) for per-class weighting
 
-func cross_entropy*(input, target, weight: RawTensor, reduction: Reduction): RawTensor 
+func cross_entropy*(input, target, weight: RawTensor, reduction: Reduction): RawTensor
   {.importcpp: "torch::nn::functional::cross_entropy(@)".}
   ## Cross entropy with class weights and explicit reduction mode (Mean, Sum, or None)
 
